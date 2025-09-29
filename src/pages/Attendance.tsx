@@ -49,7 +49,7 @@ export const Attendance: React.FC = () => {
       const filteredAttendance = mockAttendance.filter(
         (record) => record.date === selectedDate
       );
-      setAttendance(filteredAttendance);
+      setAttendance(filteredAttendance as AttendanceRecord[]);
     }
   };
 
