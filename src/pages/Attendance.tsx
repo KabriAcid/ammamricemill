@@ -3,7 +3,7 @@ import { Clock, Calendar } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockAttendance, mockEmployees } from '../mock.ts';
+import { mockAttendance, mockEmployees } from "../mock.ts";
 
 interface AttendanceRecord {
   id: number;

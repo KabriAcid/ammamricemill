@@ -3,7 +3,7 @@ import { Tag, Plus } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockCategories } from from '../mock.ts';
+import { mockCategories } from "../mock.ts";
 
 interface Category {
   id: number;
@@ -33,7 +33,7 @@ export const Categories: React.FC = () => {
       const data = await response.json();
       setCategories(data);
     } catch (error) {
-      setCategories(mockCategories);
+      setCategories(mockCategories as Category[]);
     }
   };
 

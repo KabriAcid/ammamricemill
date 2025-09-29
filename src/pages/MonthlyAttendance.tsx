@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calendar, Download } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { mockEmployees, mockAttendance } from from '../mock.ts';
+import { mockEmployees } from "../mock.ts";
 
 interface MonthlyAttendanceRecord {
   employeeId: number;

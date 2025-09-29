@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Package, Plus } from "lucide-react";
+import { Package } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockProducts, mockCategories, MockProduct } from from '../mock.ts';
+import { mockProducts, mockCategories, MockProduct } from "../mock.ts";
 
 export const Products: React.FC = () => {
   const [products, setProducts] = useState<MockProduct[]>([]);

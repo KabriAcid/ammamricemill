@@ -3,7 +3,7 @@ import { Archive, Eye, AlertTriangle } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockStocks, MockStock } from from '../mock.ts';
+import { mockStocks, MockStock } from "../mock.ts";
 
 export const Stocks: React.FC = () => {
   const [stocks, setStocks] = useState<MockStock[]>([]);

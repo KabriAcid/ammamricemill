@@ -3,7 +3,7 @@ import { Users, Plus } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockDesignations, MockDesignation } from from '../mock.ts';
+import { mockDesignations, MockDesignation } from '../mock.ts';
 
 export const Designations: React.FC = () => {
   const [designations, setDesignations] = useState<MockDesignation[]>([]);

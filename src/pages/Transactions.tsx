@@ -8,7 +8,7 @@ import {
   mockIncomeHeads,
   mockExpenseHeads,
   MockTransaction,
-} from from '../mock.ts';
+} from "../mock.ts";
 
 export const Transactions: React.FC = () => {
   const [transactions, setTransactions] = useState<MockTransaction[]>([]);

@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { UserCheck, Plus } from "lucide-react";
+import { UserCheck } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DataTable } from "../components/DataTable";
 import { FormModal } from "../components/FormModal";
-import { mockEmployees, mockDesignations, MockEmployee } from from '../mock.ts';
+import { mockEmployees, mockDesignations, MockEmployee } from '../mock.ts';
 
 export const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<MockEmployee[]>([]);

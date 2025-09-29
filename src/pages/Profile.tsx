@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { User, Lock, Save, X } from "lucide-react";
 import { useAuth } from "../contexts/AuthContext";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { mockUsers } from from '../mock.ts';
+import { mockUsers } from "../mock.ts";
 
 export const Profile: React.FC = () => {
   const { user, updateUser } = useAuth();

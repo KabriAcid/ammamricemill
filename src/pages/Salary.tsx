@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { DollarSign, Download, Eye, FileText } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { FormModal } from "../components/FormModal";
-import { mockEmployees } from from '../mock.ts';
+import { mockEmployees } from "../mock.ts";
 
 interface SalaryRecord {
   id: number;
