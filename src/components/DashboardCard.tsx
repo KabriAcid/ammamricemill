@@ -87,7 +87,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-center space-x-4">
+      <div className="flex items-center space-x-4 py-3 px-2">
         <div
           className={`p-2 rounded-full flex items-center justify-center ${
             iconColorMap[card.color]

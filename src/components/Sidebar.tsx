@@ -538,7 +538,7 @@ export const Sidebar: React.FC = () => {
       className="
         hidden lg:block
         lg:fixed lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50
-        lg:overflow-hidden
+        lg:flex lg:flex-col
       "
     >
       <div className="flex items-center space-x-3 p-4 border-b border-gray-200">
@@ -553,7 +553,7 @@ export const Sidebar: React.FC = () => {
           AMMAM RICE MILL LTD.
         </h1>
       </div>
-      <div className="p-4 flex flex-col h-full">
+      <div className="p-4 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
         <nav className="space-y-1 flex-1">
           {navigationData.map((item) => (
             <SidebarItem key={item.id} item={item} />
