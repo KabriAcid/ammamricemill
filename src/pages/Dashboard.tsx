@@ -1,120 +1,120 @@
-import React, { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { RefreshCw, ArrowLeft } from 'lucide-react';
-import { DashboardCard } from '../components/DashboardCard';
-import { Button } from '../components/ui/Button';
-import { useFetch } from '../hooks/useFetch';
-import { DashboardData, DashboardCard as DashboardCardType } from '../types';
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { RefreshCw, ArrowLeft } from "lucide-react";
+import { DashboardCard } from "../components/DashboardCard";
+import { Button } from "../components/ui/Button";
+import { useFetch } from "../hooks/useFetch";
+import { DashboardData, DashboardCard as DashboardCardType } from "../types";
 
 // Mock data for development
 const mockDashboardData: DashboardCardType[] = [
   {
-    id: 'total-party',
-    title: 'Total Party',
+    id: "total-party",
+    title: "Total Party",
     value: 89,
-    icon: 'users',
-    color: 'primary',
-    link: '/parties',
-    description: 'Active business partners'
+    icon: "users",
+    color: "primary",
+    link: "/parties",
+    description: "Active business partners",
   },
   {
-    id: 'total-products',
-    title: 'Total Products',
+    id: "total-products",
+    title: "Total Products",
     value: 23,
-    icon: 'package',
-    color: 'success',
-    link: '/products',
-    description: 'Available products'
+    icon: "package",
+    color: "success",
+    link: "/products",
+    description: "Available products",
   },
   {
-    id: 'total-purchase',
-    title: 'Total Purchase',
+    id: "total-purchase",
+    title: "Total Purchase",
     value: 546673360,
-    icon: 'shopping-cart',
-    color: 'danger',
-    link: '/purchases',
-    description: 'All time purchases'
+    icon: "shopping-cart",
+    color: "danger",
+    link: "/purchases",
+    description: "All time purchases",
   },
   {
-    id: 'total-sales',
-    title: 'Total Sales',
+    id: "total-sales",
+    title: "Total Sales",
     value: 252522300,
-    icon: 'trending-up',
-    color: 'primary',
-    link: '/sales',
-    description: 'All time sales'
+    icon: "trending-up",
+    color: "primary",
+    link: "/sales",
+    description: "All time sales",
   },
   {
-    id: 'today-purchase',
-    title: 'Today Purchase',
+    id: "today-purchase",
+    title: "Today Purchase",
     value: 0,
-    icon: 'shopping-cart',
-    color: 'danger',
-    link: '/purchases',
-    description: 'Today\'s purchases'
+    icon: "shopping-cart",
+    color: "danger",
+    link: "/purchases",
+    description: "Today's purchases",
   },
   {
-    id: 'today-sales',
-    title: 'Today Sales',
+    id: "today-sales",
+    title: "Today Sales",
     value: 0,
-    icon: 'trending-up',
-    color: 'primary',
-    link: '/sales',
-    description: 'Today\'s sales'
+    icon: "trending-up",
+    color: "primary",
+    link: "/sales",
+    description: "Today's sales",
   },
   {
-    id: 'today-receive',
-    title: 'Today Receive',
+    id: "today-receive",
+    title: "Today Receive",
     value: 0,
-    icon: 'dollar-sign',
-    color: 'danger',
-    link: '/dailyreport',
-    description: 'Today\'s receipts'
+    icon: "dollar-sign",
+    color: "danger",
+    link: "/dailyreport",
+    description: "Today's receipts",
   },
   {
-    id: 'today-payment',
-    title: 'Today Payment',
+    id: "today-payment",
+    title: "Today Payment",
     value: 0,
-    icon: 'dollar-sign',
-    color: 'primary',
-    link: '/dailyreport',
-    description: 'Today\'s payments'
+    icon: "dollar-sign",
+    color: "primary",
+    link: "/dailyreport",
+    description: "Today's payments",
   },
   {
-    id: 'month-receive',
-    title: 'This Month Receive',
+    id: "month-receive",
+    title: "This Month Receive",
     value: 1285914430,
-    icon: 'dollar-sign',
-    color: 'primary',
-    link: '/financial-statement',
-    description: 'Monthly receipts'
+    icon: "dollar-sign",
+    color: "primary",
+    link: "/financial-statement",
+    description: "Monthly receipts",
   },
   {
-    id: 'month-payment',
-    title: 'This Month Payment',
+    id: "month-payment",
+    title: "This Month Payment",
     value: 400118812.86,
-    icon: 'dollar-sign',
-    color: 'danger',
-    link: '/financial-statement',
-    description: 'Monthly payments'
+    icon: "dollar-sign",
+    color: "danger",
+    link: "/financial-statement",
+    description: "Monthly payments",
   },
   {
-    id: 'party-due',
-    title: 'Party Due',
+    id: "party-due",
+    title: "Party Due",
     value: -22025700,
-    icon: 'alert-circle',
-    color: 'danger',
-    link: '/parties/due',
-    description: 'Outstanding dues'
+    icon: "alert-circle",
+    color: "danger",
+    link: "/parties/due",
+    description: "Outstanding dues",
   },
   {
-    id: 'party-debts',
-    title: 'Party Debts',
+    id: "party-debts",
+    title: "Party Debts",
     value: 40352000,
-    icon: 'check-circle',
-    color: 'success',
-    link: '/parties/debts',
-    description: 'Receivable amounts'
+    icon: "check-circle",
+    color: "success",
+    link: "/parties/debts",
+    description: "Receivable amounts",
   },
 ];
 
@@ -131,7 +131,7 @@ export const Dashboard: React.FC = () => {
     const loadData = async () => {
       setLoading(true);
       // Simulate network delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
       setDashboardData(mockDashboardData);
       setLoading(false);
     };
@@ -148,24 +148,19 @@ export const Dashboard: React.FC = () => {
     }, 1000);
   };
 
-  const handleGoBack = () => {
-    window.history.back();
-  };
 
   return (
     <div className="space-y-6">
       {/* Breadcrumb and Actions */}
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+          <div className="flex items-center space-x-2 text-sm text-gray-500">
+            <span>Dashboard</span>
+            <span>/</span>
+            <span className="text-gray-900">Overview</span>
+          </div>
+          
           <div className="flex items-center space-x-4">
-            <Button
-              variant="outline"
-              size="sm"
-              icon={<ArrowLeft size={16} />}
-              onClick={handleGoBack}
-            >
-              <span className="hidden sm:inline">Back</span>
-            </Button>
             <Button
               variant="outline"
               size="sm"
@@ -175,16 +170,6 @@ export const Dashboard: React.FC = () => {
             >
               <span className="hidden sm:inline">Refresh</span>
             </Button>
-          </div>
-          
-          <div className="text-center">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          </div>
-          
-          <div className="flex items-center space-x-2 text-sm text-gray-500">
-            <span>Dashboard</span>
-            <span>/</span>
-            <span className="text-gray-900">Overview</span>
           </div>
         </div>
       </div>
@@ -213,22 +198,10 @@ export const Dashboard: React.FC = () => {
               >
                 <DashboardCard card={card} />
               </motion.div>
-            ))
-        }
+            ))}
       </motion.div>
 
       {/* Additional Info */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="text-center">
-          <h2 className="text-lg font-semibold text-gray-900 mb-2">
-            Welcome to AMMAM Rice Mill Management System
-          </h2>
-          <p className="text-gray-600">
-            Monitor your business operations, track inventory, manage parties, and analyze performance
-            all from this comprehensive dashboard.
-          </p>
-        </div>
-      </div>
     </div>
   );
 };

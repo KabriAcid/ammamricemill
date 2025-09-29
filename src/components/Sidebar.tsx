@@ -463,7 +463,7 @@ export const Sidebar: React.FC = () => {
     <aside
       className="
         hidden lg:block
-        lg:fixed lg:top-0 lg:left-0 lg:h-screen lg:w-80 lg:bg-white lg:shadow-none lg:z-50
+        lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50
         lg:overflow-hidden
       "
     >
