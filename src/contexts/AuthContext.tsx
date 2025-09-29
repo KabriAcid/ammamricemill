@@ -78,7 +78,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         // Mock user data for development
         const mockUser: User = {
           id: 23,
-          name: "ABUBAKAR ADAM CHEKO",
+          name: "ADAM CHEKO",
           email: email,
           role: "Admin",
         };

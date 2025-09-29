@@ -76,7 +76,7 @@ export const Navbar: React.FC = () => {
   ];
 
   return (
-    <nav className="bg-white shadow-lg border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
+    <nav className="bg-white ml-3 shadow-lg border-b border-gray-200 rounded z-40">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side */}
@@ -89,14 +89,7 @@ export const Navbar: React.FC = () => {
               <Menu size={24} />
             </button>
             
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold text-sm">A</span>
-              </div>
-              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">
-                AMMAM RICE MILL LTD.
-              </h1>
-            </div>
+           
           </div>
 
           {/* Right side */}

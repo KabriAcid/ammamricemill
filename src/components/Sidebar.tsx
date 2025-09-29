@@ -38,19 +38,19 @@ const navigationData: NavigationItem[] = [
       {
         id: "general-setting",
         title: "General Setting",
-        icon: "settings",
+        icon: "sliders",
         link: "/setting",
       },
       {
         id: "silo-setting",
         title: "Silo Setting",
-        icon: "settings",
+        icon: "warehouse",
         link: "/dayar",
       },
       {
         id: "godown-setting",
         title: "Godown Setting",
-        icon: "settings",
+        icon: "building-2",
         link: "/godown",
       },
     ],
@@ -63,28 +63,28 @@ const navigationData: NavigationItem[] = [
       {
         id: "designation",
         title: "Designation List",
-        icon: "users",
+        icon: "badge",
         link: "/designation",
       },
       {
         id: "employee",
         title: "Employee List",
-        icon: "users",
+        icon: "user",
         link: "/employee",
       },
       {
         id: "attendance",
         title: "Daily Attendance",
-        icon: "users",
+        icon: "calendar-days",
         link: "/attendance",
       },
       {
         id: "monthly-attendance",
         title: "Monthly Attendance",
-        icon: "users",
+        icon: "calendar-check",
         link: "/attendance/monthly",
       },
-      { id: "salary", title: "Salary Sheet", icon: "users", link: "/salary" },
+      { id: "salary", title: "Salary Sheet", icon: "wallet", link: "/salary" },
     ],
   },
   {
@@ -95,31 +95,31 @@ const navigationData: NavigationItem[] = [
       {
         id: "income-head",
         title: "Income Head",
-        icon: "credit-card",
+        icon: "arrow-down-circle",
         link: "/head-income",
       },
       {
         id: "expense-head",
         title: "Expense Head",
-        icon: "credit-card",
+        icon: "arrow-up-circle",
         link: "/head-expense",
       },
       {
         id: "bank-head",
         title: "Bank Head",
-        icon: "credit-card",
+        icon: "banknote",
         link: "/head-bank",
       },
       {
         id: "others-head",
         title: "Others Head",
-        icon: "credit-card",
+        icon: "list",
         link: "/head-others",
       },
       {
         id: "transactions",
         title: "All Transactions",
-        icon: "credit-card",
+        icon: "repeat",
         link: "/transactions",
       },
     ],
@@ -132,26 +132,31 @@ const navigationData: NavigationItem[] = [
       {
         id: "party-types",
         title: "Party Type",
-        icon: "users",
+        icon: "layers",
         link: "/party-types",
       },
-      { id: "parties", title: "Party List", icon: "users", link: "/parties" },
+      {
+        id: "parties",
+        title: "Party List",
+        icon: "user-group",
+        link: "/parties",
+      },
       {
         id: "party-payments",
         title: "Party Payments",
-        icon: "users",
+        icon: "credit-card",
         link: "/parties/payments",
       },
       {
         id: "party-due",
         title: "Party Due",
-        icon: "users",
+        icon: "alert-circle",
         link: "/parties/due",
       },
       {
         id: "party-debts",
         title: "Party Debts",
-        icon: "users",
+        icon: "alert-triangle",
         link: "/parties/debts",
       },
     ],
@@ -161,7 +166,7 @@ const navigationData: NavigationItem[] = [
     title: "Products",
     icon: "package",
     children: [
-      { id: "category", title: "Category", icon: "package", link: "/category" },
+      { id: "category", title: "Category", icon: "tag", link: "/category" },
       {
         id: "products-list",
         title: "Products",
@@ -178,7 +183,7 @@ const navigationData: NavigationItem[] = [
       {
         id: "emptybag-purchase",
         title: "Purchase",
-        icon: "shopping-bag",
+        icon: "shopping-cart",
         link: "/emptybag-purchase",
       },
       {
@@ -190,19 +195,19 @@ const navigationData: NavigationItem[] = [
       {
         id: "emptybag-receive",
         title: "Receive",
-        icon: "shopping-bag",
+        icon: "download",
         link: "/emptybag-receive",
       },
       {
         id: "emptybag-payment",
         title: "Payment",
-        icon: "shopping-bag",
+        icon: "credit-card",
         link: "/emptybag-payment",
       },
       {
         id: "emptybag-stocks",
         title: "Stocks",
-        icon: "shopping-bag",
+        icon: "boxes",
         link: "/emptybag-stocks",
       },
     ],
@@ -215,25 +220,25 @@ const navigationData: NavigationItem[] = [
       {
         id: "paddy-purchase",
         title: "Paddy Purchase",
-        icon: "shopping-cart",
+        icon: "leaf",
         link: "/purchases",
       },
       {
         id: "paddy-ledger",
         title: "Paddy Purchase Ledger",
-        icon: "shopping-cart",
+        icon: "book-open",
         link: "/purchase/ledger",
       },
       {
         id: "rice-purchase",
         title: "Rice Purchase",
-        icon: "shopping-cart",
+        icon: "wheat",
         link: "/rice-purchase",
       },
       {
         id: "rice-ledger",
         title: "Rice Purchase Ledger",
-        icon: "shopping-cart",
+        icon: "book-open",
         link: "/ricepurchase/ledger",
       },
     ],
@@ -246,13 +251,13 @@ const navigationData: NavigationItem[] = [
       {
         id: "sales-list",
         title: "Sales List",
-        icon: "trending-up",
+        icon: "list",
         link: "/sales",
       },
       {
         id: "sales-ledger",
         title: "Sales Ledger",
-        icon: "trending-up",
+        icon: "book-open",
         link: "/sale/ledger",
       },
     ],
@@ -265,59 +270,66 @@ const navigationData: NavigationItem[] = [
       {
         id: "production-order",
         title: "Production Order",
-        icon: "cog",
+        icon: "clipboard-list",
         link: "/productions",
       },
       {
         id: "production-details",
         title: "Production Details",
-        icon: "cog",
+        icon: "info",
         link: "/production/details",
       },
     ],
   },
+  // Group all stocks-related links under a main nav
   {
-    id: "production-stocks",
-    title: "Production Stocks",
-    icon: "plus",
+    id: "stocks",
+    title: "Stocks",
+    icon: "boxes",
     children: [
+      {
+        id: "main-stocks",
+        title: "Main Stocks",
+        icon: "box",
+        link: "/stocks",
+      },
+      {
+        id: "godown-stocks",
+        title: "Godown Stocks",
+        icon: "warehouse",
+        link: "/stocks-godown",
+      },
+      {
+        id: "stock-register",
+        title: "Stock Register",
+        icon: "book",
+        link: "/stocks/details",
+      },
+      {
+        id: "add-stocks",
+        title: "Add Stocks",
+        icon: "plus-square",
+        link: "/addstocks",
+      },
       {
         id: "production-stocks-list",
         title: "Production Stocks",
-        icon: "plus",
+        icon: "layers",
         link: "/production-stocks",
       },
       {
         id: "production-stocks-details",
         title: "Production Stocks Details",
-        icon: "plus",
+        icon: "info",
         link: "/production-stock/details",
       },
+      {
+        id: "emptybag-stocks",
+        title: "Empty Bag Stocks",
+        icon: "shopping-bag",
+        link: "/emptybag-stocks",
+      },
     ],
-  },
-  {
-    id: "add-stocks",
-    title: "Add Stocks",
-    icon: "plus",
-    link: "/addstocks",
-  },
-  {
-    id: "stocks",
-    title: "Stocks",
-    icon: "book",
-    link: "/stocks",
-  },
-  {
-    id: "godown-stocks",
-    title: "Godown Stocks",
-    icon: "home",
-    link: "/stocks-godown",
-  },
-  {
-    id: "stock-register",
-    title: "Stock Register",
-    icon: "book",
-    link: "/stocks/details",
   },
   {
     id: "reporting",
@@ -327,13 +339,13 @@ const navigationData: NavigationItem[] = [
       {
         id: "daily-report",
         title: "Daily Report",
-        icon: "bar-chart-3",
+        icon: "calendar",
         link: "/dailyreport",
       },
       {
         id: "financial-statement",
         title: "Financial Statement",
-        icon: "bar-chart-3",
+        icon: "file-text",
         link: "/financial-statement",
       },
     ],
@@ -346,13 +358,13 @@ const navigationData: NavigationItem[] = [
       {
         id: "sms-templates",
         title: "SMS Template",
-        icon: "message-square",
+        icon: "file-text",
         link: "/sms-templates",
       },
       {
         id: "send-sms",
         title: "Send SMS",
-        icon: "message-square",
+        icon: "send",
         link: "/sendsms",
       },
     ],
@@ -364,6 +376,39 @@ const navigationData: NavigationItem[] = [
     link: "/backup",
   },
 ];
+
+// Add new icons to the iconMap as used above
+import {
+  Sliders,
+  Warehouse,
+  Building2,
+  Badge,
+  User,
+  CalendarDays,
+  CalendarCheck,
+  Wallet,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Banknote,
+  List,
+  Repeat,
+  Layers,
+  UserPlus,
+  AlertCircle,
+  AlertTriangle,
+  Tag,
+  Download,
+  Boxes,
+  Box,
+  BookOpen,
+  Wheat,
+  ClipboardList,
+  Info,
+  PlusSquare,
+  Calendar,
+  FileText,
+  Send,
+} from "lucide-react";
 
 const iconMap = {
   home: Home,
@@ -380,6 +425,35 @@ const iconMap = {
   "bar-chart-3": BarChart3,
   "message-square": MessageSquare,
   database: Database,
+  sliders: Sliders,
+  warehouse: Warehouse,
+  "building-2": Building2,
+  badge: Badge,
+  user: User,
+  "calendar-days": CalendarDays,
+  "calendar-check": CalendarCheck,
+  wallet: Wallet,
+  "arrow-down-circle": ArrowDownCircle,
+  "arrow-up-circle": ArrowUpCircle,
+  banknote: Banknote,
+  list: List,
+  repeat: Repeat,
+  layers: Layers,
+  "user-group": UserPlus,
+  "alert-circle": AlertCircle,
+  "alert-triangle": AlertTriangle,
+  tag: Tag,
+  download: Download,
+  boxes: Boxes,
+  box: Box,
+  "book-open": BookOpen,
+  wheat: Wheat,
+  "clipboard-list": ClipboardList,
+  info: Info,
+  "plus-square": PlusSquare,
+  calendar: Calendar,
+  "file-text": FileText,
+  send: Send,
 };
 
 interface SidebarItemProps {
@@ -463,10 +537,22 @@ export const Sidebar: React.FC = () => {
     <aside
       className="
         hidden lg:block
-        lg:fixed lg:top-16 lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50
+        lg:fixed lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50
         lg:overflow-hidden
       "
     >
+      <div className="flex items-center space-x-3 p-4 border-b border-gray-200">
+        <div className="flex items-center justify-center">
+          <img
+            src="/favicon.png"
+            alt="favicon"
+            className="w-8 h-8 object-cover"
+          />
+        </div>
+        <h1 className="text-xl sm:text-base font-bold text-gray-900 hidden sm:block tracking-tight digit">
+          AMMAM RICE MILL LTD.
+        </h1>
+      </div>
       <div className="p-4 flex flex-col h-full">
         <nav className="space-y-1 flex-1">
           {navigationData.map((item) => (
