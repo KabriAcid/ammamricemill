@@ -37,7 +37,11 @@ export const Login: React.FC = () => {
           {/* Logo and Title */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <img src="/favicon.png" alt="AMMAM RICE MILL LTD." className="w-full h-full object-cover rounded-2xl" />
+              <img
+                src="/favicon.png"
+                alt="AMMAM RICE MILL LTD."
+                className="w-full h-full object-cover rounded-2xl"
+              />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               AMMAM RICE MILL LTD.
@@ -59,7 +63,10 @@ export const Login: React.FC = () => {
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Email Address
               </label>
               <input
@@ -74,13 +81,16 @@ export const Login: React.FC = () => {
             </div>
 
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label
+                htmlFor="password"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
                 Password
               </label>
               <div className="relative">
                 <input
                   id="password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
@@ -112,15 +122,15 @@ export const Login: React.FC = () => {
           {/* Footer */}
           <div className="mt-8 text-center text-sm text-gray-500">
             <p>
-              Developed and Maintained by{' '}
+              Developed and Maintained by{" "}
               <a
-                href="https://dreamerscode.com"
+                href="https://aacinnovation-2335f.web.app/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-500 hover:text-primary-600 font-medium"
               >
-                Dreamerscode
-              </a>{' '}
+                AAC Innovation
+              </a>{" "}
               © 2025
             </p>
           </div>

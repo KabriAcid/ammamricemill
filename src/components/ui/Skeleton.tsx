@@ -28,7 +28,7 @@ export const Skeleton: React.FC<SkeletonProps> = ({
 
 export const SkeletonCard: React.FC = () => (
   <div className="bg-white rounded-xl p-6 shadow-card">
-    <div className="flex flex-col items-center space-y-4">
+    <div className="flex flex-col items-center space-y-4 py-3 px-2">
       <Skeleton width={48} height={48} rounded />
       <Skeleton width={120} height={20} />
       <Skeleton width={80} height={32} />
