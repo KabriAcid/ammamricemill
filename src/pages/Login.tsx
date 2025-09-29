@@ -36,8 +36,8 @@ export const Login: React.FC = () => {
         <div className="bg-white rounded-2xl shadow-card-lg p-8">
           {/* Logo and Title */}
           <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-primary-500 rounded-2xl flex items-center justify-center mx-auto mb-4">
-              <span className="text-white font-bold text-2xl">A</span>
+            <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <img src="/favicon.png" alt="AMMAM RICE MILL LTD." className="w-full h-full object-cover rounded-2xl" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-2">
               AMMAM RICE MILL LTD.
@@ -58,14 +58,6 @@ export const Login: React.FC = () => {
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Development Notice */}
-            <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg text-sm">
-              <p className="font-medium">Development Mode</p>
-              <p>Enter any email and password to login. Example:</p>
-              <p className="font-mono">Email: admin@ammamricemill.com</p>
-              <p className="font-mono">Password: admin123</p>
-            </div>
-
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
                 Email Address
@@ -122,12 +114,12 @@ export const Login: React.FC = () => {
             <p>
               Developed and Maintained by{' '}
               <a
-                href="https://techexpertlab.com"
+                href="https://dreamerscode.com"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-primary-500 hover:text-primary-600 font-medium"
               >
-                Tech Expert Lab
+                Dreamerscode
               </a>{' '}
               © 2025
             </p>
