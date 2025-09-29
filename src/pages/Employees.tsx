@@ -1,23 +1,25 @@
-import React, { useState, useEffect } from 'react';
-import { UserCheck, Plus } from 'lucide-react';
-import { Breadcrumb } from '../components/Breadcrumb';
-import { DataTable } from '../components/DataTable';
-import { FormModal } from '../components/FormModal';
-import { mockEmployees, mockDesignations, MockEmployee } from '../mock';
+import React, { useState, useEffect } from "react";
+import { UserCheck, Plus } from "lucide-react";
+import { Breadcrumb } from "../components/Breadcrumb";
+import { DataTable } from "../components/DataTable";
+import { FormModal } from "../components/FormModal";
+import { mockEmployees, mockDesignations, MockEmployee } from from '../mock.ts';
 
 export const Employees: React.FC = () => {
   const [employees, setEmployees] = useState<MockEmployee[]>([]);
   const [designations, setDesignations] = useState(mockDesignations);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<MockEmployee | null>(null);
+  const [editingEmployee, setEditingEmployee] = useState<MockEmployee | null>(
+    null
+  );
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    designation: '',
+    name: "",
+    email: "",
+    phone: "",
+    designation: "",
     salary: 0,
-    joiningDate: '',
-    status: 'active' as 'active' | 'inactive'
+    joiningDate: "",
+    status: "active" as "active" | "inactive",
   });
   const [loading, setLoading] = useState(false);
 
@@ -27,7 +29,7 @@ export const Employees: React.FC = () => {
 
   const fetchEmployees = async () => {
     try {
-      const response = await fetch('/api/employees');
+      const response = await fetch("/api/employees");
       const data = await response.json();
       setEmployees(data);
     } catch (error) {
@@ -38,13 +40,13 @@ export const Employees: React.FC = () => {
   const handleAdd = () => {
     setEditingEmployee(null);
     setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      designation: '',
+      name: "",
+      email: "",
+      phone: "",
+      designation: "",
       salary: 0,
-      joiningDate: '',
-      status: 'active'
+      joiningDate: "",
+      status: "active",
     });
     setIsModalOpen(true);
   };
@@ -58,20 +60,20 @@ export const Employees: React.FC = () => {
       designation: employee.designation,
       salary: employee.salary,
       joiningDate: employee.joiningDate,
-      status: employee.status
+      status: employee.status,
     });
     setIsModalOpen(true);
   };
 
   const handleDelete = async (employee: MockEmployee) => {
-    if (window.confirm('Are you sure you want to delete this employee?')) {
+    if (window.confirm("Are you sure you want to delete this employee?")) {
       try {
         await fetch(`/api/employees/${employee.id}`, {
-          method: 'DELETE'
+          method: "DELETE",
         });
         await fetchEmployees();
       } catch (error) {
-        console.error('Failed to delete employee');
+        console.error("Failed to delete employee");
       }
     }
   };
@@ -79,57 +81,62 @@ export const Employees: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const url = editingEmployee ? `/api/employees/${editingEmployee.id}` : '/api/employees';
-      const method = editingEmployee ? 'PUT' : 'POST';
-      
+      const url = editingEmployee
+        ? `/api/employees/${editingEmployee.id}`
+        : "/api/employees";
+      const method = editingEmployee ? "PUT" : "POST";
+
       await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      
+
       await fetchEmployees();
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Failed to save employee');
+      console.error("Failed to save employee");
     }
     setLoading(false);
   };
 
   const columns = [
-    { key: 'name', label: 'Employee Name', sortable: true },
-    { key: 'email', label: 'Email', sortable: true },
-    { key: 'phone', label: 'Phone', sortable: true },
-    { key: 'designation', label: 'Designation', sortable: true },
-    { 
-      key: 'salary', 
-      label: 'Salary', 
-      sortable: true,
-      render: (value: number) => `৳${value.toLocaleString()}`
-    },
-    { key: 'joiningDate', label: 'Joining Date', sortable: true },
+    { key: "name", label: "Employee Name", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "phone", label: "Phone", sortable: true },
+    { key: "designation", label: "Designation", sortable: true },
     {
-      key: 'status',
-      label: 'Status',
+      key: "salary",
+      label: "Salary",
+      sortable: true,
+      render: (value: number) => `৳${value.toLocaleString()}`,
+    },
+    { key: "joiningDate", label: "Joining Date", sortable: true },
+    {
+      key: "status",
+      label: "Status",
       sortable: true,
       render: (value: string) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          value === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            value === "active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
           {value.charAt(0).toUpperCase() + value.slice(1)}
         </span>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="p-6">
-      <Breadcrumb items={[
-        { label: 'Human Resource' },
-        { label: 'Employees' }
-      ]} />
+      <Breadcrumb
+        items={[{ label: "Human Resource" }, { label: "Employees" }]}
+      />
 
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -153,7 +160,7 @@ export const Employees: React.FC = () => {
       <FormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingEmployee ? 'Edit Employee' : 'Add New Employee'}
+        title={editingEmployee ? "Edit Employee" : "Add New Employee"}
         size="lg"
       >
         <form onSubmit={handleSave} className="space-y-4">
@@ -165,7 +172,9 @@ export const Employees: React.FC = () => {
               <input
                 type="text"
                 value={formData.name}
-                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, name: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               />
@@ -178,7 +187,9 @@ export const Employees: React.FC = () => {
               <input
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, email: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               />
@@ -191,7 +202,9 @@ export const Employees: React.FC = () => {
               <input
                 type="tel"
                 value={formData.phone}
-                onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, phone: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               />
@@ -203,7 +216,12 @@ export const Employees: React.FC = () => {
               </label>
               <select
                 value={formData.designation}
-                onChange={(e) => setFormData(prev => ({ ...prev, designation: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    designation: e.target.value,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               >
@@ -224,7 +242,12 @@ export const Employees: React.FC = () => {
                 type="number"
                 min="0"
                 value={formData.salary}
-                onChange={(e) => setFormData(prev => ({ ...prev, salary: parseInt(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    salary: parseInt(e.target.value),
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               />
@@ -237,7 +260,12 @@ export const Employees: React.FC = () => {
               <input
                 type="date"
                 value={formData.joiningDate}
-                onChange={(e) => setFormData(prev => ({ ...prev, joiningDate: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    joiningDate: e.target.value,
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
                 required
               />
@@ -249,7 +277,12 @@ export const Employees: React.FC = () => {
               </label>
               <select
                 value={formData.status}
-                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as 'active' | 'inactive' }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    status: e.target.value as "active" | "inactive",
+                  }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               >
                 <option value="active">Active</option>
@@ -271,7 +304,11 @@ export const Employees: React.FC = () => {
               disabled={loading}
               className="bg-[#AF792F] hover:bg-[#9A6B28] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? 'Saving...' : (editingEmployee ? 'Update Employee' : 'Add Employee')}
+              {loading
+                ? "Saving..."
+                : editingEmployee
+                ? "Update Employee"
+                : "Add Employee"}
             </button>
           </div>
         </form>

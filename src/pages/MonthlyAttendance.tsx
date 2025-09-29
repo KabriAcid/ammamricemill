@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Calendar, Download } from 'lucide-react';
-import { Breadcrumb } from '../components/Breadcrumb';
-import { mockEmployees, mockAttendance } from '../mock';
+import React, { useState, useEffect } from "react";
+import { Calendar, Download } from "lucide-react";
+import { Breadcrumb } from "../components/Breadcrumb";
+import { mockEmployees, mockAttendance } from from '../mock.ts';
 
 interface MonthlyAttendanceRecord {
   employeeId: number;
@@ -17,8 +17,12 @@ interface MonthlyAttendanceRecord {
 }
 
 export const MonthlyAttendance: React.FC = () => {
-  const [attendanceData, setAttendanceData] = useState<MonthlyAttendanceRecord[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [attendanceData, setAttendanceData] = useState<
+    MonthlyAttendanceRecord[]
+  >([]);
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -28,33 +32,38 @@ export const MonthlyAttendance: React.FC = () => {
   const fetchMonthlyAttendance = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`/api/attendance/monthly?month=${selectedMonth}`);
+      const response = await fetch(
+        `/api/attendance/monthly?month=${selectedMonth}`
+      );
       const data = await response.json();
       setAttendanceData(data);
     } catch (error) {
       // Generate mock monthly data
-      const monthlyData: MonthlyAttendanceRecord[] = mockEmployees.map(employee => {
-        const totalDays = 30;
-        const presentDays = Math.floor(Math.random() * 5) + 25;
-        const absentDays = Math.floor(Math.random() * 3);
-        const lateDays = Math.floor(Math.random() * 4);
-        const halfDays = Math.floor(Math.random() * 2);
-        const workingHours = presentDays * 8 + halfDays * 4;
-        const attendancePercentage = (presentDays + halfDays * 0.5) / totalDays * 100;
+      const monthlyData: MonthlyAttendanceRecord[] = mockEmployees.map(
+        (employee) => {
+          const totalDays = 30;
+          const presentDays = Math.floor(Math.random() * 5) + 25;
+          const absentDays = Math.floor(Math.random() * 3);
+          const lateDays = Math.floor(Math.random() * 4);
+          const halfDays = Math.floor(Math.random() * 2);
+          const workingHours = presentDays * 8 + halfDays * 4;
+          const attendancePercentage =
+            ((presentDays + halfDays * 0.5) / totalDays) * 100;
 
-        return {
-          employeeId: employee.id,
-          employeeName: employee.name,
-          designation: employee.designation,
-          totalDays,
-          presentDays,
-          absentDays,
-          lateDays,
-          halfDays,
-          workingHours,
-          attendancePercentage
-        };
-      });
+          return {
+            employeeId: employee.id,
+            employeeName: employee.name,
+            designation: employee.designation,
+            totalDays,
+            presentDays,
+            absentDays,
+            lateDays,
+            halfDays,
+            workingHours,
+            attendancePercentage,
+          };
+        }
+      );
       setAttendanceData(monthlyData);
     }
     setLoading(false);
@@ -63,35 +72,37 @@ export const MonthlyAttendance: React.FC = () => {
   const handleExport = () => {
     // Create CSV content
     const headers = [
-      'Employee Name',
-      'Designation',
-      'Total Days',
-      'Present Days',
-      'Absent Days',
-      'Late Days',
-      'Half Days',
-      'Working Hours',
-      'Attendance %'
+      "Employee Name",
+      "Designation",
+      "Total Days",
+      "Present Days",
+      "Absent Days",
+      "Late Days",
+      "Half Days",
+      "Working Hours",
+      "Attendance %",
     ];
 
     const csvContent = [
-      headers.join(','),
-      ...attendanceData.map(record => [
-        record.employeeName,
-        record.designation,
-        record.totalDays,
-        record.presentDays,
-        record.absentDays,
-        record.lateDays,
-        record.halfDays,
-        record.workingHours,
-        record.attendancePercentage.toFixed(1)
-      ].join(','))
-    ].join('\n');
+      headers.join(","),
+      ...attendanceData.map((record) =>
+        [
+          record.employeeName,
+          record.designation,
+          record.totalDays,
+          record.presentDays,
+          record.absentDays,
+          record.lateDays,
+          record.halfDays,
+          record.workingHours,
+          record.attendancePercentage.toFixed(1),
+        ].join(",")
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `monthly-attendance-${selectedMonth}.csv`;
     a.click();
@@ -100,15 +111,16 @@ export const MonthlyAttendance: React.FC = () => {
 
   return (
     <div className="p-6">
-      <Breadcrumb items={[
-        { label: 'Human Resource' },
-        { label: 'Monthly Attendance' }
-      ]} />
+      <Breadcrumb
+        items={[{ label: "Human Resource" }, { label: "Monthly Attendance" }]}
+      />
 
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-4">
           <Calendar className="w-6 h-6 text-[#AF792F]" />
-          <h1 className="text-2xl font-bold text-gray-900">Monthly Attendance</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Monthly Attendance
+          </h1>
         </div>
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <p className="text-gray-600">View monthly attendance summary</p>
@@ -205,26 +217,31 @@ export const MonthlyAttendance: React.FC = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-center">
                       <div className="flex items-center justify-center">
                         <div className="flex flex-col items-center">
-                          <span className={`text-sm font-medium ${
-                            record.attendancePercentage >= 90 
-                              ? 'text-green-600' 
-                              : record.attendancePercentage >= 75 
-                              ? 'text-yellow-600' 
-                              : 'text-red-600'
-                          }`}>
+                          <span
+                            className={`text-sm font-medium ${
+                              record.attendancePercentage >= 90
+                                ? "text-green-600"
+                                : record.attendancePercentage >= 75
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                            }`}
+                          >
                             {record.attendancePercentage.toFixed(1)}%
                           </span>
                           <div className="w-16 bg-gray-200 rounded-full h-1.5 mt-1">
                             <div
                               className={`h-1.5 rounded-full ${
-                                record.attendancePercentage >= 90 
-                                  ? 'bg-green-600' 
-                                  : record.attendancePercentage >= 75 
-                                  ? 'bg-yellow-600' 
-                                  : 'bg-red-600'
+                                record.attendancePercentage >= 90
+                                  ? "bg-green-600"
+                                  : record.attendancePercentage >= 75
+                                  ? "bg-yellow-600"
+                                  : "bg-red-600"
                               }`}
                               style={{
-                                width: `${Math.min(record.attendancePercentage, 100)}%`
+                                width: `${Math.min(
+                                  record.attendancePercentage,
+                                  100
+                                )}%`,
                               }}
                             />
                           </div>
@@ -243,27 +260,47 @@ export const MonthlyAttendance: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-sm font-medium text-gray-500">Total Employees</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">{attendanceData.length}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-2">
+            {attendanceData.length}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500">Average Attendance</h3>
+          <h3 className="text-sm font-medium text-gray-500">
+            Average Attendance
+          </h3>
           <p className="text-2xl font-bold text-green-600 mt-2">
-            {attendanceData.length > 0 
-              ? (attendanceData.reduce((acc, curr) => acc + curr.attendancePercentage, 0) / attendanceData.length).toFixed(1)
-              : 0
-            }%
+            {attendanceData.length > 0
+              ? (
+                  attendanceData.reduce(
+                    (acc, curr) => acc + curr.attendancePercentage,
+                    0
+                  ) / attendanceData.length
+                ).toFixed(1)
+              : 0}
+            %
           </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500">Total Working Hours</h3>
+          <h3 className="text-sm font-medium text-gray-500">
+            Total Working Hours
+          </h3>
           <p className="text-2xl font-bold text-blue-600 mt-2">
-            {attendanceData.reduce((acc, curr) => acc + curr.workingHours, 0).toLocaleString()}h
+            {attendanceData
+              .reduce((acc, curr) => acc + curr.workingHours, 0)
+              .toLocaleString()}
+            h
           </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-sm font-medium text-gray-500">Perfect Attendance</h3>
+          <h3 className="text-sm font-medium text-gray-500">
+            Perfect Attendance
+          </h3>
           <p className="text-2xl font-bold text-[#AF792F] mt-2">
-            {attendanceData.filter(record => record.attendancePercentage === 100).length}
+            {
+              attendanceData.filter(
+                (record) => record.attendancePercentage === 100
+              ).length
+            }
           </p>
         </div>
       </div>

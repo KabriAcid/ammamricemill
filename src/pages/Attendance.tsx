@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { Clock, Plus, Calendar } from 'lucide-react';
-import { Breadcrumb } from '../components/Breadcrumb';
-import { DataTable } from '../components/DataTable';
-import { FormModal } from '../components/FormModal';
-import { mockAttendance, mockEmployees } from '../mock';
+import React, { useState, useEffect } from "react";
+import { Clock, Calendar } from "lucide-react";
+import { Breadcrumb } from "../components/Breadcrumb";
+import { DataTable } from "../components/DataTable";
+import { FormModal } from "../components/FormModal";
+import { mockAttendance, mockEmployees } from '../mock.ts';
 
 interface AttendanceRecord {
   id: number;
@@ -12,7 +12,7 @@ interface AttendanceRecord {
   date: string;
   checkIn: string;
   checkOut: string;
-  status: 'present' | 'absent' | 'late' | 'half-day';
+  status: "present" | "absent" | "late" | "half-day";
   workingHours: string;
 }
 
@@ -20,14 +20,18 @@ export const Attendance: React.FC = () => {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [employees, setEmployees] = useState(mockEmployees);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(null);
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0]);
+  const [editingRecord, setEditingRecord] = useState<AttendanceRecord | null>(
+    null
+  );
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
   const [formData, setFormData] = useState({
     employeeId: 0,
-    date: '',
-    checkIn: '',
-    checkOut: '',
-    status: 'present' as 'present' | 'absent' | 'late' | 'half-day'
+    date: "",
+    checkIn: "",
+    checkOut: "",
+    status: "present" as "present" | "absent" | "late" | "half-day",
   });
   const [loading, setLoading] = useState(false);
 
@@ -42,8 +46,8 @@ export const Attendance: React.FC = () => {
       setAttendance(data);
     } catch (error) {
       // Filter mock data by selected date
-      const filteredAttendance = mockAttendance.filter(record => 
-        record.date === selectedDate
+      const filteredAttendance = mockAttendance.filter(
+        (record) => record.date === selectedDate
       );
       setAttendance(filteredAttendance);
     }
@@ -54,9 +58,9 @@ export const Attendance: React.FC = () => {
     setFormData({
       employeeId: 0,
       date: selectedDate,
-      checkIn: '',
-      checkOut: '',
-      status: 'present'
+      checkIn: "",
+      checkOut: "",
+      status: "present",
     });
     setIsModalOpen(true);
   };
@@ -68,7 +72,7 @@ export const Attendance: React.FC = () => {
       date: record.date,
       checkIn: record.checkIn,
       checkOut: record.checkOut,
-      status: record.status
+      status: record.status,
     });
     setIsModalOpen(true);
   };
@@ -76,68 +80,71 @@ export const Attendance: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    
+
     try {
-      const url = editingRecord ? `/api/attendance/${editingRecord.id}` : '/api/attendance';
-      const method = editingRecord ? 'PUT' : 'POST';
-      
+      const url = editingRecord
+        ? `/api/attendance/${editingRecord.id}`
+        : "/api/attendance";
+      const method = editingRecord ? "PUT" : "POST";
+
       await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      
+
       await fetchAttendance();
       setIsModalOpen(false);
     } catch (error) {
-      console.error('Failed to save attendance');
+      console.error("Failed to save attendance");
     }
     setLoading(false);
   };
 
   const calculateWorkingHours = (checkIn: string, checkOut: string): string => {
-    if (!checkIn || !checkOut) return '0';
-    
+    if (!checkIn || !checkOut) return "0";
+
     const inTime = new Date(`2000-01-01 ${checkIn}`);
     const outTime = new Date(`2000-01-01 ${checkOut}`);
     const diffMs = outTime.getTime() - inTime.getTime();
     const diffHours = diffMs / (1000 * 60 * 60);
-    
+
     return diffHours.toFixed(1);
   };
 
   const columns = [
-    { key: 'employeeName', label: 'Employee Name', sortable: true },
-    { key: 'date', label: 'Date', sortable: true },
-    { key: 'checkIn', label: 'Check In', sortable: true },
-    { key: 'checkOut', label: 'Check Out', sortable: true },
-    { key: 'workingHours', label: 'Working Hours', sortable: true },
+    { key: "employeeName", label: "Employee Name", sortable: true },
+    { key: "date", label: "Date", sortable: true },
+    { key: "checkIn", label: "Check In", sortable: true },
+    { key: "checkOut", label: "Check Out", sortable: true },
+    { key: "workingHours", label: "Working Hours", sortable: true },
     {
-      key: 'status',
-      label: 'Status',
+      key: "status",
+      label: "Status",
       sortable: true,
       render: (value: string) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-          value === 'present' 
-            ? 'bg-green-100 text-green-800'
-            : value === 'late'
-            ? 'bg-yellow-100 text-yellow-800'
-            : value === 'half-day'
-            ? 'bg-blue-100 text-blue-800'
-            : 'bg-red-100 text-red-800'
-        }`}>
-          {value.charAt(0).toUpperCase() + value.slice(1).replace('-', ' ')}
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            value === "present"
+              ? "bg-green-100 text-green-800"
+              : value === "late"
+              ? "bg-yellow-100 text-yellow-800"
+              : value === "half-day"
+              ? "bg-blue-100 text-blue-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {value.charAt(0).toUpperCase() + value.slice(1).replace("-", " ")}
         </span>
-      )
-    }
+      ),
+    },
   ];
 
   return (
     <div className="p-6">
-      <Breadcrumb items={[
-        { label: 'Human Resource' },
-        { label: 'Daily Attendance' }
-      ]} />
+      <Breadcrumb
+        items={[{ label: "Human Resource" }, { label: "Daily Attendance" }]}
+      />
 
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -171,7 +178,7 @@ export const Attendance: React.FC = () => {
       <FormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        title={editingRecord ? 'Edit Attendance' : 'Mark Attendance'}
+        title={editingRecord ? "Edit Attendance" : "Mark Attendance"}
       >
         <form onSubmit={handleSave} className="space-y-4">
           <div>
@@ -180,7 +187,12 @@ export const Attendance: React.FC = () => {
             </label>
             <select
               value={formData.employeeId}
-              onChange={(e) => setFormData(prev => ({ ...prev, employeeId: parseInt(e.target.value) }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  employeeId: parseInt(e.target.value),
+                }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               required
             >
@@ -200,7 +212,9 @@ export const Attendance: React.FC = () => {
             <input
               type="date"
               value={formData.date}
-              onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, date: e.target.value }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               required
             />
@@ -214,7 +228,9 @@ export const Attendance: React.FC = () => {
               <input
                 type="time"
                 value={formData.checkIn}
-                onChange={(e) => setFormData(prev => ({ ...prev, checkIn: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, checkIn: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               />
             </div>
@@ -226,7 +242,9 @@ export const Attendance: React.FC = () => {
               <input
                 type="time"
                 value={formData.checkOut}
-                onChange={(e) => setFormData(prev => ({ ...prev, checkOut: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, checkOut: e.target.value }))
+                }
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               />
             </div>
@@ -238,7 +256,12 @@ export const Attendance: React.FC = () => {
             </label>
             <select
               value={formData.status}
-              onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as any }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  status: e.target.value as any,
+                }))
+              }
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#AF792F] focus:border-transparent"
               required
             >
@@ -252,7 +275,11 @@ export const Attendance: React.FC = () => {
           {formData.checkIn && formData.checkOut && (
             <div className="bg-gray-50 p-3 rounded-lg">
               <p className="text-sm text-gray-600">
-                Working Hours: <strong>{calculateWorkingHours(formData.checkIn, formData.checkOut)} hours</strong>
+                Working Hours:{" "}
+                <strong>
+                  {calculateWorkingHours(formData.checkIn, formData.checkOut)}{" "}
+                  hours
+                </strong>
               </p>
             </div>
           )}
@@ -270,7 +297,11 @@ export const Attendance: React.FC = () => {
               disabled={loading}
               className="bg-[#AF792F] hover:bg-[#9A6B28] text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
             >
-              {loading ? 'Saving...' : (editingRecord ? 'Update Attendance' : 'Mark Attendance')}
+              {loading
+                ? "Saving..."
+                : editingRecord
+                ? "Update Attendance"
+                : "Mark Attendance"}
             </button>
           </div>
         </form>

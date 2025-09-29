@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { DollarSign, Download, Eye, FileText } from 'lucide-react';
-import { Breadcrumb } from '../components/Breadcrumb';
-import { FormModal } from '../components/FormModal';
-import { mockEmployees } from '../mock';
+import React, { useState, useEffect } from "react";
+import { DollarSign, Download, Eye, FileText } from "lucide-react";
+import { Breadcrumb } from "../components/Breadcrumb";
+import { FormModal } from "../components/FormModal";
+import { mockEmployees } from from '../mock.ts';
 
 interface SalaryRecord {
   id: number;
@@ -14,15 +14,19 @@ interface SalaryRecord {
   deductions: number;
   netSalary: number;
   month: string;
-  status: 'paid' | 'pending' | 'draft';
+  status: "paid" | "pending" | "draft";
   paidDate?: string;
 }
 
 export const Salary: React.FC = () => {
   const [salaryData, setSalaryData] = useState<SalaryRecord[]>([]);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().toISOString().slice(0, 7));
+  const [selectedMonth, setSelectedMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRecord, setSelectedRecord] = useState<SalaryRecord | null>(null);
+  const [selectedRecord, setSelectedRecord] = useState<SalaryRecord | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -37,26 +41,28 @@ export const Salary: React.FC = () => {
       setSalaryData(data);
     } catch (error) {
       // Generate mock salary data
-      const salaryRecords: SalaryRecord[] = mockEmployees.map((employee, index) => {
-        const basicSalary = employee.salary;
-        const allowances = Math.floor(basicSalary * 0.1); // 10% allowances
-        const deductions = Math.floor(basicSalary * 0.05); // 5% deductions
-        const netSalary = basicSalary + allowances - deductions;
-        
-        return {
-          id: index + 1,
-          employeeId: employee.id,
-          employeeName: employee.name,
-          designation: employee.designation,
-          basicSalary,
-          allowances,
-          deductions,
-          netSalary,
-          month: selectedMonth,
-          status: Math.random() > 0.3 ? 'paid' : 'pending',
-          paidDate: Math.random() > 0.3 ? '2025-01-01' : undefined
-        };
-      });
+      const salaryRecords: SalaryRecord[] = mockEmployees.map(
+        (employee, index) => {
+          const basicSalary = employee.salary;
+          const allowances = Math.floor(basicSalary * 0.1); // 10% allowances
+          const deductions = Math.floor(basicSalary * 0.05); // 5% deductions
+          const netSalary = basicSalary + allowances - deductions;
+
+          return {
+            id: index + 1,
+            employeeId: employee.id,
+            employeeName: employee.name,
+            designation: employee.designation,
+            basicSalary,
+            allowances,
+            deductions,
+            netSalary,
+            month: selectedMonth,
+            status: Math.random() > 0.3 ? "paid" : "pending",
+            paidDate: Math.random() > 0.3 ? "2025-01-01" : undefined,
+          };
+        }
+      );
       setSalaryData(salaryRecords);
     }
     setLoading(false);
@@ -70,13 +76,15 @@ export const Salary: React.FC = () => {
   const handlePaySalary = async (record: SalaryRecord) => {
     try {
       await fetch(`/api/salary/${record.id}/pay`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paidDate: new Date().toISOString().split('T')[0] })
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paidDate: new Date().toISOString().split("T")[0],
+        }),
       });
       fetchSalaryData();
     } catch (error) {
-      console.error('Failed to pay salary');
+      console.error("Failed to pay salary");
     }
   };
 
@@ -96,12 +104,12 @@ Deductions: ৳${record.deductions.toLocaleString()}
 Net Salary: ৳${record.netSalary.toLocaleString()}
 
 Status: ${record.status}
-${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
+${record.paidDate ? `Paid Date: ${record.paidDate}` : ""}
     `;
 
-    const blob = new Blob([payslipContent], { type: 'text/plain' });
+    const blob = new Blob([payslipContent], { type: "text/plain" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `payslip-${record.employeeName}-${selectedMonth}.txt`;
     a.click();
@@ -110,33 +118,35 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
 
   const handleExportSalarySheet = () => {
     const headers = [
-      'Employee Name',
-      'Designation',
-      'Basic Salary',
-      'Allowances',
-      'Deductions',
-      'Net Salary',
-      'Status',
-      'Paid Date'
+      "Employee Name",
+      "Designation",
+      "Basic Salary",
+      "Allowances",
+      "Deductions",
+      "Net Salary",
+      "Status",
+      "Paid Date",
     ];
 
     const csvContent = [
-      headers.join(','),
-      ...salaryData.map(record => [
-        record.employeeName,
-        record.designation,
-        record.basicSalary,
-        record.allowances,
-        record.deductions,
-        record.netSalary,
-        record.status,
-        record.paidDate || ''
-      ].join(','))
-    ].join('\n');
+      headers.join(","),
+      ...salaryData.map((record) =>
+        [
+          record.employeeName,
+          record.designation,
+          record.basicSalary,
+          record.allowances,
+          record.deductions,
+          record.netSalary,
+          record.status,
+          record.paidDate || "",
+        ].join(",")
+      ),
+    ].join("\n");
 
-    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const blob = new Blob([csvContent], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const a = document.createElement("a");
     a.href = url;
     a.download = `salary-sheet-${selectedMonth}.csv`;
     a.click();
@@ -145,10 +155,9 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
 
   return (
     <div className="p-6">
-      <Breadcrumb items={[
-        { label: 'Human Resource' },
-        { label: 'Salary Sheet' }
-      ]} />
+      <Breadcrumb
+        items={[{ label: "Human Resource" }, { label: "Salary Sheet" }]}
+      />
 
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-4">
@@ -179,24 +188,29 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-sm font-medium text-gray-500">Total Employees</h3>
-          <p className="text-2xl font-bold text-gray-900 mt-2">{salaryData.length}</p>
+          <p className="text-2xl font-bold text-gray-900 mt-2">
+            {salaryData.length}
+          </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-sm font-medium text-gray-500">Total Salary</h3>
           <p className="text-2xl font-bold text-blue-600 mt-2">
-            ৳{salaryData.reduce((acc, curr) => acc + curr.netSalary, 0).toLocaleString()}
+            ৳
+            {salaryData
+              .reduce((acc, curr) => acc + curr.netSalary, 0)
+              .toLocaleString()}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-sm font-medium text-gray-500">Paid</h3>
           <p className="text-2xl font-bold text-green-600 mt-2">
-            {salaryData.filter(record => record.status === 'paid').length}
+            {salaryData.filter((record) => record.status === "paid").length}
           </p>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-sm font-medium text-gray-500">Pending</h3>
           <p className="text-2xl font-bold text-yellow-600 mt-2">
-            {salaryData.filter(record => record.status === 'pending').length}
+            {salaryData.filter((record) => record.status === "pending").length}
           </p>
         </div>
       </div>
@@ -257,14 +271,17 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
                       ৳{record.netSalary.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        record.status === 'paid' 
-                          ? 'bg-green-100 text-green-800'
-                          : record.status === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        {record.status.charAt(0).toUpperCase() + record.status.slice(1)}
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          record.status === "paid"
+                            ? "bg-green-100 text-green-800"
+                            : record.status === "pending"
+                            ? "bg-yellow-100 text-yellow-800"
+                            : "bg-gray-100 text-gray-800"
+                        }`}
+                      >
+                        {record.status.charAt(0).toUpperCase() +
+                          record.status.slice(1)}
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-center">
@@ -283,7 +300,7 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
                         >
                           <FileText className="w-4 h-4" />
                         </button>
-                        {record.status === 'pending' && (
+                        {record.status === "pending" && (
                           <button
                             onClick={() => handlePaySalary(record)}
                             className="bg-green-100 text-green-800 hover:bg-green-200 px-2 py-1 rounded text-xs font-medium transition-colors"
@@ -310,48 +327,66 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
         {selectedRecord && (
           <div className="space-y-4">
             <div className="bg-gray-50 p-4 rounded-lg">
-              <h3 className="font-medium text-gray-900 mb-2">Employee Information</h3>
+              <h3 className="font-medium text-gray-900 mb-2">
+                Employee Information
+              </h3>
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="text-gray-500">Name:</span>
-                  <span className="ml-2 font-medium">{selectedRecord.employeeName}</span>
+                  <span className="ml-2 font-medium">
+                    {selectedRecord.employeeName}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-500">ID:</span>
-                  <span className="ml-2 font-medium">{selectedRecord.employeeId}</span>
+                  <span className="ml-2 font-medium">
+                    {selectedRecord.employeeId}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-500">Designation:</span>
-                  <span className="ml-2 font-medium">{selectedRecord.designation}</span>
+                  <span className="ml-2 font-medium">
+                    {selectedRecord.designation}
+                  </span>
                 </div>
                 <div>
                   <span className="text-gray-500">Month:</span>
-                  <span className="ml-2 font-medium">{selectedRecord.month}</span>
+                  <span className="ml-2 font-medium">
+                    {selectedRecord.month}
+                  </span>
                 </div>
               </div>
             </div>
 
             <div className="space-y-3">
               <h3 className="font-medium text-gray-900">Salary Breakdown</h3>
-              
+
               <div className="flex justify-between py-2 border-b">
                 <span className="text-gray-600">Basic Salary</span>
-                <span className="font-medium">৳{selectedRecord.basicSalary.toLocaleString()}</span>
+                <span className="font-medium">
+                  ৳{selectedRecord.basicSalary.toLocaleString()}
+                </span>
               </div>
-              
+
               <div className="flex justify-between py-2 border-b text-green-600">
                 <span>Allowances</span>
-                <span className="font-medium">৳{selectedRecord.allowances.toLocaleString()}</span>
+                <span className="font-medium">
+                  ৳{selectedRecord.allowances.toLocaleString()}
+                </span>
               </div>
-              
+
               <div className="flex justify-between py-2 border-b text-red-600">
                 <span>Deductions</span>
-                <span className="font-medium">৳{selectedRecord.deductions.toLocaleString()}</span>
+                <span className="font-medium">
+                  ৳{selectedRecord.deductions.toLocaleString()}
+                </span>
               </div>
-              
+
               <div className="flex justify-between py-3 border-t-2 text-lg font-bold">
                 <span>Net Salary</span>
-                <span className="text-[#AF792F]">৳{selectedRecord.netSalary.toLocaleString()}</span>
+                <span className="text-[#AF792F]">
+                  ৳{selectedRecord.netSalary.toLocaleString()}
+                </span>
               </div>
             </div>
 
@@ -359,12 +394,15 @@ ${record.paidDate ? `Paid Date: ${record.paidDate}` : ''}
               <div className="flex items-center justify-between">
                 <div>
                   <span className="text-sm text-gray-600">Status: </span>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    selectedRecord.status === 'paid' 
-                      ? 'bg-green-100 text-green-800'
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {selectedRecord.status.charAt(0).toUpperCase() + selectedRecord.status.slice(1)}
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                      selectedRecord.status === "paid"
+                        ? "bg-green-100 text-green-800"
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}
+                  >
+                    {selectedRecord.status.charAt(0).toUpperCase() +
+                      selectedRecord.status.slice(1)}
                   </span>
                 </div>
                 {selectedRecord.paidDate && (

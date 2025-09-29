@@ -3,8 +3,7 @@ import { motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 import { DashboardCard } from "../components/DashboardCard";
 import { Button } from "../components/ui/Button";
-import { useFetch } from "../hooks/useFetch";
-import { DashboardData, DashboardCard as DashboardCardType } from "../types";
+import { DashboardCard as DashboardCardType } from "../types";
 
 // Mock data for development
 const mockDashboardData: DashboardCardType[] = [

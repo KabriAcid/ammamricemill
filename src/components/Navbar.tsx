@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Menu, 
   User, 
-  Settings, 
   LogOut, 
   ChevronDown,
   Home,
