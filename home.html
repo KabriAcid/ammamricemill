@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- CSRF Token -->
+    <meta name="csrf-token" content="iLJqUZChHmFiSB9S2gVi6LeTwZsxWKfdHa9hdm7a">
+    <meta name="base-url" content="https://ammamricemill.com">
+    <title>AMMAM RICE MILL LTD.</title>
+    <link rel="icon" href="https://ammamricemill.com/public/uploads/logo.jpg" type="image/gif" sizes="16x16">
+    <link href="https://ammamricemill.com/font-awesome/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="https://ammamricemill.com/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://ammamricemill.com/css/style.css" rel="stylesheet" media="all">
+    <link href="https://ammamricemill.com/css/responsive.css" rel="stylesheet" media="screen">
+    <link href="https://ammamricemill.com/css/print.css" rel="stylesheet" media="print">
+    <link href="https://ammamricemill.com/css/select2.min.css" rel="stylesheet" type="text/css">
+    <link href="https://ammamricemill.com/css/bootstrap-datepicker.min.css" rel="stylesheet">
+    <style type="text/css">
+    </style>
+    <script src="https://ammamricemill.com/js/jquery-1.12.2.min.js"></script>
+    <script>
+        window.Laravel = {
+            "csrfToken": "iLJqUZChHmFiSB9S2gVi6LeTwZsxWKfdHa9hdm7a"
+        };
+    </script>
+</head>
+
+<body>
+    <div id="wrapper">
+        <!-- Navigation -->
+        <nav class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+            <!-- Brand and toggle get grouped for better mobile display -->
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <!-- Branding Image -->
+                <a class="navbar-brand" href="https://ammamricemill.com/home">AMMAM RICE MILL LTD.</a>
+            </div>
+            <!-- Top Menu Items -->
+            <ul class="nav navbar-right top-nav">
+                <!-- Authentication Links -->
+                <li class="dropdown">
+                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+                        <i class="fa fa-user"></i> Hi, ABUBAKAR ADAM CHEKO <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu" role="menu">
+                        <li>
+                            <a href="https://ammamricemill.com/home">
+                                <i class="fa fa-fw fa-dashboard"></i> Dashboard
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://ammamricemill.com/user/23">
+                                <i class="fa fa-fw fa-user"></i> Profile
+                            </a>
+                        </li>
+                        <li>
+                            <a href="https://ammamricemill.com/user/23/password">
+                                Change Password
+                            </a>
+                        </li>
+                        <li class="divider"></li>
+                        <li>
+                            <a href="https://ammamricemill.com/logout" onclick="event.preventDefault();
+                            document.getElementById('logout-form').submit();">
+                            <i class="fa fa-fw fa-power-off"></i> Logout
+                        </a>
+                            <form id="logout-form" action="https://ammamricemill.com/logout" method="POST" style="display: none;">
+                                <input type="hidden" name="_token" value="iLJqUZChHmFiSB9S2gVi6LeTwZsxWKfdHa9hdm7a">
+                            </form>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+            <!-- Sidebar Menu Items - These collapse to the responsive navigation menu on small screens -->
+            <div class="collapse navbar-collapse navbar-ex1-collapse">
+                <ul class="nav navbar-nav side-nav">
+                    <li class=" active">
+                        <a href="https://ammamricemill.com/home"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a>
+                    </li>
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#setting"><i class="fa fa-fw fa-cogs"></i> Settings <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="setting" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/setting">General Setting</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/dayar">Silo Setting</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/godown">Godown Setting</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manageHR"><i class="fa fa-users"></i> Human Resource <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manageHR" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/designation">Designation List</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/employee">Employee List</a></li>
+                            <li class=""><a href="https://ammamricemill.com/attendance">Daily Attendance</a></li>
+                            <li class=""><a href="https://ammamricemill.com/attendance/monthly">Monthly Attendance</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/salary">Salary Sheet</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-accounts"><i class="fa fa-support"></i> Accounts <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-accounts" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/head-income">Income Head</a></li>
+                            <li class=""><a href="https://ammamricemill.com/head-expense">Expense Head</a></li>
+                            <li class=""><a href="https://ammamricemill.com/head-bank">Bank Head</a></li>
+                            <li class=""><a href="https://ammamricemill.com/head-others">Others Head</a></li>
+                            <li class=""><a href="https://ammamricemill.com/transactions">All Transactions</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-party"><i class="fa fa-users"></i> Party <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-party" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/party-types">Party Type</a></li>
+                            <li class=""><a href="https://ammamricemill.com/parties">Party List</a></li>
+                            <li class=""><a href="https://ammamricemill.com/parties/payments">Party Payments</a></li>
+                            <li class=""><a href="https://ammamricemill.com/parties/due">Party Due</a></li>
+                            <li class=""><a href="https://ammamricemill.com/parties/debts">Party Debts</a></li>
+                        </ul>
+                    </li>
+
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#dropdown_product"><i class="fa fa-shopping-cart"></i> Products <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="dropdown_product" class="collapse ">
+
+                            <li class="">
+                                <a href="https://ammamricemill.com/category">Category</a>
+                            </li>
+
+                            <li class="">
+                                <a href="https://ammamricemill.com/products">Products</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-emptybags"><i class="fa fa-suitcase" aria-hidden="true"></i> Empty Bags <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-emptybags" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/emptybag-purchase">Purchase</a></li>
+                            <li class=""><a href="https://ammamricemill.com/emptybag-sales">Sales</a></li>
+                            <li class=""><a href="https://ammamricemill.com/emptybag-receive">Receive</a></li>
+                            <li class=""><a href="https://ammamricemill.com/emptybag-payment">Payment</a></li>
+                            <li class=""><a href="https://ammamricemill.com/emptybag-stocks">Stocks</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-order"><i class="fa fa-plus"></i> Purchase <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-order" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/purchases">Paddy Purchase</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/purchase/ledger">Paddy Purchase Ledger</a></li>
+
+                            <li class=""><a href="https://ammamricemill.com/rice-purchase">Rice Purchase</a></li>
+                            <li class=""><a href="https://ammamricemill.com/ricepurchase/ledger">Rice Purchase Ledger</a></li>
+                        </ul>
+                    </li>
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-sales"><i class="fa fa-cart-plus"></i> Sales <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-sales" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/sales">  Sales List</a></li>
+                            <li class=""><a href="https://ammamricemill.com/sale/ledger">  Sales Ledger</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manageProduction"><i class="fa fa-cogs"></i> Production <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manageProduction" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/productions">  Production Order</a></li>
+                            <li class=""><a href="https://ammamricemill.com/production/details">  Production Details</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manageProductionStocks"><i class="fa fa-plus"></i> Production Stocks <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manageProductionStocks" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/production-stocks">  Production Stocks</a></li>
+                            <li class=""><a href="https://ammamricemill.com/production-stock/details">  Production Stocks Details</a></li>
+                        </ul>
+                    </li>
+                    <li class="">
+                        <a href="https://ammamricemill.com/addstocks"><i class="fa fa-plus"></i> Add Stocks</a>
+                    </li>
+                    <li class="">
+                        <a href="https://ammamricemill.com/stocks"><i class="fa fa-book"></i> Stocks</a>
+                    </li>
+                    <li class="">
+                        <a href="https://ammamricemill.com/stocks-godown"><i class="fa fa-home"></i> Godown Stocks</a>
+                    </li>
+                    <li class="">
+                        <a href="https://ammamricemill.com/stocks/details"><i class="fa fa-book"></i> Stock Register</a>
+                    </li>
+
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-reporting"><i class="fa fa-book"></i> Reporting <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-reporting" class="collapse ">
+
+                            <li class=""><a href="https://ammamricemill.com/dailyreport">Daily Report</a></li>
+                            <li class=""><a href="https://ammamricemill.com/financial-statement">Financial Statement</a></li>
+
+                        </ul>
+                    </li>
+
+
+                    <li>
+                        <a href="javascript:;" data-toggle="collapse" data-target="#manage-sms"><i class="fa fa-envelope"></i> SMS Service <i class="fa fa-fw fa-caret-down"></i></a>
+                        <ul id="manage-sms" class="collapse ">
+                            <li class=""><a href="https://ammamricemill.com/sms-templates">SMS Template</a></li>
+                            <li class=""><a href="https://ammamricemill.com/sendsms">Send SMS</a></li>
+                        </ul>
+                    </li>
+                    <li class="">
+                        <a href="https://ammamricemill.com/backup"><i class="fa fa-server"></i> Database Backup</a>
+                    </li>
+                </ul>
+            </div>
+            <!-- /.navbar-collapse -->
+        </nav>
+        <div id="page-wrapper">
+            <!-- Main Content -->
+            <div class="container-fluid">
+                <div class="alert" id="ajaxMessage" style="display:none;"></div>
+                <div class="text-center btn-warning" id="loading_image">Loading... <img src="https://ammamricemill.com/img/ajax-loader.gif" alt="Loading...."> </div>
+                <div id="breadcrumbBar" class="breadcrumb site_nav_links no_bdr_rad clearfix">
+                    <div class="col-md-3 col-sm-3 col-xs-2 cxs_2 no_pad">
+                        <button class="btn btn-info btn-xs" type="button" onclick="history.back()" title="Go Back"><span class="visible-xs"><i class="fa fa-arrow-left"></i></span><span class="hidden-xs">Back</span></button>
+                        <button class="btn btn-info btn-xs" onclick="redirectTo('https://ammamricemill.com/view-clear')" title="Refresh" type="button"><span class="visible-xs"><i class="fa fa-refresh"></i></span><span class="hidden-xs">Refresh</span></button>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-6 cxs_10 text-center">
+                        <h2 class="page-title">Dashboard</h2>
+                    </div>
+                    <div class="col-md-3 col-sm-3 col-xs-4 cxs_12 no_pad">
+                        <ul class="text-right no_mrgn">
+                            <li><a href="https://ammamricemill.com/home"><i class="fa fa-fw fa-dashboard"></i> Dashboard</a> <span class="divider">/</span></li>
+                            <li><span><i class="fa fa-file"></i> Dashboard</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="dashboard">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Total Party</div>
+                                            <h3>89</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/parties"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-success">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Total Products</div>
+                                            <h3>23</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/products"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-red">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Total Purchase</div>
+                                            <h3>546673360</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/purchases"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Total Sales</div>
+                                            <h3>252522300</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/sales"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-danger">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Today Purchase</div>
+                                            <h3>0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/purchases"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Today Sales</div>
+                                            <h3>0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/sales"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-danger">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Today Receive</div>
+                                            <h3>0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/dailyreport"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Today Payment</div>
+                                            <h3>0</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/dailyreport"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">This Month Receive</div>
+                                            <h3>1285914430</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/financial-statement"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-red">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">This Month Payment</div>
+                                            <h3>400118812.86</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/financial-statement"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-danger">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Party Due</div>
+                                            <h3>-22025700</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/parties/due"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-md-6">
+                            <div class="panel panel-success">
+                                <div class="panel-heading exclusive-panel">
+                                    <div class="row">
+                                        <div class="col-xs-12 text-center">
+                                            <div class="huge">Party Debts</div>
+                                            <h3>40352000</h3>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a href="#">
+                                    <div class="panel-footer">
+                                        <a href="https://ammamricemill.com/parties/debts"><span class="pull-left">View Details</span></a>
+                                        <span class="pull-right"><i class="fa fa-arrow-circle-right"></i></span>
+                                        <div class="clearfix"></div>
+                                    </div>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- End Main Content -->
+        </div>
+        <!-- /#page-wrapper -->
+        <footer id="footerPanel">
+            <div id="footerBottom">
+                <div class="container-fluid">
+                    <div class="text-center">
+                        <p>Developed and Maintenance By | <a href="https://techexpertlab.com" target="_blank" style="color:#FFEE58">Tech Expert Lab</a> &copy; 2025</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center alert" id="notificationMessage" style="border-radius:0px;margin:0;"></div>
+        </footer>
+    </div>
+    <!-- /#wrapper -->
+    <!-- jQuery -->
+    <!--<script src="https://ammamricemill.com/js/jquery.js"></script>-->
+    <script src="https://ammamricemill.com/js/bootstrap.min.js"></script>
+    <script src="https://ammamricemill.com/js/select2.min.js" type="text/javascript"></script>
+    <script src="https://ammamricemill.com/js/tinymce.min.js"></script>
+    <!-- Bootstrap DatePicker JavaScript -->
+    <script src="https://ammamricemill.com/js/bootstrap-datepicker.min.js"></script>
+    <script src="https://ammamricemill.com/js/custom.js"></script>
+    <div id="mask"></div>
+</body>
+
+</html>
