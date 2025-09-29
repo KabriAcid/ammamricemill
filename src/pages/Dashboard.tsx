@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { RefreshCw, ArrowLeft } from "lucide-react";
+import { RefreshCw } from "lucide-react";
 import { DashboardCard } from "../components/DashboardCard";
 import { Button } from "../components/ui/Button";
 import { useFetch } from "../hooks/useFetch";
@@ -148,7 +148,6 @@ export const Dashboard: React.FC = () => {
     }, 1000);
   };
 
-
   return (
     <div className="space-y-6">
       {/* Breadcrumb and Actions */}
@@ -159,7 +158,7 @@ export const Dashboard: React.FC = () => {
             <span>/</span>
             <span className="text-gray-900">Overview</span>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             <Button
               variant="outline"
