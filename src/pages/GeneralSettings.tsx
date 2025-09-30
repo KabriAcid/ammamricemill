@@ -3,6 +3,7 @@ import { Save, Image as ImageIcon } from "lucide-react";
 import { Spinner } from "../ui/Spinner";
 import { useToast } from "../ui/Toast";
 import { Tabs } from "../ui/Tabs";
+import { Button } from "../components/ui/Button";
 
 export const GeneralSettings: React.FC = () => {
   const { showToast } = useToast();
@@ -145,13 +146,14 @@ export const GeneralSettings: React.FC = () => {
         />
       </div>
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          disabled={loading}
+          loading={loading}
           className="bg-[#AF792F] hover:bg-[#9A6B28] text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+          icon={<Save className="w-4 h-4" />}
         >
-          {loading ? <Spinner size={20} /> : <Save className="w-4 h-4" />} Save
-        </button>
+          Save
+        </Button>
       </div>
     </form>
   );
@@ -184,13 +186,14 @@ export const GeneralSettings: React.FC = () => {
         />
       </div>
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          disabled={loading}
+          loading={loading}
           className="bg-[#AF792F] hover:bg-[#9A6B28] text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+          icon={<Save className="w-4 h-4" />}
         >
-          {loading ? <Spinner size={20} /> : <Save className="w-4 h-4" />} Save
-        </button>
+          Save
+        </Button>
       </div>
     </form>
   );
@@ -234,13 +237,14 @@ export const GeneralSettings: React.FC = () => {
         </div>
       </div>
       <div className="flex justify-end">
-        <button
+        <Button
           type="submit"
-          disabled={loading}
+          loading={loading}
           className="bg-[#AF792F] hover:bg-[#9A6B28] text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors disabled:opacity-50"
+          icon={<Save className="w-4 h-4" />}
         >
-          {loading ? <Spinner size={20} /> : <Save className="w-4 h-4" />} Save
-        </button>
+          Save
+        </Button>
       </div>
     </form>
   );
