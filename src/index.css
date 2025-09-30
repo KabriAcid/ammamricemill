@@ -8,3 +8,9 @@
 .digit {
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
+
+/* input, select, textarea */
+input:focus, select:focus, textarea:focus {
+    outline: none!important;
+}
+

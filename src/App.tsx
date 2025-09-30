@@ -13,6 +13,7 @@ import { NotFound } from "./pages/NotFound";
 import { Dashboard } from "./pages/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
+import { GeneralSettings } from "./pages/GeneralSettings";
 
 function App() {
   return (
@@ -29,6 +30,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <Dashboard />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings/general"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <GeneralSettings />
                     </Layout>
                   </ProtectedRoute>
                 }
