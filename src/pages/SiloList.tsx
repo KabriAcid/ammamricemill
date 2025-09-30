@@ -56,7 +56,7 @@ export const SiloList: React.FC = () => {
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // Handlers
-  const handleSelectAll = (checked: boolean) => {
+  const handleSelectAll = (checked: boolean) => { 
     setSelected(checked ? paged.map((s) => s.id) : []);
   };
   const handleSelect = (id: number, checked: boolean) => {
