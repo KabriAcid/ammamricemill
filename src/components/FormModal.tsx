@@ -1,12 +1,12 @@
-import React from 'react';
-import { X } from 'lucide-react';
+import React from "react";
+import { X } from "lucide-react";
 
 interface FormModalProps {
   isOpen: boolean;
   onClose: () => void;
   title: string;
   children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  size?: "sm" | "md" | "lg" | "xl";
 }
 
 export const FormModal: React.FC<FormModalProps> = ({
@@ -14,15 +14,15 @@ export const FormModal: React.FC<FormModalProps> = ({
   onClose,
   title,
   children,
-  size = 'md'
+  size = "md",
 }) => {
   if (!isOpen) return null;
 
   const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
+    sm: "max-w-md",
+    md: "max-w-lg",
+    lg: "max-w-2xl",
+    xl: "max-w-4xl",
   };
 
   return (
@@ -33,9 +33,11 @@ export const FormModal: React.FC<FormModalProps> = ({
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={onClose}
         />
-        
+
         {/* Modal */}
-        <div className={`inline-block w-full ${sizeClasses[size]} p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}>
+        <div
+          className={`inline-block w-full ${sizeClasses[size]} p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-lg`}
+        >
           {/* Header */}
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-lg font-medium text-gray-900">{title}</h3>
@@ -46,11 +48,9 @@ export const FormModal: React.FC<FormModalProps> = ({
               <X className="w-5 h-5" />
             </button>
           </div>
-          
+
           {/* Content */}
-          <div>
-            {children}
-          </div>
+          <div>{children}</div>
         </div>
       </div>
     </div>

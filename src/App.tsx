@@ -11,7 +11,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/auth/Login";
 import { NotFound } from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { Layout } from "./components/Layout";
+import { Layout } from "./components/layout/Layout";
 // settings
 import GeneralSettings from "./pages/settings/GeneralSettings";
 import SiloList from "./pages/settings/SiloList";
