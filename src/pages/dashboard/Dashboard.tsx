@@ -93,8 +93,11 @@ const Dashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} hover className="animate-slide-in" style={{ animationDelay: `${index * 0.1}s` }}>
-            <div className="flex items-center">
+          <Card key={index} hover className="animate-slide-in">
+            <div
+              className="flex items-center"
+              style={{ animationDelay: `${index * 0.1}s` }}
+            >
               <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
                 <div className={stat.color}>
                   {stat.icon}
@@ -118,7 +121,7 @@ const Dashboard: React.FC = () => {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
-        <Card title="Quick Actions" hover>
+        <Card hover>
           <div className="grid grid-cols-2 gap-4">
             <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
               <Package className="w-6 h-6 text-primary-600 mx-auto mb-2" />
@@ -140,7 +143,7 @@ const Dashboard: React.FC = () => {
         </Card>
 
         {/* Recent Activities */}
-        <Card title="Recent Activities" hover>
+        <Card hover>
           <div className="space-y-4">
             {recentActivities.map((activity) => (
               <div key={activity.id} className="flex items-center space-x-3">
@@ -157,7 +160,7 @@ const Dashboard: React.FC = () => {
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card title="Monthly Revenue Trend" hover>
+        <Card hover>
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
@@ -166,7 +169,7 @@ const Dashboard: React.FC = () => {
           </div>
         </Card>
 
-        <Card title="Production Overview" hover>
+        <Card hover>
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
