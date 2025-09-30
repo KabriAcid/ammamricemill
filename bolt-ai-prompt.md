@@ -1,3 +1,5 @@
+
+
 # Bolt AI Prompt: Rice Mill Management System (General Rules)
 
 ## Routes & Directory Structure
@@ -398,3 +400,86 @@ Table columns: #, Category, Product, Unit, Type, Size, Weight, Buy Price, Sale P
 Filter/search bar: page size, product search, category dropdown, clear.
 Actions: New, Edit (modal), Delete (multi-select), Print.
 Modal fields (New/Edit): category (dropdown), name, unit (dropdown), type (dropdown), size, weight, buy price, sale price.
+
+## Emptybag Purchase List Page
+
+Table columns: #, Date, Invoice No, Party, Items, Quantity, Price, Description, Actions, row selection (checkbox).
+Filter/search bar: page size, date range, invoice search, party/mobile/address search, print.
+Actions: New, Edit (modal), Delete (multi-select), Print.
+Modal fields (New/Edit): invoice no, date, party (dropdown), notes, and a table of products with: category, product, quantity, rate, price.
+Show totals at bottom if needed.
+
+## Emptybag Sales List Page
+
+Table columns: #, Date, Invoice No, Party, Items, Quantity, Price, Description, Actions, row selection (checkbox).
+Filter/search bar: page size, date range, invoice search, party/mobile/address search, print.
+Actions: New, Edit (modal), Delete (multi-select), Print, View (navigates to sales details print page).
+Modal fields (New/Edit): invoice no, date, party (dropdown), notes, and a table of products with: category, product, quantity, rate, price.
+Show totals at bottom if needed.
+Note: Edit is a modal, View navigates to a page/route for printable sales details.
+
+## Emptybag Sales Details Print Page
+
+Shows all details of a single emptybag sales in printable format, including: invoice no, date, party, address, mobile, notes, and a table of products with: category, product, unit, size, quantity, rate, price. Include signature/autograph section at the bottom. Route: `/emptybag-sales/:id`.
+
+## Emptybag Payment List Page
+
+- Table columns: #, Date, Invoice No, Party, Items, Quantity, Description, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, Search, Clear, Print.
+- Actions: New, Delete (multi-select), Print.
+- Modal for New: opens responsive modal (see below).
+- Show totals at bottom (e.g., total quantity).
+- Use shared table/list requirements: pagination (10, 25, 50, 100), search/filter, row selection, bulk delete, loading/empty/error states, premium UI/UX, responsive, consistent.
+- All v1 fields, columns, and actions are compulsory.
+
+## Emptybag Payment Modal (New/Edit)
+
+- Modal fields: invoice no, date, party (dropdown), notes, and a table of products with: category, product, quantity (editable).
+- Use shared modal props pattern: `item: EmptybagPayment | null`, `onClose`, `onSave`. Modal closes on 'esc'.
+- Show product table with selectable rows and editable quantity.
+- Submit button at bottom.
+- All fields must be present and functional.
+
+## Emptybag Stocks List Page
+
+- Table columns: #, Category, Product Name, Size, Weight, Opening, Receive, Purchase, Payment, Sales, Stocks.
+- Filter/search bar: page size, party (dropdown), product search, Search, Clear, Print.
+- Actions: Opening Stock (opens Opening Stock Details form), Print.
+- Show company header, address, and current date above the table.
+- Show totals row at the bottom for all numeric columns.
+- Use shared table/list requirements: pagination (10, 25, 50, 100), search/filter, loading/empty/error states, premium UI/UX, responsive, consistent.
+- All v1 fields, columns, and actions are compulsory.
+
+## Emptybag Opening Stock Details Form
+
+- Fields: date, product (dropdown), size, weight, quantity (editable).
+- Add Product button to add more rows.
+- All fields must be present and functional.
+- Use shared form/modal styles and premium UI/UX.
+
+
+## Purchase List Page
+
+- Table columns: #, Date, Invoice No, Party, Items, Quantity, Total, Discount, Net Price, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, Search, Print.
+- Actions: New, Delete (multi-select), Print, View (navigates to purchase details print page), Edit (modal).
+- Show totals at bottom for quantity, total, net price.
+- Use shared table/list requirements: pagination (10, 25, 50, 100), search/filter, row selection, bulk delete, loading/empty/error states, premium UI/UX, responsive, consistent.
+- All v1 fields, columns, and actions are compulsory.
+
+## Purchase Order Modal/Page (New/Edit)
+
+- Fields: invoice no, date, challan no, party (dropdown), transport info, notes, total quantity, total net weight, invoice amount, discount, total, previous balance, net payable, paid amount, current balance.
+- Product table: category, product, godown (dropdown), quantity (bag), net weight (kg), rate, total price (all editable).
+- Add/remove product rows.
+- Submit button at bottom.
+- Use shared modal props pattern: `item: Purchase | null`, `onClose`, `onSave`. Modal closes on 'esc'.
+- All fields must be present and functional.
+
+## Purchase Details Print Page
+
+- Shows all details of a single purchase in printable format, including: company header, address, invoice no, date, party, address, mobile, created by, and a table of products with: description, quantity (bag), net weight (kg), rate, total price.
+- Shows invoice amount, discount, total amount, previous balance, net payable, paid amount, current balance.
+- Show details/notes section.
+- Route: `/purchases/:id`.
+- Include signature/autograph section at the bottom if present in v1.
