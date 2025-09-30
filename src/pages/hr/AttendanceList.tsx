@@ -1,105 +1,137 @@
-import React, { useState } from 'react';
-import { Plus, CreditCard as Edit, Trash2, Printer, Calendar, Users, BarChart3, CheckCircle, XCircle, Percent } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Table } from '../../components/ui/Table';
-import { FilterBar } from '../../components/ui/FilterBar';
-import { Modal } from '../../components/ui/Modal';
-import { Attendance, AttendanceRecord } from '../../types';
+import React, { useState } from "react";
+import {
+  Plus,
+  Trash2,
+  Printer,
+  Calendar,
+  BarChart3,
+  CheckCircle,
+  XCircle,
+  Percent,
+} from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Modal } from "../../components/ui/Modal";
+import { Attendance, AttendanceRecord } from "../../types";
 
 const AttendanceList: React.FC = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([
     {
-      id: '1',
-      date: '2024-01-15',
+      id: "1",
+      date: "2024-01-15",
       totalEmployee: 45,
       totalPresent: 42,
       totalAbsent: 2,
       totalLeave: 1,
-      description: 'Regular working day',
+      description: "Regular working day",
       employees: [
-        { employeeId: '1', employeeName: 'John Doe', status: 'present', overtime: 2 },
-        { employeeId: '2', employeeName: 'Jane Smith', status: 'present', overtime: 0 },
-        { employeeId: '3', employeeName: 'Bob Wilson', status: 'absent', notes: 'Sick leave' }
+        {
+          employeeId: "1",
+          employeeName: "John Doe",
+          status: "present",
+          overtime: 2,
+        },
+        {
+          employeeId: "2",
+          employeeName: "Jane Smith",
+          status: "present",
+          overtime: 0,
+        },
+        {
+          employeeId: "3",
+          employeeName: "Bob Wilson",
+          status: "absent",
+          notes: "Sick leave",
+        },
       ],
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z'
+      createdAt: "2024-01-15T10:00:00Z",
+      updatedAt: "2024-01-15T10:00:00Z",
     },
     {
-      id: '2',
-      date: '2024-01-14',
+      id: "2",
+      date: "2024-01-14",
       totalEmployee: 45,
       totalPresent: 44,
       totalAbsent: 1,
       totalLeave: 0,
-      description: 'Production peak day',
+      description: "Production peak day",
       employees: [],
-      createdAt: '2024-01-14T10:00:00Z',
-      updatedAt: '2024-01-14T10:00:00Z'
-    }
+      createdAt: "2024-01-14T10:00:00Z",
+      updatedAt: "2024-01-14T10:00:00Z",
+    },
   ]);
 
   const [selectedAttendances, setSelectedAttendances] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [dateFilter, setDateFilter] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
   const [showModal, setShowModal] = useState(false);
-  const [editingAttendance, setEditingAttendance] = useState<Attendance | null>(null);
+  const [editingAttendance, setEditingAttendance] = useState<Attendance | null>(
+    null
+  );
   const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
-    date: '',
+    date: "",
     totalEmployee: 0,
     totalPresent: 0,
     totalAbsent: 0,
     totalLeave: 0,
-    description: '',
-    employees: [] as AttendanceRecord[]
+    description: "",
+    employees: [] as AttendanceRecord[],
   });
 
-  const filteredAttendances = attendances.filter(attendance => {
-    const matchesSearch = attendance.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         attendance.date.includes(searchQuery);
+  const filteredAttendances = attendances.filter((attendance) => {
+    const matchesSearch =
+      attendance.description
+        ?.toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      attendance.date.includes(searchQuery);
     const matchesDate = !dateFilter || attendance.date === dateFilter;
     return matchesSearch && matchesDate;
   });
 
   const totalPages = Math.ceil(filteredAttendances.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedAttendances = filteredAttendances.slice(startIndex, startIndex + pageSize);
+  const paginatedAttendances = filteredAttendances.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   const columns = [
-    { key: 'id', label: '#', width: '80px' },
-    { 
-      key: 'date', 
-      label: 'Date', 
+    { key: "id", label: "#", width: "80px" },
+    {
+      key: "date",
+      label: "Date",
       sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString()
+      render: (value: string) => new Date(value).toLocaleDateString(),
     },
-    { key: 'totalEmployee', label: 'Total Employee', sortable: true },
-    { 
-      key: 'totalPresent', 
-      label: 'Total Present', 
+    { key: "totalEmployee", label: "Total Employee", sortable: true },
+    {
+      key: "totalPresent",
+      label: "Total Present",
       render: (value: number) => (
         <span className="text-green-600 font-medium">{value}</span>
-      )
+      ),
     },
-    { 
-      key: 'totalAbsent', 
-      label: 'Total Absent',
+    {
+      key: "totalAbsent",
+      label: "Total Absent",
       render: (value: number) => (
         <span className="text-red-600 font-medium">{value}</span>
-      )
+      ),
     },
-    { 
-      key: 'totalLeave', 
-      label: 'Total Leave',
+    {
+      key: "totalLeave",
+      label: "Total Leave",
       render: (value: number) => (
         <span className="text-yellow-600 font-medium">{value}</span>
-      )
+      ),
     },
-    { key: 'description', label: 'Description' }
+    { key: "description", label: "Description" },
   ];
 
   const handleEdit = (attendance: Attendance) => {
@@ -110,21 +142,27 @@ const AttendanceList: React.FC = () => {
       totalPresent: attendance.totalPresent,
       totalAbsent: attendance.totalAbsent,
       totalLeave: attendance.totalLeave,
-      description: attendance.description || '',
-      employees: attendance.employees
+      description: attendance.description || "",
+      employees: attendance.employees,
     });
     setShowModal(true);
   };
 
   const handleDelete = async (attendanceIds: string[]) => {
-    if (confirm(`Are you sure you want to delete ${attendanceIds.length} attendance record(s)?`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete ${attendanceIds.length} attendance record(s)?`
+      )
+    ) {
       setLoading(true);
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setAttendances(prev => prev.filter(attendance => !attendanceIds.includes(attendance.id)));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setAttendances((prev) =>
+          prev.filter((attendance) => !attendanceIds.includes(attendance.id))
+        );
         setSelectedAttendances([]);
       } catch (error) {
-        console.error('Error deleting attendances:', error);
+        console.error("Error deleting attendances:", error);
       } finally {
         setLoading(false);
       }
@@ -134,29 +172,35 @@ const AttendanceList: React.FC = () => {
   const handleSave = async () => {
     setLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (editingAttendance) {
-        setAttendances(prev => prev.map(attendance => 
-          attendance.id === editingAttendance.id 
-            ? { ...attendance, ...formData, updatedAt: new Date().toISOString() }
-            : attendance
-        ));
+        setAttendances((prev) =>
+          prev.map((attendance) =>
+            attendance.id === editingAttendance.id
+              ? {
+                  ...attendance,
+                  ...formData,
+                  updatedAt: new Date().toISOString(),
+                }
+              : attendance
+          )
+        );
       } else {
         const newAttendance: Attendance = {
           id: Date.now().toString(),
           ...formData,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
-        setAttendances(prev => [...prev, newAttendance]);
+        setAttendances((prev) => [...prev, newAttendance]);
       }
-      
+
       setShowModal(false);
       setEditingAttendance(null);
       resetForm();
     } catch (error) {
-      console.error('Error saving attendance:', error);
+      console.error("Error saving attendance:", error);
     } finally {
       setLoading(false);
     }
@@ -164,13 +208,13 @@ const AttendanceList: React.FC = () => {
 
   const resetForm = () => {
     setFormData({
-      date: '',
+      date: "",
       totalEmployee: 0,
       totalPresent: 0,
       totalAbsent: 0,
       totalLeave: 0,
-      description: '',
-      employees: []
+      description: "",
+      employees: [],
     });
   };
 
@@ -182,14 +226,22 @@ const AttendanceList: React.FC = () => {
 
   // Calculate summary stats
   const totalDays = attendances.length;
-  const avgPresent = totalDays > 0 ? attendances.reduce((sum, att) => sum + att.totalPresent, 0) / totalDays : 0;
-  const avgAbsent = totalDays > 0 ? attendances.reduce((sum, att) => sum + att.totalAbsent, 0) / totalDays : 0;
+  const avgPresent =
+    totalDays > 0
+      ? attendances.reduce((sum, att) => sum + att.totalPresent, 0) / totalDays
+      : 0;
+  const avgAbsent =
+    totalDays > 0
+      ? attendances.reduce((sum, att) => sum + att.totalAbsent, 0) / totalDays
+      : 0;
   const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Attendance Management</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Attendance Management
+        </h1>
         <p className="mt-1 text-sm text-gray-500">
           Track daily employee attendance records.
         </p>
@@ -204,19 +256,28 @@ const AttendanceList: React.FC = () => {
         </Card>
         <Card icon={<CheckCircle size={32} />} loading={loadingCards} hover>
           <div>
-            <p className="text-3xl font-bold text-gray-700">{Math.round(avgPresent)}</p>
+            <p className="text-3xl font-bold text-gray-700">
+              {Math.round(avgPresent)}
+            </p>
             <p className="text-sm text-gray-500">Avg Present</p>
           </div>
         </Card>
         <Card icon={<XCircle size={32} />} loading={loadingCards} hover>
           <div>
-            <p className="text-3xl font-bold text-gray-700">{Math.round(avgAbsent)}</p>
+            <p className="text-3xl font-bold text-gray-700">
+              {Math.round(avgAbsent)}
+            </p>
             <p className="text-sm text-gray-500">Avg Absent</p>
           </div>
         </Card>
         <Card icon={<Percent size={32} />} loading={loadingCards} hover>
           <div>
-            <p className="text-3xl font-bold text-gray-700">{totalDays > 0 ? Math.round((avgPresent / (avgPresent + avgAbsent)) * 100) : 0}%</p>
+            <p className="text-3xl font-bold text-gray-700">
+              {totalDays > 0
+                ? Math.round((avgPresent / (avgPresent + avgAbsent)) * 100)
+                : 0}
+              %
+            </p>
             <p className="text-sm text-gray-500">Attendance Rate</p>
           </div>
         </Card>
@@ -248,7 +309,12 @@ const AttendanceList: React.FC = () => {
               Delete ({selectedAttendances.length})
             </Button>
           )}
-          <Button variant="outline" size="sm" icon={Printer} onClick={() => window.print()}>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Printer}
+            onClick={() => window.print()}
+          >
             Print
           </Button>
         </div>
@@ -267,21 +333,21 @@ const AttendanceList: React.FC = () => {
           onPageSizeChange: (size) => {
             setPageSize(size);
             setCurrentPage(1);
-          }
+          },
         }}
         selection={{
           selectedItems: selectedAttendances,
-          onSelectionChange: setSelectedAttendances
+          onSelectionChange: setSelectedAttendances,
         }}
         actions={{
-          onEdit: handleEdit
+          onEdit: handleEdit,
         }}
       />
 
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingAttendance ? 'Edit Attendance' : 'New Attendance'}
+        title={editingAttendance ? "Edit Attendance" : "New Attendance"}
         size="lg"
       >
         <div className="space-y-4">
@@ -293,7 +359,9 @@ const AttendanceList: React.FC = () => {
               <input
                 type="date"
                 value={formData.date}
-                onChange={(e) => setFormData(prev => ({ ...prev, date: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, date: e.target.value }))
+                }
                 className="input-base"
                 required
               />
@@ -305,7 +373,12 @@ const AttendanceList: React.FC = () => {
               <input
                 type="number"
                 value={formData.totalEmployee}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalEmployee: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    totalEmployee: Number(e.target.value),
+                  }))
+                }
                 className="input-base"
                 min="0"
                 required
@@ -321,7 +394,12 @@ const AttendanceList: React.FC = () => {
               <input
                 type="number"
                 value={formData.totalPresent}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalPresent: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    totalPresent: Number(e.target.value),
+                  }))
+                }
                 className="input-base"
                 min="0"
                 required
@@ -334,7 +412,12 @@ const AttendanceList: React.FC = () => {
               <input
                 type="number"
                 value={formData.totalAbsent}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalAbsent: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    totalAbsent: Number(e.target.value),
+                  }))
+                }
                 className="input-base"
                 min="0"
                 required
@@ -347,7 +430,12 @@ const AttendanceList: React.FC = () => {
               <input
                 type="number"
                 value={formData.totalLeave}
-                onChange={(e) => setFormData(prev => ({ ...prev, totalLeave: Number(e.target.value) }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    totalLeave: Number(e.target.value),
+                  }))
+                }
                 className="input-base"
                 min="0"
                 required
@@ -361,7 +449,12 @@ const AttendanceList: React.FC = () => {
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               className="input-base"
               rows={3}
               placeholder="Enter description (optional)"
@@ -373,7 +466,7 @@ const AttendanceList: React.FC = () => {
               Cancel
             </Button>
             <Button onClick={handleSave} loading={loading}>
-              {editingAttendance ? 'Update' : 'Save'}
+              {editingAttendance ? "Update" : "Save"}
             </Button>
           </div>
         </div>
