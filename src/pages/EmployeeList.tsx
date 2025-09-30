@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Edit, Eye, BookOpen } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Spinner } from "../ui/Spinner";
@@ -113,6 +114,7 @@ const mockDesignations = [
 ];
 
 export const EmployeeList: React.FC = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selected, setSelected] = useState<number[]>([]);
   const [designationFilter, setDesignationFilter] = useState("");
@@ -291,7 +293,7 @@ export const EmployeeList: React.FC = () => {
                   <td className="px-2 py-2 flex gap-2">
                     <button
                       onClick={() =>
-                        (window.location.href = `/hr/employee/view/${employee.id}`)
+                        navigate(`/hr/employee/view/${employee.id}`)
                       }
                       className="p-1 focus:outline-none text-blue-500 hover:text-blue-700 transition"
                       aria-label="View"
@@ -307,7 +309,7 @@ export const EmployeeList: React.FC = () => {
                     </button>
                     <button
                       onClick={() =>
-                        (window.location.href = `/hr/employee/ledger/${employee.id}`)
+                        navigate(`/hr/employee/ledger/${employee.id}`)
                       }
                       className="p-1 focus:outline-none text-green-600 hover:text-green-800 transition"
                       aria-label="Ledger"
