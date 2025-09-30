@@ -1,3 +1,30 @@
+import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
+import MonthlySalarySheet from "./pages/hr/MonthlySalarySheet";
+import SiloList from "./pages/settings/SiloList";
+import GodownList from "./pages/settings/GodownList";
+import GeneralSettings from "./pages/settings/GeneralSettings";
+              {/* HR Monthly Attendance */}
+              <Route
+                path="/hr/monthly-attendance"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MonthlyAttendance />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* HR Monthly Salary Sheet */}
+              <Route
+                path="/hr/monthly-salary"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MonthlySalarySheet />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
 import {
   BrowserRouter as Router,
   Routes,
