@@ -1,3 +1,16 @@
+// User type for AuthState
+export interface User {
+  id: number | string;
+  name: string;
+  email: string;
+  role: string;
+}
+// Auth State for context
+export interface AuthState {
+  user: User | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+}
 export interface UIState {
   sidebarOpen: boolean;
   theme: "light" | "dark";
