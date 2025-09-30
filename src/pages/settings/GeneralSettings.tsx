@@ -223,7 +223,7 @@ const GeneralSettings: React.FC = () => {
       content: (
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card title="Logo">
+            <Card>
               <div className="text-center">
                 {settings.logoUrl ? (
                   <div className="mb-4">
@@ -250,7 +250,7 @@ const GeneralSettings: React.FC = () => {
               </div>
             </Card>
 
-            <Card title="Favicon">
+            <Card>
               <div className="text-center">
                 {settings.faviconUrl ? (
                   <div className="mb-4">
