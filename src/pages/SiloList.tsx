@@ -56,7 +56,7 @@ export const SiloList: React.FC = () => {
   const paged = filtered.slice((page - 1) * pageSize, page * pageSize);
 
   // Handlers
-  const handleSelectAll = (checked: boolean) => { 
+  const handleSelectAll = (checked: boolean) => {
     setSelected(checked ? paged.map((s) => s.id) : []);
   };
   const handleSelect = (id: number, checked: boolean) => {
@@ -134,7 +134,7 @@ export const SiloList: React.FC = () => {
         />
       </div>
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-auto max-h-[60vh] bg-white rounded-lg shadow border border-gray-200 scrollbar-hide">
+      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200 scrollbar-hide">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
