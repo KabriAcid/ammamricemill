@@ -166,6 +166,7 @@ You are generating code for a modern rice mill management system using React, Ty
 
 ## Settings Page (GeneralSettings)
 
+- **Modal vs. Page Navigation:** All create/edit actions (New, Edit) should use responsive modals with the shared modal props pattern. Actions that require viewing or detailed data (e.g., View, Ledger, Details) must navigate to a dedicated page/route (never a modal), unless otherwise specified.
 - Three tabs: General, Others Setting, Logo & Favicon.
 - All fields and actions below are compulsory:
   - General: siteName, description, address, proprietor, proprietorEmail, contactNo (editable, save).
@@ -176,6 +177,12 @@ You are generating code for a modern rice mill management system using React, Ty
 - All form fields must be present and functional.
 - Layout and presentation can be improved for a premium feel (cards, tabs, skeletons, animation), but do not remove or rename any required field or action.
 
+All tables/lists must support: pagination (page size: 10, 25, 50, 100), search/filter (by all relevant fields), row selection (checkboxes), bulk delete, and actions (edit, delete, print, new, view as applicable).
+Show loading, empty, and error states using shared Spinner and EmptyState components. Use skeletons for loading where appropriate.
+Use premium UI/UX: cards, transitions, and consistent spacing/typography. All tables/lists must be responsive and visually consistent.
+All v1 fields, columns, and actions are compulsory; do not remove or rename any required element.
+All modals must use the shared modal props pattern and close on 'esc'.
+
 ---
 
 ## Silo List Page
@@ -185,6 +192,14 @@ You are generating code for a modern rice mill management system using React, Ty
 - Table: row selection (checkboxes), bulk delete, page size (10, 25, 50, 100), search by name/description.
 - Modal: name (string), capacity (number), description (string), Save/Update, Cancel.
 - Show loading/empty states.
+
+## Sales Ledger Page
+
+Table columns (Invoices): #, Date, Party, Description, Amount.
+Table columns (Receives): #, Date, Party, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals at bottom of each table.
+
 - If summary/stat cards (e.g., total silos, total capacity) would improve UX, include them at the top.
 - All fields, columns, and actions are compulsory; do not remove or rename.
 - Layout, modal, and table can be improved for a premium feel (cards, transitions, skeletons), but core functionality must remain.
@@ -195,7 +210,8 @@ You are generating code for a modern rice mill management system using React, Ty
 - Show loading, empty, and error states using shared Spinner and EmptyState components. Use skeletons for loading where appropriate.
 - Use premium UI/UX: cards, transitions, and consistent spacing/typography. All tables/lists must be responsive and visually consistent.
 - All v1 fields, columns, and actions are compulsory; do not remove or rename any required element.
-- All modals must use the shared modal props pattern and close on 'esc'.
+- All modals (for New, Edit, etc.) must use the shared modal props pattern and close on 'esc'.
+- Actions that require viewing or detailed data (e.g., View, Ledger) should navigate to a dedicated page/route (not a modal). Only New/Edit should use modals unless otherwise specified.
 
 ## Designation List Page
 
@@ -211,24 +227,24 @@ You are generating code for a modern rice mill management system using React, Ty
 ## Attendance List Page
 
 - Table columns: #, Date, Total Employee, Total Present, Total Absent, Total Leave, Description, Actions, row selection (checkbox).
-- Filter/search bar: date picker, page size, search, clear, new, delete, print.
+- Filter/search bar: date picker, page size, search, new, delete, print.
 
 ## Monthly Attendance List Page
 
 - Table columns: #, Date, Total Employee, Total Present, Total Absent, Total Leave, Description, Actions, row selection (checkbox).
-- Filter/search bar: page size, year, month, employee dropdown, search, clear, print.
+- Filter/search bar: page size, year, month, employee dropdown, search, print.
 
 ## Monthly Salary Sheet Page
 
 - Table columns: #, Date, Year, Month, Description, Total Employee, Total Salary, Actions, row selection (checkbox).
-- Filter/search bar: page size, year, month, search, clear, print.
+- Filter/search bar: page size, year, month, search, print.
 - Actions: New, Edit, View, Delete (multi-select), Print.
 - Modal fields: date, year, month, description, payment head, and a table of employees with: designation, ID, name, salary, bonus/OT, absent/fine, deduction, payment, note, signature. Show summary (total employee, total salary) at top or bottom.
 
 ## Income Head List Page
 
 - Table columns: #, Head Name, Receives, Actions, row selection (checkbox).
-- Filter/search bar: page size, sort order, date range, search, clear, print.
+- Filter/search bar: page size, sort order, date range, search, print.
 - Actions: New, Edit, Delete (multi-select), Print, Ledger.
 - Modal fields: name (string), add multiple heads at once.
 - Show total receives at bottom.
@@ -237,5 +253,74 @@ You are generating code for a modern rice mill management system using React, Ty
 
 - Table columns (Invoices): #, Date, Party, Description, Amount.
 - Table columns (Receives): #, Date, Party, Description, Amount.
-- Filter/search bar: date range, search, clear, print.
+- Filter/search bar: date range, search, print.
 - Show totals at bottom of each table.
+- The main ledger view is a page. The View action navigates to `/transactions/:id` (not a modal). New and Edit actions use responsive modals.
+
+## Expense Head List Page
+
+Table columns: #, Head Name, Payments, Actions, row selection (checkbox).
+Filter/search bar: page size, sort order, date range, search, print.
+Actions: New, Edit, Delete (multi-select), Print, Ledger.
+Modal fields: name (string), add multiple heads at once.
+Show total payments at bottom.
+
+## Ledger Head Details Page
+
+Table columns: #, Date, Description, Party, Amount.
+Filter/search bar: date range, search, print.
+Show totals at bottom.
+This is a page, not a modal. Navigated to from the Ledger action in Head List.
+
+## Bank Head List Page
+
+Table columns: #, Head Name, Receive, Payment, Balance, Actions, row selection (checkbox).
+Filter/search bar: page size, sort order, date range, search, print.
+Actions: New, Edit, Delete (multi-select), Print, Ledger.
+Modal fields: name (string), add multiple heads at once.
+Show total receive, payment, and balance at bottom.
+
+## Banking Head Ledger Details Page
+
+Table columns (Receive): #, Date, Party, Description, Amount.
+Table columns (Payments): #, Date, Party, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals at bottom of each table.
+This is a page, not a modal. Navigated to from the Ledger action in Bank Head List.
+
+## Others Head List Page
+
+Table columns: #, Head Name, Receive, Payment, Balance, Actions, row selection (checkbox).
+Filter/search bar: page size, sort order, date range, search, print.
+Actions: New, Edit, Delete (multi-select), Print, Ledger.
+Modal fields: name (string), add multiple heads at once.
+Show total receive, payment, and balance at bottom.
+
+## Ledger Head Details Page (Others)
+
+Table columns (Receive): #, Date, Party, Description, Amount.
+Table columns (Payments): #, Date, Party, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals and balance at bottom of each table.
+This is a page, not a modal. Navigated to from the Ledger action in Others Head List.
+
+## Party Type List Page
+
+Table columns: #, Name, Description, Actions, row selection (checkbox).
+Filter/search bar: page size, search, clear.
+Actions: New, Edit (modal), Delete (multi-select).
+Modal fields: name (string), description (string).
+
+## Transaction List Page
+
+Table columns: #, Date, Party, Voucher Type, From Head, To Head, Description, Amount, Status, Actions, row selection (checkbox).
+Filter/search bar: page size, sort order, voucher type, head, party, date range, search, clear, print.
+Actions: New (Receive, Payment, Invoice), Edit (modal), Delete (multi-select), Approve, Print, View (navigates to `/transactions/:id`).
+Modal fields (for New/Edit): date, description, amount, party, from head, to head, voucher type (for invoice: type radio for receive/payment). Use color-coded backgrounds for different voucher types.
+Status column shows transaction state (e.g., Completed).
+Show totals at bottom if needed.
+Note: Edit is a modal, View navigates to a page/route for printable voucher details.
+
+## Transaction Voucher Print Page
+
+Shows all details of a single transaction in printable format, including: payment from, party, description, amount, date, voucher number, created by, and signature lines. Route: `/transactions/:id`.
