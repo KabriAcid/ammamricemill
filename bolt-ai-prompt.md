@@ -1,24 +1,3 @@
-## Production List Page
-
-- Table columns: #, Date, Invoice No, Silo Info, Items, Quantity, Weight, Actions, row selection (checkbox).
-- Filter/search bar: page size, date range (from/to), invoice search, Search, Print.
-- Actions: New, Delete (multi-select), Print, View, Edit.
-- Show totals at bottom for quantity and weight.
-- All v1 fields, columns, and actions are compulsory.
-
-## Production Order (New/Edit)
-
-- Fields: invoice no, date, description.
-- Product table: category, product, godown, silo, quantity (bag), net weight (all editable).
-- Add/remove product rows.
-- Submit button.
-- All fields must be present and functional.
-
-## Production Details Print Page
-
-- Shows all details of a single production in printable format: company header, invoice no, date, product table (category, product, godown, silo, quantity, weight).
-- Includes authorized seal and signature section at the bottom.
-- All v1 fields and layout are compulsory.
 
 # Bolt AI Prompt: Rice Mill Management System (General Rules)
 
@@ -509,3 +488,128 @@ Shows all details of a single emptybag sales in printable format, including: inv
 - Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, product search, Search, Print.
 - Actions: New (sam as pur), Print.
 - All v1 fields, columns, and actions are compulsory.
+
+## Production List Page
+
+- Table columns: #, Date, Invoice No, Silo Info, Items, Quantity, Weight, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), invoice search, Search, Print.
+- Actions: New, Delete (multi-select), Print, View, Edit.
+- Show totals at bottom for quantity and weight.
+- All v1 fields, columns, and actions are compulsory.
+
+## Production Order (New/Edit)
+
+- Fields: invoice no, date, description.
+- Product table: category, product, godown, silo, quantity (bag), net weight (all editable).
+- Add/remove product rows.
+- Submit button.
+- All fields must be present and functional.
+
+## Production Details Print Page
+
+- Shows all details of a single production in printable format: company header, invoice no, date, product table (category, product, godown, silo, quantity, weight).
+- Includes authorized seal and signature section at the bottom.
+- All v1 fields and layout are compulsory.
+
+## Production Stocks List Page
+
+- Table columns: #, Date, Invoice No, Production No, Items, Quantity, Net Weight, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), invoice search, Search, Print.
+- Actions: New, Delete (multi-select), Print.
+- Show totals at bottom for quantity and net weight.
+- All v1 fields, columns, and actions are compulsory.
+
+## Production Stocks Order (New/Edit)
+
+- Fields: invoice no, date, production order (dropdown), description.
+- Product table: category, product, size, weight, godown, quantity, net weight (all editable).
+- Add/remove product rows.
+- Submit button.
+- All fields must be present and functional.
+
+## Production Stocks Details Page
+
+- Table columns: #, Date, Invoice No, Production No, Product, Size, Weight, Godown, Quantity, Net Weight.
+- Filter/search bar: page size, date range (from/to), invoice search, product search, Search, Print.
+- Actions: New, Print.
+- Show totals at bottom for quantity and net weight.
+- All v1 fields, columns, and actions are compulsory.
+
+## Stocks Details Page
+
+- Table columns: #, Category, Product, Opening, Add, Purchase, Sales, Production, Production Stocks, Stock, Avg Price, Total Price.
+- Filter/search bar: page size, category dropdown, godown dropdown, product search, Search, Print.
+- Actions: Opening Stock, Print.
+- Show company header, address, and current date above the table.
+- Show totals at bottom for all numeric columns.
+- All v1 fields, columns, and actions are compulsory.
+
+## Opening Stock Details Page
+
+- Fields: date, godown, category, product, size, weight, quantity, net weight, rate, price.
+- Add Product button to add more rows.
+- Table of opening items with: date, category, product, size, weight, quantity, net weight, rate, price, action (delete).
+- Show totals at bottom for quantity and net weight.
+- All fields must be present and functional.
+
+## Add Stocks List Page
+
+- Table columns: #, Date, Product, Quantity (Bag), Net Weight (Kg), Rate, Total Price, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), product dropdown, Search, Print.
+- Actions: New, Delete (multi-select), Print, Edit.
+- Show totals at bottom for quantity, net weight, total price.
+- All v1 fields, columns, and actions are compulsory.
+
+## Add Stocks Order (New/Edit)
+
+- Fields: date, product (dropdown), godown (dropdown), quantity (bag), net weight (kg), rate, price, notes.
+- Submit button.
+- All fields must be present and functional.
+
+## Stock Register Page
+
+- Filter/search bar: page size, category dropdown, product dropdown, product search, date range (from/to), Search, Print.
+- All v1 fields, columns, and actions are compulsory.
+
+## Daily Report Page
+
+- Date picker, Search, Clear, Print.
+- Show opening balance at top.
+- Two tables: Receives (SL, Party, From Head, To Head, Description, Amount), Payments (SL, Party, From Head, To Head, Description, Amount).
+- Show totals at bottom of each table.
+- Show opening balance, total receives, total payments, and closing balance below tables.
+- Signature lines for Accountant, Manager, Director, Managing Director at bottom.
+- All v1 fields, columns, and layout are compulsory.
+
+## Financial Statement Page
+
+- Filter/search bar: date range (from/to), Search, Clear, Print.
+- Show opening balance at top.
+- Two tables: Receives (SL, Head, Amount), Payments (SL, Head, Amount).
+- Show totals at bottom of each table.
+- All v1 fields, columns, and layout are compulsory.
+
+## SMS Module (Templates & Send SMS)
+
+- Suggestion: Combine SMS Templates and Send SMS into a single module with tabs: "Templates" and "Send SMS".
+
+### Templates Tab
+
+- Table columns: #, Name, Text, Actions, row selection (checkbox).
+- Filter/search bar: page size, sort order, search, Search, Print.
+- Actions: New, Delete (multi-select), Print, Edit.
+- Modal fields: name, text.
+
+### Send SMS Tab
+
+- Fields: SMS template (dropdown), text (auto-filled or editable), SMS type (text/unicode), receiver.
+- Actions: Send SMS.
+- Selecting a template auto-fills the text field.
+
+## Backup and Restore Database Page
+
+- Sections: Generate Backup, Restore Backup, Available Backup.
+- Generate Backup: button to create a new backup.
+- Restore Backup: file input and button to restore from backup file.
+- Available Backup table: #, Created At, Created By, Actions (Download Backup).
+- All v1 fields, actions, and layout are compulsory.
