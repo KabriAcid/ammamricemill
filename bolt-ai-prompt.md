@@ -139,6 +139,7 @@ You are generating code for a modern rice mill management system using React, Ty
   - Robust error handling and empty states.
   - All pages must be visually and functionally consistent.
 - **Cards & KPIs:** For any page where summary/stat cards (e.g., totals, KPIs) improve UX (like SalarySheet), include them at the top. The AI should determine and suggest cards for relevant pages, but all required data must be present.
+- **KPI/Stat Cards:** All KPI/stat cards must use the following layout: left-aligned icon (colored - primary-800), right of icon is a vertically stacked title (small, uppercase) and value (large, bold). Card is white, rounded, with subtle shadow and hover effect. Cards must be responsive, animated, and visually consistent. See `DashboardCard.tsx` for implementation details.
 - Deliverables
   - Production ready
   - Premium designs give suggestions or create KPI cards in pages that need it
@@ -324,3 +325,76 @@ Note: Edit is a modal, View navigates to a page/route for printable voucher deta
 ## Transaction Voucher Print Page
 
 Shows all details of a single transaction in printable format, including: payment from, party, description, amount, date, voucher number, created by, and signature lines. Route: `/transactions/:id`.
+
+## Party List Page
+
+Table columns: #, Type, Name, Company, Bank Account No, Mobile, Address, Balance, Actions, row selection (checkbox).
+Filter/search bar: page size, party type, name/mobile/address search, print.
+Actions: New, Edit (modal), Delete (multi-select), Print, Ledger.
+Modal fields: party type, name, company name, bank account no, mobile no, address.
+Show balance at bottom.
+
+## Party Ledger Details Page
+
+Table columns (Receives): #, Date, Description, Amount.
+Table columns (Payments): #, Date, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals and balance at bottom of each table.
+This is a page, not a modal. Navigated to from the Ledger action in Party List.
+
+## Party Payment List Page
+
+Table columns: #, Date, Type, Head, Party, Description, Created By, Amount, Actions, row selection (checkbox).
+Filter/search bar: page size, party, voucher type, date range, party search, print.
+Actions: Edit (modal), Delete (multi-select), Print, View (navigates to voucher print page).
+Modal fields: date, type, head, party, description, amount.
+Show totals at bottom if needed.
+Note: Edit is a modal, View navigates to a page/route for printable voucher details.
+
+## Party Payment Voucher Print Page
+
+Shows all details of a single party payment in printable format, including: payment to, party, description, amount, date, voucher number, created by, and signature lines. Route: `/parties/payments/:id`.
+
+## Party Due List Page
+
+Table columns: #, Name, Company Name, Mobile, Address, Due, Actions, row selection (checkbox).
+Filter/search bar: page size, search, print.
+Actions: Print, Ledger (navigates to Party Ledger Details page).
+Show due totals at bottom if needed.
+
+## Party Ledger Details Page
+
+Table columns (Receives): #, Date, Description, Amount.
+Table columns (Payments): #, Date, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals and balance at bottom of each table.
+This is a page, not a modal. Navigated to from the Ledger action in Party Due List.
+
+## Party Debts List Page
+
+Table columns: #, Name, Company Name, Mobile, Address, Debts, Actions, row selection (checkbox).
+Filter/search bar: page size, search, print.
+Actions: Print, Ledger (navigates to Party Ledger Details page).
+Show debts totals at bottom if needed.
+
+## Party Debts Ledger Details Page
+
+Table columns (Receives): #, Date, Description, Amount.
+Table columns (Payments): #, Date, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals and balance at bottom of each table.
+This is a page, not a modal. Navigated to from the Ledger action in Party Debts List.
+
+## Category List Page
+
+Table columns: #, Category Name, Unit, Description, Actions, row selection (checkbox).
+Filter/search bar: page size, search, clear.
+Actions: New, Edit (modal), Delete (multi-select).
+Modal fields (New/Edit): category name, category unit (dropdown), category description.
+
+## Product List Page
+
+Table columns: #, Category, Product, Unit, Type, Size, Weight, Buy Price, Sale Price, Actions, row selection (checkbox).
+Filter/search bar: page size, product search, category dropdown, clear.
+Actions: New, Edit (modal), Delete (multi-select), Print.
+Modal fields (New/Edit): category (dropdown), name, unit (dropdown), type (dropdown), size, weight, buy price, sale price.
