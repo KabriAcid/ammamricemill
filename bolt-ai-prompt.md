@@ -1,4 +1,24 @@
+## Production List Page
 
+- Table columns: #, Date, Invoice No, Silo Info, Items, Quantity, Weight, Actions, row selection (checkbox).
+- Filter/search bar: page size, date range (from/to), invoice search, Search, Print.
+- Actions: New, Delete (multi-select), Print, View, Edit.
+- Show totals at bottom for quantity and weight.
+- All v1 fields, columns, and actions are compulsory.
+
+## Production Order (New/Edit)
+
+- Fields: invoice no, date, description.
+- Product table: category, product, godown, silo, quantity (bag), net weight (all editable).
+- Add/remove product rows.
+- Submit button.
+- All fields must be present and functional.
+
+## Production Details Print Page
+
+- Shows all details of a single production in printable format: company header, invoice no, date, product table (category, product, godown, silo, quantity, weight).
+- Includes authorized seal and signature section at the bottom.
+- All v1 fields and layout are compulsory.
 
 # Bolt AI Prompt: Rice Mill Management System (General Rules)
 
@@ -457,7 +477,6 @@ Shows all details of a single emptybag sales in printable format, including: inv
 - All fields must be present and functional.
 - Use shared form/modal styles and premium UI/UX.
 
-
 ## Purchase List Page
 
 - Table columns: #, Date, Invoice No, Party, Items, Quantity, Total, Discount, Net Price, Actions, row selection (checkbox).
@@ -483,3 +502,10 @@ Shows all details of a single emptybag sales in printable format, including: inv
 - Show details/notes section.
 - Route: `/purchases/:id`.
 - Include signature/autograph section at the bottom if present in v1.
+
+## Purchase Ledger Page
+
+- Table columns: #, Date, Invoice No, Party, Product, Quantity (Bag), Net Weight (Kg), Rate, Total Price.
+- Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, product search, Search, Print.
+- Actions: New (sam as pur), Print.
+- All v1 fields, columns, and actions are compulsory.
