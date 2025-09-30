@@ -19,6 +19,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { NavigationItem } from "../types";
+import { useUI } from "../contexts/UIContext";
 
 const navigationData: NavigationItem[] = [
   {
@@ -529,34 +530,78 @@ const SidebarItem: React.FC<SidebarItemProps> = ({ item, level = 0 }) => {
 };
 
 export const Sidebar: React.FC = () => {
-  // Always visible, fixed on LG screens, no scrollbar
+  const { sidebarOpen, closeSidebar } = useUI();
+  // Sidebar for large screens and overlay for small screens
   return (
-    <aside
-      className="
-        hidden lg:block
-        lg:fixed lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50
-        lg:flex lg:flex-col
-      "
-    >
-      <div className="flex items-center space-x-3 p-4 border-b border-gray-200">
-        <div className="flex items-center justify-center">
-          <img
-            src="/favicon.png"
-            alt="favicon"
-            className="w-8 h-8 object-cover"
-          />
+    <>
+      {/* Desktop Sidebar */}
+      <aside className="hidden lg:block lg:fixed lg:left-0 lg:h-[calc(100vh-4rem)] lg:w-80 lg:bg-white lg:shadow-none lg:z-50 lg:flex lg:flex-col">
+        <div className="flex items-center space-x-3 p-4 border-b border-gray-200">
+          <div className="flex items-center justify-center">
+            <img
+              src="/favicon.png"
+              alt="favicon"
+              className="w-8 h-8 object-cover"
+            />
+          </div>
+          <h1 className="text-xl sm:text-base font-bold text-gray-900 hidden sm:block tracking-tight digit">
+            AMMAM RICE MILL LTD.
+          </h1>
         </div>
-        <h1 className="text-xl sm:text-base font-bold text-gray-900 hidden sm:block tracking-tight digit">
-          AMMAM RICE MILL LTD.
-        </h1>
-      </div>
-      <div className="p-4 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
-        <nav className="space-y-1 flex-1">
-          {navigationData.map((item) => (
-            <SidebarItem key={item.id} item={item} />
-          ))}
-        </nav>
-      </div>
-    </aside>
+        <div className="p-4 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
+          <nav className="space-y-1 flex-1">
+            {navigationData.map((item) => (
+              <SidebarItem key={item.id} item={item} />
+            ))}
+          </nav>
+        </div>
+      </aside>
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 z-50 flex">
+          <div className="w-72 bg-white shadow-lg flex flex-col h-full">
+            <div className="flex items-center space-x-3 p-4 border-b border-gray-200">
+              <div className="flex items-center justify-center">
+                <img
+                  src="/favicon.png"
+                  alt="favicon"
+                  className="w-8 h-8 object-cover"
+                />
+              </div>
+              <h1 className="text-xl font-bold text-gray-900 tracking-tight digit">
+                AMMAM RICE MILL LTD.
+              </h1>
+              <button
+                className="ml-auto text-gray-400 hover:text-gray-700"
+                onClick={closeSidebar}
+                aria-label="Close sidebar"
+              >
+                <svg
+                  className="w-6 h-6"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div className="p-4 flex-1 flex flex-col overflow-y-auto scrollbar-hide">
+              <nav className="space-y-1 flex-1">
+                {navigationData.map((item) => (
+                  <SidebarItem key={item.id} item={item} />
+                ))}
+              </nav>
+            </div>
+          </div>
+          <div className="flex-1 bg-black/30" onClick={closeSidebar} />
+        </div>
+      )}
+    </>
   );
 };
