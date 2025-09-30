@@ -10,9 +10,8 @@ import {
   DollarSign,
   AlertCircle,
   CheckCircle,
-  ArrowRight,
 } from "lucide-react";
-import { DashboardCard as DashboardCardType } from "../types";
+import type { DashboardCard as DashboardCardType } from "../config/types";
 import { Skeleton } from "./ui/Skeleton";
 
 interface DashboardCardProps {
@@ -39,6 +38,8 @@ const colorMap = {
   warning: "border-yellow-500 bg-gradient-to-br from-yellow-50 to-yellow-100",
   info: "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100",
 };
+
+colorMap.info = colorMap.info;
 
 const iconColorMap = {
   primary: "text-primary-500",
@@ -90,7 +91,7 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
       <div className="flex items-center space-x-4 py-3 px-2">
         <div
           className={`p-2 rounded-full flex items-center justify-center ${
-            iconColorMap[card.color]
+            iconColorMap[card.color as keyof typeof iconColorMap]
           }`}
         >
           <IconComponent size={28} />
@@ -100,10 +101,9 @@ export const DashboardCard: React.FC<DashboardCardProps> = ({
             {card.title}
           </h3>
           <p className="text-xl font-bold text-gray-900 text-left digit">
-            {typeof card.value === 'number' 
-              ? card.value.toLocaleString() 
-              : card.value
-            }
+            {typeof card.value === "number"
+              ? card.value.toLocaleString()
+              : card.value}
           </p>
         </div>
       </div>

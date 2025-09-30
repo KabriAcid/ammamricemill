@@ -1,28 +1,25 @@
-import { SalarySheet } from "./pages/SalarySheet";
-import React from "react";
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
-import { ToastProvider } from "./ui/Toast";
+import { ToastProvider } from "./components/ui/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UIProvider } from "./contexts/UIContext";
-import { Login } from "./pages/Login";
+import { Login } from "./pages/auth/Login";
 import { NotFound } from "./pages/NotFound";
-import { Dashboard } from "./pages/Dashboard";
+import Dashboard from "./pages/dashboard/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
-import { GeneralSettings } from "./pages/GeneralSettings";
-import { SiloList } from "./pages/SiloList";
-import { GodownList } from "./pages/GodownList";
-import { DesignationList } from "./pages/DesignationList";
-import { EmployeeList } from "./pages/EmployeeList";
-import { EmployeeView } from "./pages/EmployeeView";
-import { EmployeeLedger } from "./pages/EmployeeLedger";
-import { AttendanceList } from "./pages/AttendanceList";
-import { AttendanceSheet } from "./pages/AttendanceSheet";
+import { GeneralSettings } from "./pages/settings/GeneralSettings";
+import { SiloList } from "./pages/settings/SiloList";
+import { GodownList } from "./pages/settings/GodownList";
+import DesignationList from "./pages/hr/DesignationList";
+import EmployeeList from "./pages/hr/EmployeeList";
+import AttendanceList from "./pages/hr/AttendanceList";
+import { AttendanceSheet } from "./pages/hr/AttendanceSheet";
+import { SalarySheet } from "./pages/hr/SalarySheet";
 
 function App() {
   return (

@@ -1,36 +1,31 @@
 import React from 'react';
-import { motion } from 'framer-motion';
 
 interface CardProps {
+  title?: string;
+  subtitle?: string;
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
-  onClick?: () => void;
 }
 
 export const Card: React.FC<CardProps> = ({
+  title,
+  subtitle,
   children,
   className = '',
-  hover = false,
-  onClick,
+  hover = false
 }) => {
-  const Component = onClick ? motion.div : 'div';
-  
   return (
-    <Component
-      className={`
-        bg-white rounded-xl shadow-card
-        ${hover ? 'hover:shadow-card-hover transition-shadow duration-300' : ''}
-        ${onClick ? 'cursor-pointer' : ''}
-        ${className}
-      `}
-      onClick={onClick}
-      {...(onClick && {
-        whileHover: { y: -2 },
-        whileTap: { scale: 0.98 },
-      })}
-    >
-      {children}
-    </Component>
+    <div className={`${hover ? 'card-hover' : 'card-base'} ${className}`}>
+      {(title || subtitle) && (
+        <div className="p-6 border-b border-gray-200">
+          {title && <h3 className="text-lg font-semibold text-gray-900">{title}</h3>}
+          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
+        </div>
+      )}
+      <div className="p-6">
+        {children}
+      </div>
+    </div>
   );
 };

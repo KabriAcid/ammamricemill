@@ -1,17 +1,127 @@
 
-# Bolt AI Prompt: Rice Mill Management System (General Rules)
+# Amam Rice Mill (Admin Dashboard) — Bolt AI Prompt (Final, Modular, Compact)
 
-## Routes & Directory Structure
+**IMPORTANT: For this phase, focus ONLY on generating the sidebar, navbar (topbar), and main content layout. Do NOT generate any page/module internals or any irrelevant pages, forms, or business logic. The output should be a modular, maintainable layout shell with a responsive sidebar, a top navigation bar, and a main content area that renders routed pages. Sidebar and navbar must use shared components, support config-driven navigation, and be visually consistent with the premium UI/UX guidelines below.**
 
-- All pages live under a single `pages` directory.
-- Each main sidebar nav link is a subdirectory (e.g., `pages/settings`, `pages/hr`, `pages/attendance`).
-- Each sub-nav/page is a file in its directory (e.g., `pages/settings/GeneralSettings.tsx`).
-- Route paths should mirror this structure (e.g., `/settings/general`, `/hr/employee-list`).
-- Use React Router for all navigation.
 
----
+## 1. Global Rules & Tech Stack
 
-## All Routes (as in Sidebar)
+- **Tech Stack:** React, TypeScript, Vite, Tailwind CSS (with `dark:` variants), Lucide icons, Chart.js. **Preserve v1:** All v1 fields, columns, and actions are compulsory; do not remove or rename any required element. v2+ can add optional enhancements. **DRY & Maintainable:** Use only shared components/utilities for all UI/UX. All code must be DRY, maintainable, and production-ready. **Premium UI/UX:** You may suggest or implement premium, modern, or user-friendly layouts, but all required data/actions must remain. **Accessibility:** All forms must have labels, aria attributes, high-contrast support, and keyboard navigation (modals close on `esc`). **Color Palette:** Primary: #AF792F (bg-primary), Secondary: #b8c4a7 (bg-secondary), use only these for accents/highlights/focus. **Layout:** Responsive, mobile-first, grid-based, compact, clean, consistent spacing/typography. Avoid excessive gradients/custom styles unless specified. **Navigation:** Each main sidebar link is a directory; each sub-nav link is a file in that directory. Use React Router for navigation. Route paths mirror directory structure. **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use TypeScript types/interfaces for all data. Centralize types in `types/entities.ts`. **UX:** Robust error handling and empty states. All pages must be visually/functionally consistent.
+
+## 2. UI/UX & Shared Components
+
+- **Shared Components:** Button, Spinner, EmptyState, Tabs, DataTable, DashboardCard, FormField, etc. **Tables:** Use shared DataTable everywhere (pagination, filters, actions as props). All tables/lists must support: pagination (10, 25, 50, 100), search/filter (all relevant fields), row selection (checkboxes), bulk delete, actions (edit, delete, print, new, view as applicable). **Forms:** Use shared FormField utilities (label, error, validation). Input widths should match expected content. All forms use shared input styles and Button for actions. **Modals:** All "New"/"Edit" modals use the same fields; Edit pre-fills data. Use shared modal props pattern: `item: EntityType | null`, `onClose`, `onSave`. Modals close on 'esc'. Long modals: scrollable, no visible scrollbars, action buttons fixed at bottom. **Photo Columns:** Any table with photo data must include a photo column. **KPI/Stat Cards:** Use DashboardCard layout: left icon (primary-800), right stacked title/value, white, rounded, subtle shadow, hover effect, responsive, animated. Use for summary/stat cards where relevant (AI may suggest). **Charts:** Use Chart.js for all charts. **Micro-interactions:** Fade-in, success toast, error shake, etc. **Loading/Empty/Error:** Use Spinner, EmptyState, and skeletons for loading. All tables/lists must be responsive and visually consistent.
+
+## 3. Directory, Routing & Naming
+
+- All pages live under a single `pages` directory. Each main sidebar nav link is a subdirectory (e.g., `pages/settings`, `pages/hr`). Each sub-nav/page is a file in its directory (e.g., `pages/settings/GeneralSettings.tsx`). Route paths mirror this structure (e.g., `/settings/general`). Use a config-driven `routes.ts` for sidebar, router, and breadcrumbs. Naming: PascalCase for components, kebab-case for routes.
+
+## 4. Do vs Don’t Table
+
+| Do                             | Don’t                         |
+| ------------------------------ | ----------------------------- |
+| Use shared `Button` and other UIs with props | Create custom styled buttons  |
+| Use Chart.js for charts        | Use random chart libs         |
+| Use DataTable everywhere       | Repeat table logic per page   |
+| Use config-driven routes       | Hardcode routes in many files |
+| Use FormField utilities        | Repeat input markup           |
+
+## 5. Page Prioritization
+
+**Core Pages:** Dashboard, Human Resource (HR), Accounts, Sales, Stocks. **Support Pages:** Backup, SMS, Reporting, Settings
+
+## 6. Code, Docs & Premium Enhancements
+
+- **Centralized Types:** All entity types/interfaces in `types/entities.ts` (Employee, Party, Product, etc.). **Config-Driven:** Sidebar/routes are config-driven. All modals use the same fields for New/Edit; Edit pre-fills data. **Docs:** Add sample table schemas and page mockups (pseudo-code or Figma link). Add glossary (e.g., Godown = warehouse, Emptybag = packaging bag). **Premium Features:** Role-Based Access Control (RBAC) for all modules/pages. Offline-first support (service workers, caching for key pages). Audit logs/activity history for financial & HR operations.
+
+## 7. Tailwind Custom Utilities (Concise)
+
+- Use `shadow-card-hover`, `shadow-card-lg` for cards. Use `animate-fade-in`, `animate-slide-in`, `animate-pulse-slow` for transitions. Prefer these over default Tailwind for a consistent, premium look.
+
+## 8. Modal & Form Rules
+
+- All "New" modals are for creating, and "Edit" modals use the same fields but load existing data for update. Input fields: sensible widths based on expected data length (e.g., invoice no, phone, amounts, names, etc.). All modals must close on 'esc'. Long modals: scrollable, no visible scrollbars (overlay/auto-hide styles). Action buttons fixed and always visible at the bottom.
+
+## 9. Page Blueprints (All Modules)
+
+> All requirements below inherit the global, UI/UX, shared component, and modal/form rules above. Only unique fields/actions are listed per page. All v1 fields/actions are compulsory.
+
+### Dashboard
+
+- Quick Actions: Add Stock, Mark Attendance, New Purchase, Start Production (large buttons, icons). Recent Activities: List of latest actions (purchase, production, attendance, stock, payment) with timestamps. Monthly Revenue Trend: Chart.js line/bar chart. Production Overview: Chart.js chart. Layout: Responsive cards/sections.
+- General filter on the top-left for daily, weekly, monthly data
+
+### Settings (GeneralSettings)
+
+- Modal vs. Page: All create/edit = modals; view/details = dedicated page/route. Tabs: General, Others Setting, Logo & Favicon. General: siteName, description, address, proprietor, proprietorEmail, contactNo. Others: itemsPerPage, copyrightText. Logo & Favicon: upload/preview favicon/logo. Tabbed interface, loading/saving states, feedback.
+
+### Silo List
+
+- Table: #, Silo Name, Silo Capacity, Description, Actions. Actions: Edit (modal), Delete (multi-select), Print. Modal: name, capacity, description.
+
+### Sales Ledger
+
+- Table (Invoices): #, Date, Party, Description, Amount. Table (Receives): #, Date, Party, Description, Amount. Filter/search: date range, search, print. Show totals at bottom.
+
+### Designation List
+
+- Table: #, Designation Name, Description, Actions. Modal: name, description.
+
+### Employee List
+
+- Table: #, Photo, Employee Name, Employee ID, Designation, Mobile, Salary, Actions. Modal: all v1 employee fields (see v1 for full list), photo preview if present. Filter by designation.
+
+### Attendance List
+
+- Table: #, Date, Total Employee, Total Present, Total Absent, Total Leave, Description, Actions. Filter/search: date picker, page size, search, new, delete, print.
+
+### Monthly Attendance List
+
+- Table: #, Date, Total Employee, Total Present, Total Absent, Total Leave, Description, Actions. Filter/search: page size, year, month, employee dropdown, search, print.
+
+### Monthly Salary Sheet
+
+- Table: #, Date, Year, Month, Description, Total Employee, Total Salary, Actions. Filter/search: page size, year, month, search, print. Modal: date, year, month, description, payment head, employee table (designation, ID, name, salary, bonus/OT, absent/fine, deduction, payment, note, signature). Show summary at top/bottom.
+
+### Income/Expense/Bank/Others Head Lists & Ledgers
+
+- Table: #, Head Name, Receives/Payments/Balance, Actions. Filter/search: page size, sort order, date range, search, print. Actions: New, Edit, Delete (multi-select), Print, Ledger. Modal: name (string), add multiple heads at once. Show totals at bottom. Ledger Details: #, Date, Description, Party, Amount. Filter/search: date range, search, print. Totals at bottom. Page, not modal.
+
+### Party/Party Type/Party Payment/Due/Debts Lists & Ledgers
+
+- Table: #, Type, Name, Company, Bank Account No, Mobile, Address, Balance/Due/Debts, Actions. Filter/search: page size, party type, name/mobile/address search, print. Actions: New, Edit (modal), Delete (multi-select), Print, Ledger. Modal: party type, name, company name, bank account no, mobile no, address. Show balance/due/debts at bottom. Ledger Details: Receives/Payments tables, filter/search, print, totals/balance at bottom. Page, not modal.
+
+### Category/Product Lists
+
+- Table: #, Category Name, Unit, Description, Actions. Product Table: #, Category, Product, Unit, Type, Size, Weight, Buy Price, Sale Price, Actions. Filter/search: page size, search, category dropdown. Actions: New, Edit (modal), Delete (multi-select), Print. Modal: category, name, unit, type, size, weight, buy price, sale price.
+
+### Emptybag Purchase/Sales/Payment/Stocks
+
+- Table: #, Date, Invoice No, Party, Items, Quantity, Price, Description, Actions. Filter/search: page size, date range, invoice/party search, print. Actions: New, Edit (modal), Delete (multi-select), Print, View (navigates to details print page). Modal: invoice no, date, party, notes, product table (category, product, quantity, rate, price). Show totals at bottom. Print Page: all details, signature/autograph section at bottom.
+
+### Purchase/Production/Stocks (List, Order, Details, Ledger)
+
+- Table: #, Date, Invoice No, Party, Items, Quantity, Total, Discount, Net Price, Actions. Filter/search: page size, date range, invoice/party/product search, print. Actions: New, Edit (modal), Delete (multi-select), Print, View (navigates to details print page). Modal: invoice no, date, challan no, party, transport info, notes, totals, product table (category, product, godown, quantity, net weight, rate, total price). Show totals at bottom. Print Page: all details, signature/autograph section at bottom.
+
+### Daily Report/Financial Statement
+
+- Date picker, search, clear, print. Opening balance at top. Two tables: Receives, Payments. Show totals at bottom. Signature lines for Accountant, Manager, Director, Managing Director at bottom.
+
+### SMS Module (Templates & Send SMS)
+
+- Tabs: Templates, Send SMS. Templates: #, Name, Text, Actions. Filter/search, print. Modal: name, text. Send SMS: template dropdown, text (auto-filled/editable), SMS type, receiver. Action: Send SMS.
+
+### Backup & Restore Database
+
+- Sections: Generate Backup, Restore Backup, Available Backup. Table: #, Created At, Created By, Actions (Download Backup).
+
+## 10. Glossary
+
+- Godown = warehouse. Emptybag = packaging bag.
+
+## 11. Final Project Structure Note
+
+- Single `pages` directory, sidebar navigation as subdirectories, sub-nav/page as files. All code must follow above rules: preserve all v1 fields/features, allow premium UI/UX improvements, use shared components/utilities.
 
 **Dashboard**
 
@@ -160,11 +270,25 @@ You are generating code for a modern rice mill management system using React, Ty
 - Each sub-nav/page is a file within its respective directory.
 - All code must follow the above rules: preserve all v1 fields/features, allow premium UI/UX improvements, and use shared components/utilities.
 
-## General Modal Props
+## General Modal & Form Rules
 
-- **Modal Props (General):** For all create/edit modals, props should follow the pattern: `item: EntityType | null`, `onClose: () => void`, `onSave: (item: EntityType) => void`. Use the correct type for each entity (e.g., Silo, Godown). Also modal should close when 'esc'
+- All "New" modals are for creating, and "Edit" modals use the same fields but load existing data for update.
+- Input fields should use sensible widths based on expected data length (e.g., invoice no, phone, amounts, names, etc.).
+- All modals must close on 'esc'.
+- Long modals should be scrollable with no visible scrollbars (use overlay/auto-hide styles).
+- Action buttons (submit, save, etc.) must be fixed and always visible at the bottom, even when scrolling.
 
 ---
+
+## Dashboard
+
+- Sections:
+  - Quick Actions: Add Stock, Mark Attendance, New Purchase, Start Production (large buttons, icons).
+  - Recent Activities: List of latest actions (purchase, production, attendance, stock, payment) with timestamps.
+  - Monthly Revenue Trend: Chart.js line or bar chart showing revenue trend.
+  - Production Overview: Chart.js chart showing production stats/overview.
+- Use chart.js for all charts.
+- Layout: Responsive cards/sections as shown.
 
 ## Settings Page (GeneralSettings)
 
@@ -222,9 +346,10 @@ Show totals at bottom of each table.
 
 ## Employee List Page
 
-- Table columns: #, Employee Name, Employee ID, Designation, Mobile, Salary, Actions.
+- Table columns: #, Photo, Employee Name, Employee ID, Designation, Mobile, Salary, Actions.
 - Modal fields: all v1 employee fields (see v1 for full list), including name, empId, designation, mobile, salary, salaryType, joiningDate, grossAmount, bonus, loan, tax, netSalary, absence, email, bankName, accountName, accountNo, address, nationalId, fatherName, motherName, bloodGroup, others, photo. Show photo preview if present.
 - Filter by designation.
+- Any table with photo data (like Employee List) must include a photo column.
 
 ## Attendance List Page
 
@@ -309,14 +434,14 @@ This is a page, not a modal. Navigated to from the Ledger action in Others Head 
 ## Party Type List Page
 
 Table columns: #, Name, Description, Actions, row selection (checkbox).
-Filter/search bar: page size, search, clear.
+Filter/search bar: page size, search, .
 Actions: New, Edit (modal), Delete (multi-select).
 Modal fields: name (string), description (string).
 
 ## Transaction List Page
 
 Table columns: #, Date, Party, Voucher Type, From Head, To Head, Description, Amount, Status, Actions, row selection (checkbox).
-Filter/search bar: page size, sort order, voucher type, head, party, date range, search, clear, print.
+Filter/search bar: page size, sort order, voucher type, head, party, date range, search, , print.
 Actions: New (Receive, Payment, Invoice), Edit (modal), Delete (multi-select), Approve, Print, View (navigates to `/transactions/:id`).
 Modal fields (for New/Edit): date, description, amount, party, from head, to head, voucher type (for invoice: type radio for receive/payment). Use color-coded backgrounds for different voucher types.
 Status column shows transaction state (e.g., Completed).
@@ -389,14 +514,14 @@ This is a page, not a modal. Navigated to from the Ledger action in Party Debts 
 ## Category List Page
 
 Table columns: #, Category Name, Unit, Description, Actions, row selection (checkbox).
-Filter/search bar: page size, search, clear.
+Filter/search bar: page size, search, .
 Actions: New, Edit (modal), Delete (multi-select).
 Modal fields (New/Edit): category name, category unit (dropdown), category description.
 
 ## Product List Page
 
 Table columns: #, Category, Product, Unit, Type, Size, Weight, Buy Price, Sale Price, Actions, row selection (checkbox).
-Filter/search bar: page size, product search, category dropdown, clear.
+Filter/search bar: page size, product search, category dropdown, .
 Actions: New, Edit (modal), Delete (multi-select), Print.
 Modal fields (New/Edit): category (dropdown), name, unit (dropdown), type (dropdown), size, weight, buy price, sale price.
 
