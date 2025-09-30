@@ -11,7 +11,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/auth/Login";
 import { NotFound } from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { Layout } from "./components/layout/Layout";
+import MainApp from "./MainApp";
 // settings
 import GeneralSettings from "./pages/settings/GeneralSettings";
 import SiloList from "./pages/settings/SiloList";
@@ -35,116 +35,33 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/" element={<Navigate to="/login" replace />} />
               <Route
-                path="/dashboard"
                 element={
                   <ProtectedRoute>
-                    <Layout>
-                      <Dashboard />
-                    </Layout>
+                    <MainApp />
                   </ProtectedRoute>
                 }
-              />
-              <Route
-                path="/settings/general"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <GeneralSettings />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings/silo"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <SiloList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/settings/godown"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <GodownList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/designation"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <DesignationList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/employee"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <EmployeeList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/attendance"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <AttendanceList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/attendance/new"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <AttendanceSheet />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/salary"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <SalarySheet />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/monthly-attendance"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MonthlyAttendance />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/monthly-salary"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MonthlySalarySheet />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-
+              >
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/settings/general" element={<GeneralSettings />} />
+                <Route path="/settings/silo" element={<SiloList />} />
+                <Route path="/settings/godown" element={<GodownList />} />
+                <Route path="/hr/designation" element={<DesignationList />} />
+                <Route path="/hr/employee" element={<EmployeeList />} />
+                <Route path="/hr/attendance" element={<AttendanceList />} />
+                <Route
+                  path="/hr/attendance/new"
+                  element={<AttendanceSheet />}
+                />
+                <Route path="/hr/salary" element={<SalarySheet />} />
+                <Route
+                  path="/hr/monthly-attendance"
+                  element={<MonthlyAttendance />}
+                />
+                <Route
+                  path="/hr/monthly-salary"
+                  element={<MonthlySalarySheet />}
+                />
+              </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
