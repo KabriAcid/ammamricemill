@@ -7,14 +7,16 @@ import {
 import { ToastProvider } from "./components/ui/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UIProvider } from "./contexts/UIContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Login } from "./pages/auth/Login";
 import { NotFound } from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Dashboard";
-import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
-import { GeneralSettings } from "./pages/settings/GeneralSettings";
-import { SiloList } from "./pages/settings/SiloList";
-import { GodownList } from "./pages/settings/GodownList";
+// settings
+import GeneralSettings  from "./pages/settings/GeneralSettings";
+import SiloList from "./pages/settings/SiloList";
+import GodownList from "./pages/settings/GodownList";
+// hr
 import DesignationList from "./pages/hr/DesignationList";
 import EmployeeList from "./pages/hr/EmployeeList";
 import AttendanceList from "./pages/hr/AttendanceList";
@@ -87,26 +89,6 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <EmployeeList />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/employee/view/:id"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <EmployeeView />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/hr/employee/ledger/:id"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <EmployeeLedger />
                     </Layout>
                   </ProtectedRoute>
                 }
