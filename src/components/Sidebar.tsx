@@ -42,7 +42,7 @@ const navigationData: NavigationItem[] = [
         id: "silo-setting",
         title: "Silo Setting",
         icon: "warehouse",
-        link: "/dayar",
+        link: "/settings/silo",
       },
       {
         id: "godown-setting",

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Save, Image as ImageIcon } from "lucide-react";
 import { Spinner } from "../ui/Spinner";
 import { useToast } from "../ui/Toast";
@@ -7,25 +7,25 @@ import { Button } from "../components/ui/Button";
 
 export const GeneralSettings: React.FC = () => {
   const { showToast } = useToast();
+  const [fetching, setFetching] = useState(true);
   // General tab state
   const [form, setForm] = useState({
-    siteName: "AMMAM RICE MILL LTD.",
-    description: "RICE PROCESSING MILL",
-    address:
-      "No.2A Lambu, Gwarzo Road, Tofa Local Government Area, Kano State - Nigeria",
+    siteName: "",
+    description: "",
+    address: "",
     proprietor: "",
-    proprietorEmail: "ammamricemill437@gmail.com",
-    contactNo: "+2349031740606, 2349123507947",
+    proprietorEmail: "",
+    contactNo: "",
   });
   // Others tab state
   const [others, setOthers] = useState({
     itemsPerPage: 50,
-    copyrightText: "Developed By | Tech Expert Lab",
+    copyrightText: "",
   });
   // Logo tab state
   const [logo, setLogo] = useState({
-    faviconUrl: "/public/uploads/logo.jpg",
-    logoUrl: "/public/uploads/logo.jpg",
+    faviconUrl: "",
+    logoUrl: "",
   });
   const [faviconFile, setFaviconFile] = useState<File | null>(null);
   const [logoFile, setLogoFile] = useState<File | null>(null);
@@ -70,6 +70,63 @@ export const GeneralSettings: React.FC = () => {
       showToast("Logo & favicon updated!", "success");
     }, 1200);
   };
+
+  // Fetch settings on mount
+  useEffect(() => {
+    const fetchSettings = async () => {
+      try {
+        // Simulate API call
+        const res = await fetch("/api/settings/general");
+        if (!res.ok) throw new Error("Network error");
+        const data = await res.json();
+        setForm(
+          data.general || {
+            siteName: "AMMAM RICE MILL LTD.",
+            description: "RICE PROCESSING MILL",
+            address:
+              "No.2A Lambu, Gwarzo Road, Tofa Local Government Area, Kano State - Nigeria",
+            proprietor: "",
+            proprietorEmail: "ammamricemill437@gmail.com",
+            contactNo: "+2349031740606, 2349123507947",
+          }
+        );
+        setOthers(
+          data.others || {
+            itemsPerPage: 50,
+            copyrightText: "Developed By | Tech Expert Lab",
+          }
+        );
+        setLogo(
+          data.logo || {
+            faviconUrl: "/public/uploads/logo.jpg",
+            logoUrl: "/public/uploads/logo.jpg",
+          }
+        );
+      } catch (err) {
+        // fallback to defaults
+        setForm({
+          siteName: "AMMAM RICE MILL LTD.",
+          description: "RICE PROCESSING MILL",
+          address:
+            "No.2A Lambu, Gwarzo Road, Tofa Local Government Area, Kano State - Nigeria",
+          proprietor: "",
+          proprietorEmail: "ammamricemill437@gmail.com",
+          contactNo: "+2349031740606, 2349123507947",
+        });
+        setOthers({
+          itemsPerPage: 50,
+          copyrightText: "Developed By | Tech Expert Lab",
+        });
+        setLogo({
+          faviconUrl: "/public/uploads/logo.jpg",
+          logoUrl: "/public/uploads/logo.jpg",
+        });
+      } finally {
+        setFetching(false);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   const generalTab = (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-2xl mx-auto">
@@ -248,6 +305,14 @@ export const GeneralSettings: React.FC = () => {
       </div>
     </form>
   );
+
+  if (fetching) {
+    return (
+      <div className="flex justify-center items-center min-h-[300px]">
+        <Spinner size={32} />
+      </div>
+    );
+  }
 
   return (
     <div>

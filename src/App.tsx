@@ -14,6 +14,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import { GeneralSettings } from "./pages/GeneralSettings";
+import { SiloList } from "./pages/SiloList";
 
 function App() {
   return (
@@ -40,6 +41,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <GeneralSettings />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings/silo"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <SiloList />
                     </Layout>
                   </ProtectedRoute>
                 }
