@@ -1,3 +1,4 @@
+import { GeneralSettings } from "./pages/GeneralSettings";
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -28,12 +29,13 @@ import { Transactions } from "./pages/Transactions";
 
 // Placeholder pages for missing sidebar routes
 import { NotFound } from "./pages/NotFound";
-const Placeholder = (label: string) => () => (
-  <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-    <h1 className="text-2xl font-bold text-gray-700 mb-2">{label}</h1>
-    <p className="text-gray-500">This page is under construction.</p>
-  </div>
-);
+const Placeholder = (label: string) => () =>
+  (
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
+      <h1 className="text-2xl font-bold text-gray-700 mb-2">{label}</h1>
+      <p className="text-gray-500">This page is under construction.</p>
+    </div>
+  );
 
 const Setting = Placeholder("General Setting");
 const HeadIncome = Placeholder("Income Head");
@@ -107,57 +109,345 @@ function App() {
               }
             />
             <Route
-                path="/settings"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Settings />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/setting"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <Setting />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              <Route path="/head-income" element={<ProtectedRoute><Layout><HeadIncome /></Layout></ProtectedRoute>} />
-              <Route path="/head-expense" element={<ProtectedRoute><Layout><HeadExpense /></Layout></ProtectedRoute>} />
-              <Route path="/head-bank" element={<ProtectedRoute><Layout><HeadBank /></Layout></ProtectedRoute>} />
-              <Route path="/head-others" element={<ProtectedRoute><Layout><HeadOthers /></Layout></ProtectedRoute>} />
-              <Route path="/party-types" element={<ProtectedRoute><Layout><PartyTypes /></Layout></ProtectedRoute>} />
-              <Route path="/parties" element={<ProtectedRoute><Layout><Parties /></Layout></ProtectedRoute>} />
-              <Route path="/parties/payments" element={<ProtectedRoute><Layout><PartyPayments /></Layout></ProtectedRoute>} />
-              <Route path="/parties/due" element={<ProtectedRoute><Layout><PartyDue /></Layout></ProtectedRoute>} />
-              <Route path="/parties/debts" element={<ProtectedRoute><Layout><PartyDebts /></Layout></ProtectedRoute>} />
-              <Route path="/emptybag-purchase" element={<ProtectedRoute><Layout><EmptyBagPurchase /></Layout></ProtectedRoute>} />
-              <Route path="/emptybag-sales" element={<ProtectedRoute><Layout><EmptyBagSales /></Layout></ProtectedRoute>} />
-              <Route path="/emptybag-receive" element={<ProtectedRoute><Layout><EmptyBagReceive /></Layout></ProtectedRoute>} />
-              <Route path="/emptybag-payment" element={<ProtectedRoute><Layout><EmptyBagPayment /></Layout></ProtectedRoute>} />
-              <Route path="/emptybag-stocks" element={<ProtectedRoute><Layout><EmptyBagStocks /></Layout></ProtectedRoute>} />
-              <Route path="/purchases" element={<ProtectedRoute><Layout><Purchases /></Layout></ProtectedRoute>} />
-              <Route path="/purchase/ledger" element={<ProtectedRoute><Layout><PurchaseLedger /></Layout></ProtectedRoute>} />
-              <Route path="/rice-purchase" element={<ProtectedRoute><Layout><RicePurchase /></Layout></ProtectedRoute>} />
-              <Route path="/ricepurchase/ledger" element={<ProtectedRoute><Layout><RicePurchaseLedger /></Layout></ProtectedRoute>} />
-              <Route path="/sales" element={<ProtectedRoute><Layout><Sales /></Layout></ProtectedRoute>} />
-              <Route path="/sale/ledger" element={<ProtectedRoute><Layout><SalesLedger /></Layout></ProtectedRoute>} />
-              <Route path="/productions" element={<ProtectedRoute><Layout><Productions /></Layout></ProtectedRoute>} />
-              <Route path="/production/details" element={<ProtectedRoute><Layout><ProductionDetails /></Layout></ProtectedRoute>} />
-              <Route path="/stocks-godown" element={<ProtectedRoute><Layout><StocksGodown /></Layout></ProtectedRoute>} />
-              <Route path="/stocks/details" element={<ProtectedRoute><Layout><StocksDetails /></Layout></ProtectedRoute>} />
-              <Route path="/addstocks" element={<ProtectedRoute><Layout><AddStocks /></Layout></ProtectedRoute>} />
-              <Route path="/production-stocks" element={<ProtectedRoute><Layout><ProductionStocks /></Layout></ProtectedRoute>} />
-              <Route path="/production-stock/details" element={<ProtectedRoute><Layout><ProductionStockDetails /></Layout></ProtectedRoute>} />
-              <Route path="/dailyreport" element={<ProtectedRoute><Layout><DailyReport /></Layout></ProtectedRoute>} />
-              <Route path="/financial-statement" element={<ProtectedRoute><Layout><FinancialStatement /></Layout></ProtectedRoute>} />
-              <Route path="/sms-templates" element={<ProtectedRoute><Layout><SmsTemplates /></Layout></ProtectedRoute>} />
-              <Route path="/sendsms" element={<ProtectedRoute><Layout><SendSms /></Layout></ProtectedRoute>} />
-              <Route path="/backup" element={<ProtectedRoute><Layout><Backup /></Layout></ProtectedRoute>} />
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Settings />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings/general"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <GeneralSettings />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/head-income"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <HeadIncome />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/head-expense"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <HeadExpense />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/head-bank"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <HeadBank />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/head-others"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <HeadOthers />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/party-types"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PartyTypes />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parties"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Parties />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parties/payments"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PartyPayments />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parties/due"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PartyDue />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/parties/debts"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PartyDebts />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/emptybag-purchase"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmptyBagPurchase />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/emptybag-sales"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmptyBagSales />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/emptybag-receive"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmptyBagReceive />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/emptybag-payment"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmptyBagPayment />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/emptybag-stocks"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <EmptyBagStocks />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/purchases"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Purchases />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/purchase/ledger"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <PurchaseLedger />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/rice-purchase"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RicePurchase />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ricepurchase/ledger"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <RicePurchaseLedger />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sales"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Sales />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sale/ledger"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SalesLedger />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/productions"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Productions />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/production/details"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProductionDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stocks-godown"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <StocksGodown />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/stocks/details"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <StocksDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/addstocks"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <AddStocks />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/production-stocks"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProductionStocks />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/production-stock/details"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <ProductionStockDetails />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dailyreport"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <DailyReport />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/financial-statement"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <FinancialStatement />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sms-templates"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SmsTemplates />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/sendsms"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <SendSms />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/backup"
+              element={
+                <ProtectedRoute>
+                  <Layout>
+                    <Backup />
+                  </Layout>
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dayar"
               element={
@@ -249,7 +539,7 @@ function App() {
               }
             />
             <Route
-              path="/stocks"  
+              path="/stocks"
               element={
                 <ProtectedRoute>
                   <Layout>

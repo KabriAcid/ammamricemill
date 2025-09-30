@@ -33,10 +33,10 @@ const navigationData: NavigationItem[] = [
     icon: "settings",
     children: [
       {
-        id: "general-setting",
-        title: "General Setting",
+        id: "general-settings",
+        title: "General Settings",
         icon: "sliders",
-        link: "/setting",
+        link: "/settings/general",
       },
       {
         id: "silo-setting",
