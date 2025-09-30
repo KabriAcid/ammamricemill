@@ -17,6 +17,9 @@ import { GeneralSettings } from "./pages/GeneralSettings";
 import { SiloList } from "./pages/SiloList";
 import { GodownList } from "./pages/GodownList";
 import { DesignationList } from "./pages/DesignationList";
+import { EmployeeList } from "./pages/EmployeeList";
+import { EmployeeView } from "./pages/EmployeeView";
+import { EmployeeLedger } from "./pages/EmployeeLedger";
 
 function App() {
   return (
@@ -74,6 +77,36 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <DesignationList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/employee"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <EmployeeList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/employee/view/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <EmployeeView />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/employee/ledger/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <EmployeeLedger />
                     </Layout>
                   </ProtectedRoute>
                 }
