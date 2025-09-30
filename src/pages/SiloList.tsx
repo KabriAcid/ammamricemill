@@ -3,6 +3,7 @@ import { Edit } from "lucide-react";
 import { useToast } from "../ui/Toast";
 import { Spinner } from "../ui/Spinner";
 import { Button } from "../components/ui/Button";
+import { EmptyState } from "../components/EmptyState";
 
 interface Silo {
   id: number;
@@ -12,8 +13,8 @@ interface Silo {
 }
 
 const mockSilos: Silo[] = [
-  { id: 1, name: "1 No Silo", capacity: 5000, description: "sdfsdf" },
-  { id: 2, name: "4 No Silo", capacity: 50000, description: "sdfsdf" },
+  { id: 1, name: "1 No Silo", capacity: 5000, description: "something" },
+  { id: 2, name: "4 No Silo", capacity: 50000, description: "something" },
 ];
 
 export const SiloList: React.FC = () => {
@@ -130,7 +131,7 @@ export const SiloList: React.FC = () => {
         />
       </div>
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
+      <div className="overflow-x-auto bg-white rounded-lg shadow-card-hover border border-gray-200">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
@@ -158,8 +159,11 @@ export const SiloList: React.FC = () => {
               </tr>
             ) : paged.length === 0 ? (
               <tr>
-                <td colSpan={6} className="text-center py-8 text-gray-400">
-                  No silos found.
+                <td colSpan={6}>
+                  <EmptyState
+                    message="No silos found"
+                    imageSrc="/img/empty.jpg"
+                  />
                 </td>
               </tr>
             ) : (
@@ -180,14 +184,13 @@ export const SiloList: React.FC = () => {
                   <td className="px-2 py-2">{silo.capacity}</td>
                   <td className="px-2 py-2">{silo.description}</td>
                   <td className="px-2 py-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
+                    <button
                       onClick={() => openEditModal(silo)}
-                      icon={<Edit size={16} />}
+                      className="p-1 focus:outline-none text-[#AF792F] hover:text-[#8c5f22] transition"
+                      aria-label="Edit"
                     >
-                      <span className="sr-only">Edit</span>
-                    </Button>
+                      <Edit size={16} />
+                    </button>
                   </td>
                 </tr>
               ))
