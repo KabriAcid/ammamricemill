@@ -1,5 +1,8 @@
 {
   "compilerOptions": {
+    // Prevent TypeScript from looking for global @types
+    "typeRoots": ["./node_modules/@types"],
+    "types": [],
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",

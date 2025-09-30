@@ -16,11 +16,8 @@ import {
   BarChart3,
   MessageSquare,
   Database,
-  ChevronDown,
   ChevronRight,
-  X,
 } from "lucide-react";
-import { useUI } from "../contexts/UIContext";
 import { NavigationItem } from "../types";
 
 const navigationData: NavigationItem[] = [
