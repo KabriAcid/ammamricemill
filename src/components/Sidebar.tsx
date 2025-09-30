@@ -49,7 +49,7 @@ const navigationData: NavigationItem[] = [
         id: "godown-setting",
         title: "Godown Setting",
         icon: "building-2",
-        link: "/godown",
+        link: "/settings/godown",
       },
     ],
   },

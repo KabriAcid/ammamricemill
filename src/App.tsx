@@ -15,6 +15,7 @@ import { ProtectedRoute } from "./components/ProtectedRoute";
 import { Layout } from "./components/Layout";
 import { GeneralSettings } from "./pages/GeneralSettings";
 import { SiloList } from "./pages/SiloList";
+import { GodownList } from "./pages/GodownList";
 
 function App() {
   return (
@@ -51,6 +52,16 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <SiloList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/settings/godown"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <GodownList />
                     </Layout>
                   </ProtectedRoute>
                 }
