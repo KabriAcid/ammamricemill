@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard as Edit, Trash2, Printer, Calendar, Users } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Printer, Calendar, Users, BarChart3, CheckCircle, XCircle, Percent } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Table } from '../../components/ui/Table';
@@ -184,6 +184,7 @@ const AttendanceList: React.FC = () => {
   const totalDays = attendances.length;
   const avgPresent = totalDays > 0 ? attendances.reduce((sum, att) => sum + att.totalPresent, 0) / totalDays : 0;
   const avgAbsent = totalDays > 0 ? attendances.reduce((sum, att) => sum + att.totalAbsent, 0) / totalDays : 0;
+  const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
@@ -195,29 +196,27 @@ const AttendanceList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary-600">{totalDays}</p>
+        <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{totalDays}</p>
             <p className="text-sm text-gray-500">Total Records</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-600">{Math.round(avgPresent)}</p>
+        <Card icon={<CheckCircle size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{Math.round(avgPresent)}</p>
             <p className="text-sm text-gray-500">Avg Present</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-red-600">{Math.round(avgAbsent)}</p>
+        <Card icon={<XCircle size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{Math.round(avgAbsent)}</p>
             <p className="text-sm text-gray-500">Avg Absent</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-secondary-600">
-              {totalDays > 0 ? Math.round((avgPresent / (avgPresent + avgAbsent)) * 100) : 0}%
-            </p>
+        <Card icon={<Percent size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{totalDays > 0 ? Math.round((avgPresent / (avgPresent + avgAbsent)) * 100) : 0}%</p>
             <p className="text-sm text-gray-500">Attendance Rate</p>
           </div>
         </Card>
@@ -236,7 +235,7 @@ const AttendanceList: React.FC = () => {
             className="input-base"
           />
           <Button onClick={handleNew} icon={Plus} size="sm">
-            New Attendance
+            New
           </Button>
           {selectedAttendances.length > 0 && (
             <Button

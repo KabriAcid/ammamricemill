@@ -1,50 +1,59 @@
-import React, { useState } from 'react';
-import { Plus, CreditCard as Edit, Trash2, Printer } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Table } from '../../components/ui/Table';
-import { FilterBar } from '../../components/ui/FilterBar';
-import { Modal } from '../../components/ui/Modal';
-import { Silo } from '../../types';
+import React, { useState } from "react";
+import {
+  Plus,
+  CreditCard as Edit,
+  Trash2,
+  Printer,
+  Warehouse,
+  BarChart3,
+  Layers,
+} from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Modal } from "../../components/ui/Modal";
+import { Silo } from "../../types";
 
 const SiloList: React.FC = () => {
   const [silos, setSilos] = useState<Silo[]>([
     {
-      id: '1',
-      name: 'Main Storage Silo',
+      id: "1",
+      name: "Main Storage Silo",
       capacity: 5000,
-      description: 'Primary storage facility for paddy rice',
-      createdAt: '2024-01-15T10:00:00Z',
-      updatedAt: '2024-01-15T10:00:00Z'
+      description: "Primary storage facility for paddy rice",
+      createdAt: "2024-01-15T10:00:00Z",
+      updatedAt: "2024-01-15T10:00:00Z",
     },
     {
-      id: '2',
-      name: 'Secondary Silo A',
+      id: "2",
+      name: "Secondary Silo A",
       capacity: 3000,
-      description: 'Additional storage for processed rice',
-      createdAt: '2024-01-10T10:00:00Z',
-      updatedAt: '2024-01-10T10:00:00Z'
-    }
+      description: "Additional storage for processed rice",
+      createdAt: "2024-01-10T10:00:00Z",
+      updatedAt: "2024-01-10T10:00:00Z",
+    },
   ]);
 
   const [selectedSilos, setSelectedSilos] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [showModal, setShowModal] = useState(false);
   const [editingSilo, setEditingSilo] = useState<Silo | null>(null);
   const [loading, setLoading] = useState(false);
 
   // Modal form state
   const [formData, setFormData] = useState({
-    name: '',
+    name: "",
     capacity: 0,
-    description: ''
+    description: "",
   });
 
-  const filteredSilos = silos.filter(silo =>
-    silo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    silo.description?.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredSilos = silos.filter(
+    (silo) =>
+      silo.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      silo.description?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const totalPages = Math.ceil(filteredSilos.length / pageSize);
@@ -52,15 +61,15 @@ const SiloList: React.FC = () => {
   const paginatedSilos = filteredSilos.slice(startIndex, startIndex + pageSize);
 
   const columns = [
-    { key: 'id', label: '#', width: '80px' },
-    { key: 'name', label: 'Silo Name', sortable: true },
-    { 
-      key: 'capacity', 
-      label: 'Silo Capacity (Tons)', 
+    { key: "id", label: "#", width: "80px" },
+    { key: "name", label: "Silo Name", sortable: true },
+    {
+      key: "capacity",
+      label: "Silo Capacity (Tons)",
       sortable: true,
-      render: (value: number) => value.toLocaleString()
+      render: (value: number) => value.toLocaleString(),
     },
-    { key: 'description', label: 'Description' }
+    { key: "description", label: "Description" },
   ];
 
   const handleEdit = (silo: Silo) => {
@@ -68,7 +77,7 @@ const SiloList: React.FC = () => {
     setFormData({
       name: silo.name,
       capacity: silo.capacity,
-      description: silo.description || ''
+      description: silo.description || "",
     });
     setShowModal(true);
   };
@@ -78,11 +87,11 @@ const SiloList: React.FC = () => {
       setLoading(true);
       try {
         // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setSilos(prev => prev.filter(silo => !siloIds.includes(silo.id)));
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setSilos((prev) => prev.filter((silo) => !siloIds.includes(silo.id)));
         setSelectedSilos([]);
       } catch (error) {
-        console.error('Error deleting silos:', error);
+        console.error("Error deleting silos:", error);
       } finally {
         setLoading(false);
       }
@@ -93,31 +102,33 @@ const SiloList: React.FC = () => {
     setLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       if (editingSilo) {
         // Update existing silo
-        setSilos(prev => prev.map(silo => 
-          silo.id === editingSilo.id 
-            ? { ...silo, ...formData, updatedAt: new Date().toISOString() }
-            : silo
-        ));
+        setSilos((prev) =>
+          prev.map((silo) =>
+            silo.id === editingSilo.id
+              ? { ...silo, ...formData, updatedAt: new Date().toISOString() }
+              : silo
+          )
+        );
       } else {
         // Create new silo
         const newSilo: Silo = {
           id: Date.now().toString(),
           ...formData,
           createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
+          updatedAt: new Date().toISOString(),
         };
-        setSilos(prev => [...prev, newSilo]);
+        setSilos((prev) => [...prev, newSilo]);
       }
-      
+
       setShowModal(false);
       setEditingSilo(null);
-      setFormData({ name: '', capacity: 0, description: '' });
+      setFormData({ name: "", capacity: 0, description: "" });
     } catch (error) {
-      console.error('Error saving silo:', error);
+      console.error("Error saving silo:", error);
     } finally {
       setLoading(false);
     }
@@ -125,7 +136,7 @@ const SiloList: React.FC = () => {
 
   const handleNew = () => {
     setEditingSilo(null);
-    setFormData({ name: '', capacity: 0, description: '' });
+    setFormData({ name: "", capacity: 0, description: "" });
     setShowModal(true);
   };
 
@@ -136,6 +147,7 @@ const SiloList: React.FC = () => {
   // Calculate summary stats
   const totalCapacity = silos.reduce((sum, silo) => sum + silo.capacity, 0);
   const avgCapacity = silos.length > 0 ? totalCapacity / silos.length : 0;
+  const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
@@ -148,21 +160,25 @@ const SiloList: React.FC = () => {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary-600">{silos.length}</p>
+        <Card icon={<Warehouse size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{silos.length}</p>
             <p className="text-sm text-gray-500">Total Silos</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-secondary-600">{totalCapacity.toLocaleString()}</p>
+        <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">
+              {totalCapacity.toLocaleString()}
+            </p>
             <p className="text-sm text-gray-500">Total Capacity (Tons)</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-600">{Math.round(avgCapacity).toLocaleString()}</p>
+        <Card icon={<Layers size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">
+              {Math.round(avgCapacity).toLocaleString()}
+            </p>
             <p className="text-sm text-gray-500">Average Capacity (Tons)</p>
           </div>
         </Card>
@@ -174,11 +190,7 @@ const SiloList: React.FC = () => {
         placeholder="Search by silo name or description..."
       >
         <div className="flex items-center space-x-2">
-          <Button
-            onClick={handleNew}
-            icon={Plus}
-            size="sm"
-          >
+          <Button onClick={handleNew} icon={Plus} size="sm">
             New Silo
           </Button>
           {selectedSilos.length > 0 && (
@@ -217,14 +229,14 @@ const SiloList: React.FC = () => {
           onPageSizeChange: (size) => {
             setPageSize(size);
             setCurrentPage(1);
-          }
+          },
         }}
         selection={{
           selectedItems: selectedSilos,
-          onSelectionChange: setSelectedSilos
+          onSelectionChange: setSelectedSilos,
         }}
         actions={{
-          onEdit: handleEdit
+          onEdit: handleEdit,
         }}
       />
 
@@ -232,7 +244,7 @@ const SiloList: React.FC = () => {
       <Modal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        title={editingSilo ? 'Edit Silo' : 'New Silo'}
+        title={editingSilo ? "Edit Silo" : "New Silo"}
         size="md"
       >
         <div className="space-y-4">
@@ -243,7 +255,9 @@ const SiloList: React.FC = () => {
             <input
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
               className="input-base"
               placeholder="Enter silo name"
               required
@@ -257,7 +271,12 @@ const SiloList: React.FC = () => {
             <input
               type="number"
               value={formData.capacity}
-              onChange={(e) => setFormData(prev => ({ ...prev, capacity: Number(e.target.value) }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  capacity: Number(e.target.value),
+                }))
+              }
               className="input-base"
               placeholder="Enter capacity in tons"
               min="0"
@@ -271,7 +290,12 @@ const SiloList: React.FC = () => {
             </label>
             <textarea
               value={formData.description}
-              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
+              }
               className="input-base"
               rows={3}
               placeholder="Enter description (optional)"
@@ -279,17 +303,11 @@ const SiloList: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <Button
-              variant="outline"
-              onClick={() => setShowModal(false)}
-            >
+            <Button variant="outline" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              loading={loading}
-            >
-              {editingSilo ? 'Update' : 'Save'}
+            <Button onClick={handleSave} loading={loading}>
+              {editingSilo ? "Update" : "Save"}
             </Button>
           </div>
         </div>

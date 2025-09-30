@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard as Edit, Trash2, Printer } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Printer, BadgeCheck, Info } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Table } from '../../components/ui/Table';
@@ -121,6 +121,8 @@ const DesignationList: React.FC = () => {
     setShowModal(true);
   };
 
+  const loadingCards = false; // set to true to show skeleton
+
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
@@ -131,17 +133,15 @@ const DesignationList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary-600">{designations.length}</p>
+        <Card icon={<BadgeCheck size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{designations.length}</p>
             <p className="text-sm text-gray-500">Total Designations</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-secondary-600">
-              {designations.filter(d => d.description).length}
-            </p>
+        <Card icon={<Info size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{designations.filter(d => d.description).length}</p>
             <p className="text-sm text-gray-500">With Descriptions</p>
           </div>
         </Card>

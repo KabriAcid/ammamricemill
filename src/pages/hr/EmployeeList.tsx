@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, CreditCard as Edit, Trash2, Printer, User, Upload } from 'lucide-react';
+import { Plus, CreditCard as Edit, Trash2, Printer, User, Users, Wallet, BadgeCheck } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Table } from '../../components/ui/Table';
@@ -265,6 +265,7 @@ const EmployeeList: React.FC = () => {
 
   const activeEmployees = employees.filter(emp => emp.isActive).length;
   const totalSalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
+  const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
@@ -276,27 +277,27 @@ const EmployeeList: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-primary-600">{employees.length}</p>
+        <Card icon={<Users size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{employees.length}</p>
             <p className="text-sm text-gray-500">Total Employees</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-600">{activeEmployees}</p>
+        <Card icon={<User size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{activeEmployees}</p>
             <p className="text-sm text-gray-500">Active Employees</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-secondary-600">₹{totalSalary.toLocaleString()}</p>
+        <Card icon={<Wallet size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">₹{totalSalary.toLocaleString()}</p>
             <p className="text-sm text-gray-500">Total Monthly Salary</p>
           </div>
         </Card>
-        <Card hover>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-blue-600">{designations.length}</p>
+        <Card icon={<BadgeCheck size={32} />} loading={loadingCards} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{designations.length}</p>
             <p className="text-sm text-gray-500">Designations</p>
           </div>
         </Card>

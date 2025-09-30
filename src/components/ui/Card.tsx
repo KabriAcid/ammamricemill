@@ -1,35 +1,49 @@
 import React from "react";
 
 interface CardProps {
-  title?: string;
-  subtitle?: string;
+  icon: React.ReactNode;
+  iconClassName?: string;
+  loading?: boolean;
   children: React.ReactNode;
   className?: string;
   hover?: boolean;
 }
 
 export const Card: React.FC<CardProps> = ({
-  title,
-  subtitle,
+  icon,
+  iconClassName = "text-primary-600",
+  loading = false,
   children,
   className = "",
   hover = false,
 }) => {
-  // Merge DashboardCard's style: white bg, rounded-xl, p-3, shadow-card-hover, hover:shadow-card, transition, cursor-pointer
   const mergedBase =
     "bg-white rounded-xl p-3 shadow-card-hover transition-all duration-300";
   const mergedHover = hover ? "hover:card cursor-pointer" : "";
+
   return (
     <div className={`${mergedBase} ${mergedHover} ${className}`}>
-      {(title || subtitle) && (
-        <div className="p-6 border-b border-gray-200">
-          {title && (
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+      <div className="flex items-center justify-between min-h-[72px] px-2 py-3">
+        <div className="flex-1 flex flex-col justify-center">
+          {loading ? (
+            <div className="animate-pulse space-y-2">
+              <div className="h-6 bg-gray-200 rounded w-2/3" />
+              <div className="h-4 bg-gray-100 rounded w-1/3" />
+            </div>
+          ) : (
+            children
           )}
-          {subtitle && <p className="mt-1 text-sm text-gray-500">{subtitle}</p>}
         </div>
-      )}
-      <div className="p-6">{children}</div>
+        <div className="flex items-center ml-4">
+          {icon && React.isValidElement(icon)
+            ? React.cloneElement(icon as React.ReactElement, {
+                className: `${
+                  icon.props.className || ""
+                } ${iconClassName}`.trim(),
+              })
+            : icon}
+        </div>
+      </div>
     </div>
   );
 };
