@@ -74,7 +74,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Human resource */}
               <Route
                 path="/hr/designation"
                 element={
@@ -95,7 +94,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Attendance Routes */}
               <Route
                 path="/hr/attendance"
                 element={
@@ -116,7 +114,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* Salary Routes */}
               <Route
                 path="/hr/salary"
                 element={
@@ -127,7 +124,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              {/* HR Monthly Attendance */}
               <Route
                 path="/hr/monthly-attendance"
                 element={
@@ -138,7 +134,6 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              ;{/* HR Monthly Salary Sheet */}
               <Route
                 path="/hr/monthly-salary"
                 element={
@@ -149,7 +144,7 @@ function App() {
                   </ProtectedRoute>
                 }
               />
-              ;
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
