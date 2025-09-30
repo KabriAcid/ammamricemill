@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Filter, Plus, Trash2, Printer, CreditCard as Edit3, Eye, Calendar, Users, DollarSign, Download, RefreshCw, ArrowLeft, ChevronDown, MoreHorizontal, TrendingUp, Building2 } from 'lucide-react';
+import { Search, Filter, Plus, Trash2, Printer, CreditCard as Edit3, Eye, Calendar, Users, RefreshCw, ArrowLeft, ChevronDown, TrendingUp, Building2 } from 'lucide-react';
 
 interface SalaryRecord {
   id: number;
@@ -227,7 +227,7 @@ export const SalarySheet: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-[#AF792F] border-b border-gray-200">
+                <tr className="border-b border-gray-200">
                   <th className="px-6 py-4 text-left text-white">
                     <input
                       type="checkbox"
@@ -236,28 +236,28 @@ export const SalarySheet: React.FC = () => {
                       className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
                     />
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     SL#
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Date
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Year
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Month
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Description
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Total Employee
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Total Salary
                   </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-white uppercase tracking-wider">
+                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -318,10 +318,10 @@ export const SalarySheet: React.FC = () => {
                 ))}
               </tbody>
               <tfoot>
-                <tr className="bg-[#AF792F] border-t-2 border-gray-200">
-                  <td colSpan={6} className="px-6 py-4 text-sm font-bold text-white">Total</td>
-                  <td className="px-6 py-4 text-sm font-bold text-white">{totalEmployees}</td>
-                  <td className="px-6 py-4 text-sm font-bold text-white">{formatCurrency(totalAmount)}</td>
+                <tr className="border-t-2 border-gray-200">
+                  <td colSpan={6} className="text-gray-600 px-6 py-4 text-sm font-bold">Total</td>
+                  <td className="px-6 py-4 text-sm font-bold text-primary-500">{totalEmployees}</td>
+                  <td className="px-6 py-4 text-sm font-bold text-primary-500">{formatCurrency(totalAmount)}</td>
                   <td className="px-6 py-4"></td>
                 </tr>
               </tfoot>
