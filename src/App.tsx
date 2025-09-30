@@ -1,30 +1,3 @@
-import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
-import MonthlySalarySheet from "./pages/hr/MonthlySalarySheet";
-import SiloList from "./pages/settings/SiloList";
-import GodownList from "./pages/settings/GodownList";
-import GeneralSettings from "./pages/settings/GeneralSettings";
-              {/* HR Monthly Attendance */}
-              <Route
-                path="/hr/monthly-attendance"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MonthlyAttendance />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
-              {/* HR Monthly Salary Sheet */}
-              <Route
-                path="/hr/monthly-salary"
-                element={
-                  <ProtectedRoute>
-                    <Layout>
-                      <MonthlySalarySheet />
-                    </Layout>
-                  </ProtectedRoute>
-                }
-              />
 import {
   BrowserRouter as Router,
   Routes,
@@ -40,7 +13,7 @@ import { NotFound } from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Dashboard";
 import { Layout } from "./components/Layout";
 // settings
-import GeneralSettings  from "./pages/settings/GeneralSettings";
+import GeneralSettings from "./pages/settings/GeneralSettings";
 import SiloList from "./pages/settings/SiloList";
 import GodownList from "./pages/settings/GodownList";
 // hr
@@ -49,6 +22,8 @@ import EmployeeList from "./pages/hr/EmployeeList";
 import AttendanceList from "./pages/hr/AttendanceList";
 import { AttendanceSheet } from "./pages/hr/AttendanceSheet";
 import { SalarySheet } from "./pages/hr/SalarySheet";
+import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
+import MonthlySalarySheet from "./pages/hr/MonthlySalarySheet";
 
 function App() {
   return (
@@ -152,6 +127,29 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              {/* HR Monthly Attendance */}
+              <Route
+                path="/hr/monthly-attendance"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MonthlyAttendance />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              ;{/* HR Monthly Salary Sheet */}
+              <Route
+                path="/hr/monthly-salary"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <MonthlySalarySheet />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              ;
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Router>
