@@ -22,7 +22,7 @@ const GeneralSettings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [settings, setSettings] = useState<GeneralSettingsData>({
     siteName: 'Rice Mill Management System',
-    description: 'Complete ERP solution for rice mill operations',
+    description: 'Complete ERP solution for ricae mill operations',
     address: '123 Mill Street, Rice Valley, RV 12345',
     proprietor: 'John Doe',
     proprietorEmail: 'john@ricemill.com',
