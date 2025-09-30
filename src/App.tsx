@@ -1,3 +1,4 @@
+import { SalarySheet } from "./pages/SalarySheet";
 import React from "react";
 import {
   BrowserRouter as Router,
@@ -20,6 +21,8 @@ import { DesignationList } from "./pages/DesignationList";
 import { EmployeeList } from "./pages/EmployeeList";
 import { EmployeeView } from "./pages/EmployeeView";
 import { EmployeeLedger } from "./pages/EmployeeLedger";
+import { AttendanceList } from "./pages/AttendanceList";
+import { AttendanceSheet } from "./pages/AttendanceSheet";
 
 function App() {
   return (
@@ -107,6 +110,38 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <EmployeeLedger />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Attendance Routes */}
+              <Route
+                path="/hr/attendance"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AttendanceList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/hr/attendance/new"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <AttendanceSheet />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Salary Routes */}
+              <Route
+                path="/hr/salary"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <SalarySheet />
                     </Layout>
                   </ProtectedRoute>
                 }
