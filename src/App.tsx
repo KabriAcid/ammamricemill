@@ -16,6 +16,7 @@ import { Layout } from "./components/Layout";
 import { GeneralSettings } from "./pages/GeneralSettings";
 import { SiloList } from "./pages/SiloList";
 import { GodownList } from "./pages/GodownList";
+import { DesignationList } from "./pages/DesignationList";
 
 function App() {
   return (
@@ -62,6 +63,17 @@ function App() {
                   <ProtectedRoute>
                     <Layout>
                       <GodownList />
+                    </Layout>
+                  </ProtectedRoute>
+                }
+              />
+              {/* Human resource */}
+              <Route
+                path="/hr/designation"
+                element={
+                  <ProtectedRoute>
+                    <Layout>
+                      <DesignationList />
                     </Layout>
                   </ProtectedRoute>
                 }
