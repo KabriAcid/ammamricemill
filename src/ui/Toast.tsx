@@ -33,11 +33,7 @@ const iconMap = {
       strokeWidth="2"
       viewBox="0 0 24 24"
     >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M5 13l4 4L19 7"
-      />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
     </svg>
   ),
   error: (
@@ -95,12 +91,11 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`relative px-5 py-3 min-w-[240px] max-w-xs rounded-lg shadow-lg border-l-4 flex items-center gap-3 bg-white animate-fade-in-up transition-all duration-300 ${
+            className={`relative px-5 py-3 min-w-[240px] max-w-xs rounded-lg shadow-lg flex items-center gap-3 bg-white animate-fade-in-up transition-all duration-300 ${
               toastTypeStyles[toast.type || "info"]
             }`}
             style={{
-              boxShadow:
-                "0 4px 16px 0 rgba(31, 38, 135, 0.10)",
+              boxShadow: "0 4px 16px 0 rgba(31, 38, 135, 0.10)",
               backdropFilter: "blur(2px)",
             }}
           >
@@ -112,10 +107,24 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
             </span>
             <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 transition"
-              onClick={() => setToasts((prev) => prev.filter((t) => t.id !== toast.id))}
+              onClick={() =>
+                setToasts((prev) => prev.filter((t) => t.id !== toast.id))
+              }
               aria-label="Close toast"
             >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+              <svg
+                className="w-4 h-4"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
             </button>
           </div>
         ))}
