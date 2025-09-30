@@ -134,7 +134,7 @@ export const SiloList: React.FC = () => {
         />
       </div>
       {/* Table */}
-      <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200 scrollbar-hide">
+      <div className="overflow-x-auto bg-white rounded-lg shadow-card-hover border border-gray-200 scrollbar-hide">
         <table className="min-w-full text-sm">
           <thead className="bg-gray-50">
             <tr>
