@@ -151,21 +151,25 @@ const EmptybagPaymentList = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap gap-4">
-        <Card icon={<CreditCard className="w-6 h-6 text-primary-800" />}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+        <Card icon={<CreditCard className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">
+            <div className="text-xs uppercase text-gray-500 font-semibold">
               Total Payments
             </div>
-            <div className="text-2xl font-bold">{totalPayments}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalPayments}
+            </div>
           </div>
         </Card>
-        <Card icon={<CreditCard className="w-6 h-6 text-primary-800" />}>
+        <Card icon={<CreditCard className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">
+            <div className="text-xs uppercase text-gray-500 font-semibold">
               Total Quantity
             </div>
-            <div className="text-2xl font-bold">{totalQuantity}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalQuantity}
+            </div>
           </div>
         </Card>
       </div>
@@ -255,69 +259,83 @@ const EmptybagPaymentList = () => {
             editItem ? handleUpdate() : handleCreate();
           }}
         >
-          <div>
-            <label className="block font-medium">Date</label>
-            <input
-              className="form-input w-full"
-              type="date"
-              value={formData.date}
-              onChange={(e) =>
-                setFormData({ ...formData, date: e.target.value })
-              }
-              required
-              aria-label="Date"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date *
+              </label>
+              <input
+                className="form-input w-full"
+                type="date"
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+                required
+                aria-label="Date"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Invoice No *
+              </label>
+              <input
+                className="form-input w-full"
+                value={formData.invoiceNo}
+                onChange={(e) =>
+                  setFormData({ ...formData, invoiceNo: e.target.value })
+                }
+                required
+                aria-label="Invoice No"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Party *
+              </label>
+              <input
+                className="form-input w-full"
+                value={formData.party}
+                onChange={(e) =>
+                  setFormData({ ...formData, party: e.target.value })
+                }
+                required
+                aria-label="Party"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Items
+              </label>
+              <input
+                className="form-input w-full"
+                type="number"
+                value={formData.items}
+                onChange={(e) =>
+                  setFormData({ ...formData, items: Number(e.target.value) })
+                }
+                aria-label="Items"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity
+              </label>
+              <input
+                className="form-input w-full"
+                type="number"
+                value={formData.quantity}
+                onChange={(e) =>
+                  setFormData({ ...formData, quantity: Number(e.target.value) })
+                }
+                aria-label="Quantity"
+              />
+            </div>
           </div>
           <div>
-            <label className="block font-medium">Invoice No</label>
-            <input
-              className="form-input w-full"
-              value={formData.invoiceNo}
-              onChange={(e) =>
-                setFormData({ ...formData, invoiceNo: e.target.value })
-              }
-              required
-              aria-label="Invoice No"
-            />
-          </div>
-          <div>
-            <label className="block font-medium">Party</label>
-            <input
-              className="form-input w-full"
-              value={formData.party}
-              onChange={(e) =>
-                setFormData({ ...formData, party: e.target.value })
-              }
-              required
-              aria-label="Party"
-            />
-          </div>
-          <div>
-            <label className="block font-medium">Items</label>
-            <input
-              className="form-input w-full"
-              type="number"
-              value={formData.items}
-              onChange={(e) =>
-                setFormData({ ...formData, items: Number(e.target.value) })
-              }
-              aria-label="Items"
-            />
-          </div>
-          <div>
-            <label className="block font-medium">Quantity</label>
-            <input
-              className="form-input w-full"
-              type="number"
-              value={formData.quantity}
-              onChange={(e) =>
-                setFormData({ ...formData, quantity: Number(e.target.value) })
-              }
-              aria-label="Quantity"
-            />
-          </div>
-          <div>
-            <label className="block font-medium">Description</label>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Description
+            </label>
             <input
               className="form-input w-full"
               value={formData.description}
@@ -327,7 +345,17 @@ const EmptybagPaymentList = () => {
               aria-label="Description"
             />
           </div>
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2 pt-2">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => {
+                setModalOpen(false);
+                setEditItem(null);
+              }}
+            >
+              Cancel
+            </Button>
             <Button type="submit" variant="primary" loading={loading}>
               {editItem ? "Update" : "Create"}
             </Button>

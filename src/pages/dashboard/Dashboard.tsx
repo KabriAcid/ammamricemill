@@ -8,6 +8,7 @@ import {
   ShoppingCart,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
+import { Spinner } from "../../components/ui/Spinner";
 
 interface StatCard {
   title: string;
@@ -70,7 +71,7 @@ const Dashboard: React.FC = () => {
   }, [token]);
 
   if (loading) {
-    return <p className="text-gray-500">Loading dashboard...</p>;
+    return <p className="text-gray-500"><Spinner /></p>;
   }
 
   return (

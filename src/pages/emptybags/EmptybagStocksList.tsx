@@ -72,31 +72,43 @@ const EmptybagStocksList = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-wrap gap-4">
-        <Card icon={<Boxes className="w-6 h-6 text-primary-800" />}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+        <Card icon={<Boxes className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">Total Stocks</div>
-            <div className="text-2xl font-bold">{totalStocks}</div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Stocks
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalStocks}
+            </div>
           </div>
         </Card>
-        <Card icon={<Boxes className="w-6 h-6 text-primary-800" />}>
+        <Card icon={<Boxes className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">Total Opening</div>
-            <div className="text-2xl font-bold">{totalOpening}</div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Opening
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalOpening}
+            </div>
           </div>
         </Card>
-        <Card icon={<Boxes className="w-6 h-6 text-primary-800" />}>
+        <Card icon={<Boxes className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">
+            <div className="text-xs uppercase text-gray-500 font-semibold">
               Total Purchase
             </div>
-            <div className="text-2xl font-bold">{totalPurchase}</div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalPurchase}
+            </div>
           </div>
         </Card>
-        <Card icon={<Boxes className="w-6 h-6 text-primary-800" />}>
+        <Card icon={<Boxes className="w-8 h-8 text-primary-800" />}>
           <div>
-            <div className="text-xs uppercase text-gray-500">Total Sales</div>
-            <div className="text-2xl font-bold">{totalSales}</div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Sales
+            </div>
+            <div className="text-2xl font-bold text-gray-900">{totalSales}</div>
           </div>
         </Card>
       </div>
