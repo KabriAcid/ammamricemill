@@ -33,8 +33,8 @@ import Transactions from "./pages/accounts/Transactions";
 import PartyTypes from "./pages/party/PartyTypes";
 import PartyList from "./pages/party/PartyList";
 import PartyPayments from "./pages/party/PartyPayments";
-// import PartyDue from "./pages/party/PartyDue";
-// import PartyDebts from "./pages/party/PartyDebts";
+import PartyDue from "./pages/party/PartyDue";
+import PartyDebts from "./pages/party/PartyDebts";
 // import PartyLedger from "./pages/party/PartyLedger";
 // import PartyPaymentVoucher from "./pages/party/PartyPaymentVoucher";
 // import PartyDueLedger from "./pages/party/PartyDueLedger";
@@ -114,8 +114,8 @@ function App() {
                 <Route path="/party/party-types" element={<PartyTypes />} />
                 <Route path="/party/parties" element={<PartyList />} />
                 <Route path="/party/payments" element={<PartyPayments />} />
-                {/* <Route path="/party/due" element={<PartyDue />} /> */}
-                {/* <Route path="/party/debts" element={<PartyDebts />} /> */}
+                <Route path="/party/due" element={<PartyDue />} />
+                <Route path="/party/debts" element={<PartyDebts />} />
                 {/* <Route path="/party/ledger" element={<PartyLedger />} /> */}
                 {/* <Route path="/party/payments/:id" element={<PartyPaymentVoucher />} /> */}
                 {/* <Route path="/party/due/ledger" element={<PartyDueLedger />} /> */}

@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import {
   Plus,
-  CreditCard as Edit,
   Trash2,
   Printer,
   Warehouse,

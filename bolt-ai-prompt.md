@@ -1,10 +1,7 @@
 # Amam Rice Mill (Admin Dashboard) — Bolt AI Prompt (Final, Modular, Compact)
 
-**IMPORTANT: For this phase, focus ONLY on generating the sidebar, navbar (topbar), and main content layout. Do NOT generate any page/module internals or any irrelevant pages, forms, or business logic. The output should be a modular, maintainable layout shell with a responsive sidebar, a top navigation bar, and a main content area that renders routed pages. Sidebar and navbar must use shared components, support config-driven navigation, and be visually consistent with the premium UI/UX guidelines below.**
-
 ## 1. Global Rules & Tech Stack
 
-- **Tech Stack:** React, TypeScript, Vite, Tailwind CSS (with `dark:` variants), Lucide icons, Chart.js.
 - **Preserve v1:** All v1 fields, columns, and actions are compulsory; do not remove or rename any required element. v2+ can add optional enhancements.
 - **DRY & Maintainable:** Use only shared components/utilities for all UI/UX. All code must be DRY, maintainable, and production-ready.
 - **Premium UI/UX:** All pages must use shared UI components (Card, Button, Table, Modal, Tabs, FilterBar, etc.) for every action, stat, and layout. No custom styles for buttons, tables, or modals—always use the shared component and its props (icon, variant, loading, etc.).
