@@ -1,75 +1,77 @@
-import React from 'react';
-import { BarChart3, Users, Package, TrendingUp, DollarSign, Factory, Warehouse, ShoppingCart } from 'lucide-react';
-import { Card } from '../../components/ui/Card';
+import React, { useEffect, useState } from "react";
+import {
+  BarChart3,
+  Users,
+  Package,
+  TrendingUp,
+  Factory,
+  ShoppingCart,
+} from "lucide-react";
+import { Card } from "../../components/ui/Card";
 
 interface StatCard {
   title: string;
   value: string;
   change: string;
-  changeType: 'positive' | 'negative';
+  changeType: "positive" | "negative";
   icon: React.ReactNode;
   color: string;
 }
 
-const Dashboard: React.FC = () => {
-  const stats: StatCard[] = [
-    {
-      title: 'Total Revenue',
-      value: '₹2,45,000',
-      change: '+12.5%',
-      changeType: 'positive',
-      icon: <DollarSign className="w-6 h-6" />,
-      color: 'text-green-600'
-    },
-    {
-      title: 'Total Employees',
-      value: '45',
-      change: '+2',
-      changeType: 'positive',
-      icon: <Users className="w-6 h-6" />,
-      color: 'text-blue-600'
-    },
-    {
-      title: 'Products in Stock',
-      value: '1,234',
-      change: '-5.2%',
-      changeType: 'negative',
-      icon: <Package className="w-6 h-6" />,
-      color: 'text-purple-600'
-    },
-    {
-      title: 'Active Productions',
-      value: '8',
-      change: '+3',
-      changeType: 'positive',
-      icon: <Factory className="w-6 h-6" />,
-      color: 'text-orange-600'
-    },
-    {
-      title: 'Monthly Sales',
-      value: '₹1,85,000',
-      change: '+8.1%',
-      changeType: 'positive',
-      icon: <ShoppingCart className="w-6 h-6" />,
-      color: 'text-primary-600'
-    },
-    {
-      title: 'Warehouse Capacity',
-      value: '85%',
-      change: '+12%',
-      changeType: 'positive',
-      icon: <Warehouse className="w-6 h-6" />,
-      color: 'text-secondary-600'
-    }
-  ];
+interface Activity {
+  id: number;
+  action: string;
+  time: string;
+  type: string;
+}
 
-  const recentActivities = [
-    { id: 1, action: 'New purchase order created', time: '2 hours ago', type: 'purchase' },
-    { id: 2, action: 'Production batch completed', time: '4 hours ago', type: 'production' },
-    { id: 3, action: 'Employee attendance marked', time: '6 hours ago', type: 'hr' },
-    { id: 4, action: 'Stock updated for Rice Premium', time: '8 hours ago', type: 'stock' },
-    { id: 5, action: 'Payment received from Party ABC', time: '1 day ago', type: 'payment' }
-  ];
+const Dashboard: React.FC = () => {
+  const [stats, setStats] = useState<StatCard[]>([]);
+  const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    const fetchDashboard = async () => {
+      try {
+        const statsRes = await fetch(
+          "http://localhost:5000/api/dashboard/stats",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const statsJson = await statsRes.json();
+
+        const activitiesRes = await fetch(
+          "http://localhost:5000/api/dashboard/activities",
+          {
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const activitiesJson = await activitiesRes.json();
+
+        setStats(statsJson?.data ?? []);
+        setRecentActivities(activitiesJson?.data ?? []);
+      } catch (err) {
+        console.error("Dashboard fetch failed:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboard();
+  }, [token]);
+
+  if (loading) {
+    return <p className="text-gray-500">Loading dashboard...</p>;
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -99,17 +101,23 @@ const Dashboard: React.FC = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
-                <div className={stat.color}>
-                  {stat.icon}
-                </div>
+                <div className={stat.color}>{stat.icon}</div>
               </div>
               <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-500">{stat.title}</p>
+                <p className="text-sm font-medium text-gray-500">
+                  {stat.title}
+                </p>
                 <div className="flex items-center">
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
-                  <span className={`ml-2 text-sm font-medium ${
-                    stat.changeType === 'positive' ? 'text-green-600' : 'text-red-600'
-                  }`}>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </p>
+                  <span
+                    className={`ml-2 text-sm font-medium ${
+                      stat.changeType === "positive"
+                        ? "text-green-600"
+                        : "text-red-600"
+                    }`}
+                  >
                     {stat.change}
                   </span>
                 </div>
@@ -164,7 +172,9 @@ const Dashboard: React.FC = () => {
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Chart visualization would go here</p>
+              <p className="text-sm text-gray-500">
+                Chart visualization would go here
+              </p>
             </div>
           </div>
         </Card>
@@ -173,7 +183,9 @@ const Dashboard: React.FC = () => {
           <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
             <div className="text-center">
               <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">Production chart would go here</p>
+              <p className="text-sm text-gray-500">
+                Production chart would go here
+              </p>
             </div>
           </div>
         </Card>
