@@ -63,7 +63,11 @@ const PartyTypes = () => {
       .then((res) => res.json())
       .then((updated) =>
         setData((prev) =>
-          prev.map((row) => (row.id === String(updated.id) ? { ...updated, id: String(updated.id) } : row))
+          prev.map((row) =>
+            row.id === String(updated.id)
+              ? { ...updated, id: String(updated.id) }
+              : row
+          )
         )
       )
       .finally(() => {

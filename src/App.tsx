@@ -31,6 +31,41 @@ import HeadBank from "./pages/accounts/HeadBank";
 import HeadOthers from "./pages/accounts/HeadOthers";
 import Transactions from "./pages/accounts/Transactions";
 import PartyTypes from "./pages/party/PartyTypes";
+import PartyList from "./pages/party/PartyList";
+import PartyPayments from "./pages/party/PartyPayments";
+// import PartyDue from "./pages/party/PartyDue";
+// import PartyDebts from "./pages/party/PartyDebts";
+// import PartyLedger from "./pages/party/PartyLedger";
+// import PartyPaymentVoucher from "./pages/party/PartyPaymentVoucher";
+// import PartyDueLedger from "./pages/party/PartyDueLedger";
+// import PartyDebtsLedger from "./pages/party/PartyDebtsLedger";
+// import CategoryList from "./pages/products/CategoryList";
+// import ProductList from "./pages/products/ProductList";
+// import EmptybagPurchase from "./pages/emptybags/EmptybagPurchase";
+// import EmptybagSales from "./pages/emptybags/EmptybagSales";
+// import EmptybagReceive from "./pages/emptybags/EmptybagReceive";
+// import EmptybagPayment from "./pages/emptybags/EmptybagPayment";
+// import EmptybagStocks from "./pages/emptybags/EmptybagStocks";
+// import PurchaseList from "./pages/purchase/PurchaseList";
+// import PurchaseLedger from "./pages/purchase/PurchaseLedger";
+// import RicePurchase from "./pages/purchase/RicePurchase";
+// import RicePurchaseLedger from "./pages/purchase/RicePurchaseLedger";
+// import SalesList from "./pages/sales/SalesList";
+// import SalesLedger from "./pages/sales/SalesLedger";
+// import ProductionOrder from "./pages/production/ProductionOrder";
+// import ProductionDetails from "./pages/production/ProductionDetails";
+// import MainStocks from "./pages/stocks/MainStocks";
+// import GodownStocks from "./pages/stocks/GodownStocks";
+// import StockRegister from "./pages/stocks/StockRegister";
+// import AddStocks from "./pages/stocks/AddStocks";
+// import ProductionStocksList from "./pages/stocks/ProductionStocksList";
+// import ProductionStocksDetails from "./pages/stocks/ProductionStocksDetails";
+// import EmptyBagStocks from "./pages/stocks/EmptyBagStocks";
+// import DailyReport from "./pages/reporting/DailyReport";
+// import FinancialStatement from "./pages/reporting/FinancialStatement";
+// import SMSTemplates from "./pages/sms/SMSTemplates";
+// import SendSMS from "./pages/sms/SendSMS";
+// import DatabaseBackup from "./pages/backup/DatabaseBackup";
 
 function App() {
   return (
@@ -77,6 +112,41 @@ function App() {
                   element={<Transactions />}
                 />
                 <Route path="/party/party-types" element={<PartyTypes />} />
+                <Route path="/party/parties" element={<PartyList />} />
+                <Route path="/party/payments" element={<PartyPayments />} />
+                {/* <Route path="/party/due" element={<PartyDue />} /> */}
+                {/* <Route path="/party/debts" element={<PartyDebts />} /> */}
+                {/* <Route path="/party/ledger" element={<PartyLedger />} /> */}
+                {/* <Route path="/party/payments/:id" element={<PartyPaymentVoucher />} /> */}
+                {/* <Route path="/party/due/ledger" element={<PartyDueLedger />} /> */}
+                {/* <Route path="/party/debts/ledger" element={<PartyDebtsLedger />} /> */}
+                {/* <Route path="/category" element={<CategoryList />} /> */}
+                {/* <Route path="/products" element={<ProductList />} /> */}
+                {/* <Route path="/empty/emptybag-purchase" element={<EmptybagPurchase />} /> */}
+                {/* <Route path="/empty/emptybag-sales" element={<EmptybagSales />} /> */}
+                {/* <Route path="/empty/emptybag-receive" element={<EmptybagReceive />} /> */}
+                {/* <Route path="/empty/emptybag-payment" element={<EmptybagPayment />} /> */}
+                {/* <Route path="/empty/emptybag-stocks" element={<EmptybagStocks />} /> */}
+                {/* <Route path="/purchase/purchases" element={<PurchaseList />} /> */}
+                {/* <Route path="/purchase/purchase/ledger" element={<PurchaseLedger />} /> */}
+                {/* <Route path="/purchase/rice-purchase" element={<RicePurchase />} /> */}
+                {/* <Route path="/purchase/ricepurchase/ledger" element={<RicePurchaseLedger />} /> */}
+                {/* <Route path="/sales" element={<SalesList />} /> */}
+                {/* <Route path="/sale/ledger" element={<SalesLedger />} /> */}
+                {/* <Route path="/productions" element={<ProductionOrder />} /> */}
+                {/* <Route path="/production/details" element={<ProductionDetails />} /> */}
+                {/* <Route path="/stocks" element={<MainStocks />} /> */}
+                {/* <Route path="/stocks-godown" element={<GodownStocks />} /> */}
+                {/* <Route path="/stocks/details" element={<StockRegister />} /> */}
+                {/* <Route path="/stocks/addstocks" element={<AddStocks />} /> */}
+                {/* <Route path="/stocks/production-stocks" element={<ProductionStocksList />} /> */}
+                {/* <Route path="/stocks/production-stock/details" element={<ProductionStocksDetails />} /> */}
+                {/* <Route path="/stocks/emptybag-stocks" element={<EmptyBagStocks />} /> */}
+                {/* <Route path="/dailyreport" element={<DailyReport />} /> */}
+                {/* <Route path="/financial-statement" element={<FinancialStatement />} /> */}
+                {/* <Route path="/sms-templates" element={<SMSTemplates />} /> */}
+                {/* <Route path="/sendsms" element={<SendSMS />} /> */}
+                {/* <Route path="/backup" element={<DatabaseBackup />} /> */}
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
