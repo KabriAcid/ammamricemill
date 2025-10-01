@@ -1,10 +1,10 @@
 import React from 'react';
-import { Video as LucideIcon } from 'lucide-react';
+import { Video as LucideIcon, Icon } from 'lucide-react';
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
-  icon?: LucideIcon;
+  icon?: "LucideIcon";
   iconPosition?: 'left' | 'right';
   loading?: boolean;
   children: React.ReactNode;

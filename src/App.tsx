@@ -7,7 +7,7 @@ import {
 import { ToastProvider } from "./components/ui/Toast";
 import { AuthProvider } from "./contexts/AuthContext";
 import { UIProvider } from "./contexts/UIContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute } from "./components/layout/ProtectedRoute";
 import { Login } from "./pages/auth/Login";
 import { NotFound } from "./pages/NotFound";
 import Dashboard from "./pages/dashboard/Dashboard";
@@ -57,10 +57,7 @@ function App() {
                   path="/hr/attendance/monthly"
                   element={<MonthlyAttendance />}
                 />
-                <Route
-                  path="/hr/salary"
-                  element={<MonthlySalarySheet />}  
-                />
+                <Route path="/hr/salary" element={<MonthlySalarySheet />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>

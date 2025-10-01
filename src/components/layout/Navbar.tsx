@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Menu, User, LogOut, ChevronDown, Home, Lock } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext";
-import { useUI } from "../contexts/UIContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { useUI } from "../../contexts/UIContext";
 import { useNavigate } from "react-router-dom";
 
 export const Navbar: React.FC = () => {
