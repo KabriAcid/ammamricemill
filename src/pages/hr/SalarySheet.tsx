@@ -1,23 +1,20 @@
-import React, { useState } from "react";
 import {
-  Search,
-  Filter,
   Plus,
   Trash2,
   Printer,
-  CreditCard as Edit3,
-  Eye,
   Calendar,
   Users,
-  RefreshCw,
-  ArrowLeft,
-  ChevronDown,
   TrendingUp,
-  Building2,
 } from "lucide-react";
+import React, { useState } from "react";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Modal } from "../../components/ui/Modal";
 
 interface SalaryRecord {
-  id: number;
+  id: string;
   date: string;
   year: number;
   month: string;
@@ -28,8 +25,8 @@ interface SalaryRecord {
 
 const mockSalaryData: SalaryRecord[] = [
   {
-    id: 1,
-    date: "29-09-2025",
+    id: "1",
+    date: "2025-09-29",
     year: 2025,
     month: "September",
     description: "Salary Payment for the Month of September",
@@ -37,8 +34,8 @@ const mockSalaryData: SalaryRecord[] = [
     totalSalary: 5466900,
   },
   {
-    id: 2,
-    date: "29-08-2025",
+    id: "2",
+    date: "2025-08-29",
     year: 2025,
     month: "August",
     description: "Salary Payment for the Month of August",
@@ -47,358 +44,296 @@ const mockSalaryData: SalaryRecord[] = [
   },
 ];
 
-export const SalarySheet: React.FC = () => {
-  const [selectedRecords, setSelectedRecords] = useState<number[]>([]);
-  const [showEntries, setShowEntries] = useState(50);
-  const [selectedYear, setSelectedYear] = useState(2025);
-  const [selectedMonth, setSelectedMonth] = useState("September");
+const years = [2025, 2024, 2023];
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
-  const totalAmount = mockSalaryData.reduce(
-    (sum, record) => sum + record.totalSalary,
+const SalarySheet: React.FC = () => {
+  const [salaryData, setSalaryData] = useState<SalaryRecord[]>(mockSalaryData);
+  const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [yearFilter, setYearFilter] = useState<string>("");
+  const [monthFilter, setMonthFilter] = useState<string>("");
+  const [showModal, setShowModal] = useState(false);
+  const [editingRecord, setEditingRecord] = useState<SalaryRecord | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  const filteredData = salaryData.filter((record) => {
+    const matchesSearch =
+      record.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      record.month.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesYear = !yearFilter || record.year.toString() === yearFilter;
+    const matchesMonth = !monthFilter || record.month === monthFilter;
+    return matchesSearch && matchesYear && matchesMonth;
+  });
+
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+  const totalAmount = filteredData.reduce((sum, r) => sum + r.totalSalary, 0);
+  const totalEmployees = filteredData.reduce(
+    (sum, r) => sum + r.totalEmployees,
     0
   );
-  const totalEmployees = mockSalaryData.reduce(
-    (sum, record) => sum + record.totalEmployees,
-    0
-  );
 
-  const handleSelectAll = () => {
-    if (selectedRecords.length === mockSalaryData.length) {
-      setSelectedRecords([]);
-    } else {
-      setSelectedRecords(mockSalaryData.map((record) => record.id));
+  const columns = [
+    {
+      key: "id",
+      label: "#",
+      width: "60px",
+      render: (_: any, __: SalaryRecord) => {
+        // Find the index of the current record in the filteredData array
+        const idx = filteredData.findIndex((r) => r.id === __.id);
+        return idx + 1;
+      },
+    },
+    {
+      key: "date",
+      label: "Date",
+      render: (value: string) => new Date(value).toLocaleDateString(),
+    },
+    { key: "year", label: "Year" },
+    {
+      key: "month",
+      label: "Month",
+      render: (value: string) => (
+        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+          {value}
+        </span>
+      ),
+    },
+    { key: "description", label: "Description" },
+    {
+      key: "totalEmployees",
+      label: "Total Employee",
+      render: (value: number) => (
+        <div className="flex items-center gap-2">
+          <Users className="w-4 h-4 text-gray-400" />
+          <span className="font-medium">{value}</span>
+        </div>
+      ),
+    },
+    {
+      key: "totalSalary",
+      label: "Total Salary",
+      render: (value: number) => (
+        <span className="font-semibold text-gray-900">
+          {value.toLocaleString()}
+        </span>
+      ),
+    },
+  ];
+
+  const handleEdit = (record: SalaryRecord) => {
+    setEditingRecord(record);
+    setShowModal(true);
+  };
+
+  const handleDelete = async (ids: string[]) => {
+    if (window.confirm(`Delete ${ids.length} record(s)?`)) {
+      setLoading(true);
+      setTimeout(() => {
+        setSalaryData((prev) => prev.filter((r) => !ids.includes(r.id)));
+        setSelectedRecords([]);
+        setLoading(false);
+      }, 500);
     }
   };
 
-  const handleSelectRecord = (id: number) => {
-    setSelectedRecords((prev) =>
-      prev.includes(id)
-        ? prev.filter((recordId) => recordId !== id)
-        : [...prev, id]
-    );
-  };
-
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-NG", {
-      style: "currency",
-      currency: "NGN",
-      minimumFractionDigits: 0,
-    }).format(amount);
+  const handleNew = () => {
+    setEditingRecord(null);
+    setShowModal(true);
   };
 
   return (
-    <div className="min-h-screen">
-      <div className="mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header Section */}
-        <div className="mb-8">
-          {/* Breadcrumb */}
-          <nav className="flex items-center text-sm text-gray-500 mb-4">
-            <button className="hover:text-primary-700 transition-colors flex items-center gap-1">
-              <Building2 className="w-4 h-4 text-primary-500" />
-              Dashboard
-            </button>
-            <span className="mx-2">/</span>
-            <span className="text-primary-600 font-medium">Salary</span>
-          </nav>
-
-          {/* Title and Actions */}
-          <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Monthly Salary Sheet
-              </h1>
-              <p className="text-gray-600">
-                Manage and track monthly salary payments for all employees
-              </p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-primary-500 text-primary-700 rounded-xl font-medium hover:bg-primary-50 hover:border-primary-600 transition-all duration-200">
-                <ArrowLeft className="w-4 h-4 text-primary-500" />
-                Back
-              </button>
-              <button className="inline-flex items-center gap-2 px-4 py-2.5 border border-primary-500 text-primary-700 rounded-xl font-medium hover:bg-primary-50 hover:border-primary-600 transition-all duration-200">
-                <RefreshCw className="w-4 h-4 text-primary-500" />
-                Refresh
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">
-                  Total Records
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {mockSalaryData.length}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-primary-500" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">
-                  Total Employees
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {totalEmployees}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-secondary-50 rounded-xl flex items-center justify-center">
-                <Users className="w-6 h-6 text-secondary-500" />
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">
-                  Total Amount
-                </p>
-                <p className="text-3xl font-bold text-gray-900">
-                  {formatCurrency(totalAmount)}
-                </p>
-              </div>
-              <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-primary-500" />
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Main Content Card */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
-          {/* Filters and Controls */}
-          <div className="p-6 border-b border-gray-100 bg-white">
-            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-              {/* Left side controls */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium text-gray-700">
-                    Show
-                  </span>
-                  <div className="relative">
-                    <select
-                      value={showEntries}
-                      onChange={(e) => setShowEntries(Number(e.target.value))}
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    >
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                      <option value={50}>50</option>
-                      <option value={100}>100</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-                  <span className="text-sm font-medium text-gray-700">
-                    entries
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <div className="relative">
-                    <select
-                      value={selectedYear}
-                      onChange={(e) => setSelectedYear(Number(e.target.value))}
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    >
-                      <option value={2025}>2025</option>
-                      <option value={2024}>2024</option>
-                      <option value={2023}>2023</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-
-                  <div className="relative">
-                    <select
-                      value={selectedMonth}
-                      onChange={(e) => setSelectedMonth(e.target.value)}
-                      className="appearance-none bg-white border border-gray-300 rounded-lg px-4 py-2 pr-8 text-sm font-medium text-gray-700 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                    >
-                      <option value="September">September</option>
-                      <option value="August">August</option>
-                      <option value="July">July</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
-
-                  <button className="inline-flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition-all duration-200 shadow-sm">
-                    <Search className="w-4 h-4" />
-                    Search
-                  </button>
-                  <button className="inline-flex items-center gap-2 border border-primary-500 text-primary-700 px-4 py-2 rounded-lg font-medium hover:bg-primary-50 hover:border-primary-600 transition-all duration-200">
-                    <Filter className="w-4 h-4" />
-                    Clear
-                  </button>
-                </div>
-              </div>
-
-              {/* Right side actions */}
-              <div className="flex items-center gap-3">
-                <button className="inline-flex items-center gap-2 bg-primary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-600 transition-all duration-200 shadow-sm">
-                  <Plus className="w-4 h-4" />
-                  New
-                </button>
-                <button className="inline-flex items-center gap-2 bg-primary-100 text-primary-700 border border-primary-500 px-4 py-2 rounded-lg font-medium hover:bg-primary-200 transition-all duration-200">
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
-                <button className="inline-flex items-center gap-2 bg-secondary-500 text-white px-4 py-2 rounded-lg font-medium hover:bg-secondary-600 transition-all duration-200 shadow-sm">
-                  <Printer className="w-4 h-4" />
-                  Print
-                </button>
-              </div>
-            </div>
-          </div>
-
-          {/* Table */}
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="px-6 py-4 text-left text-white">
-                    <input
-                      type="checkbox"
-                      checked={selectedRecords.length === mockSalaryData.length}
-                      onChange={handleSelectAll}
-                      className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
-                    />
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    SL#
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Date
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Year
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Month
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Description
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Total Employee
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Total Salary
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {mockSalaryData.map((record, index) => (
-                  <tr
-                    key={record.id}
-                    className="hover:bg-gradient-to-r hover:from-blue-50/50 hover:to-indigo-50/30 transition-all duration-200"
-                  >
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selectedRecords.includes(record.id)}
-                        onChange={() => handleSelectRecord(record.id)}
-                        className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2"
-                      />
-                    </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
-                      {index + 1}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 font-medium">
-                      {record.date}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      {record.year}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
-                        {record.month}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 max-w-xs">
-                      {record.description}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <Users className="w-4 h-4 text-gray-400" />
-                        <span className="font-medium">
-                          {record.totalEmployees}
-                        </span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                      {formatCurrency(record.totalSalary)}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <button className="inline-flex items-center gap-1 bg-primary-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-primary-600 transition-all duration-200 shadow-sm">
-                          <Edit3 className="w-3 h-3" />
-                          Edit
-                        </button>
-                        <button className="inline-flex items-center gap-1 bg-secondary-500 text-white px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-secondary-600 transition-all duration-200 shadow-sm">
-                          <Eye className="w-3 h-3" />
-                          View
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-200">
-                  <td
-                    colSpan={6}
-                    className="text-gray-600 px-6 py-4 text-sm font-bold"
-                  >
-                    Total
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-primary-500">
-                    {totalEmployees}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-primary-500">
-                    {formatCurrency(totalAmount)}
-                  </td>
-                  <td className="px-6 py-4"></td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-
-          {/* Pagination */}
-          <div className="px-6 py-4 border-t border-gray-100 bg-white">
-            <div className="flex items-center justify-between">
-              <div className="text-sm text-gray-700">
-                Showing <span className="font-medium">1</span> to{" "}
-                <span className="font-medium">{mockSalaryData.length}</span> of{" "}
-                <span className="font-medium">{mockSalaryData.length}</span>{" "}
-                results
-              </div>
-              <div className="flex items-center gap-2">
-                <button className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                  Previous
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-white bg-indigo-600 border border-indigo-600 rounded-lg hover:bg-indigo-700 transition-colors">
-                  1
-                </button>
-                <button className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-700 transition-colors">
-                  Next
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
+    <div className="animate-fade-in">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Monthly Salary Sheet
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Manage and track monthly salary payments for all employees.
+        </p>
       </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card icon={<Calendar size={32} />} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">
+              {filteredData.length}
+            </p>
+            <p className="text-sm text-gray-500">Total Records</p>
+          </div>
+        </Card>
+        <Card icon={<Users size={32} />} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">{totalEmployees}</p>
+            <p className="text-sm text-gray-500">Total Employees</p>
+          </div>
+        </Card>
+        <Card icon={<TrendingUp size={32} />} hover>
+          <div>
+            <p className="text-3xl font-bold text-gray-700">
+              {totalAmount.toLocaleString()}
+            </p>
+            <p className="text-sm text-gray-500">Total Amount</p>
+          </div>
+        </Card>
+      </div>
+
+      <Card>
+        <FilterBar
+          onSearch={setSearchQuery}
+          placeholder="Search by description or month..."
+        >
+          <div className="flex items-center space-x-2">
+            <select
+              value={yearFilter}
+              onChange={(e) => setYearFilter(e.target.value)}
+              className="input-base"
+            >
+              <option value="">All Years</option>
+              {years.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <select
+              value={monthFilter}
+              onChange={(e) => setMonthFilter(e.target.value)}
+              className="input-base"
+            >
+              <option value="">All Months</option>
+              {months.map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <Button onClick={handleNew} icon={Plus} size="sm">
+              New
+            </Button>
+            {selectedRecords.length > 0 && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={() => handleDelete(selectedRecords)}
+                loading={loading}
+              >
+                Delete ({selectedRecords.length})
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Printer}
+              onClick={() => window.print()}
+            >
+              Print
+            </Button>
+          </div>
+        </FilterBar>
+
+        <Table
+          data={paginatedData}
+          columns={columns}
+          loading={loading}
+          pagination={{
+            currentPage,
+            totalPages,
+            pageSize,
+            totalItems: filteredData.length,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+          }}
+          selection={{
+            selectedItems: selectedRecords,
+            onSelectionChange: setSelectedRecords,
+          }}
+          actions={{
+            onEdit: handleEdit,
+            onView: (record) => alert(`View record ${record.id}`),
+          }}
+        />
+      </Card>
+
+      <Modal
+        isOpen={showModal}
+        onClose={() => setShowModal(false)}
+        title={editingRecord ? "Edit Salary Sheet" : "New Salary Sheet"}
+        size="lg"
+      >
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date *
+              </label>
+              <input type="date" className="input-base" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Year *
+              </label>
+              <select className="input-base" required>
+                {years.map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Month *
+              </label>
+              <select className="input-base" required>
+                {months.map((month) => (
+                  <option key={month} value={month}>
+                    {month}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <textarea className="input-base" rows={2} />
+          </div>
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button variant="outline" onClick={() => setShowModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={() => setShowModal(false)} loading={loading}>
+              {editingRecord ? "Update" : "Save"}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 };
+
+export default SalarySheet;
