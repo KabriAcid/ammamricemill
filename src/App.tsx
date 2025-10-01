@@ -52,8 +52,9 @@ import PurchaseDetails from "./pages/purchase/PurchaseDetails";
 import PurchaseLedger from "./pages/purchase/PurchaseLedger";
 import RicePurchase from "./pages/purchase/RicePurchase";
 import RicePurchaseLedger from "./pages/purchase/RicePurchaseLedger";
-// import SalesList from "./pages/sales/SalesList";
-// import SalesLedger from "./pages/sales/SalesLedger";
+import SalesList from "./pages/sales/SalesList";
+import SaleDetails from "./pages/sales/SaleDetails";
+import SalesLedger from "./pages/sales/SalesLedger";
 // import ProductionOrder from "./pages/production/ProductionOrder";
 // import ProductionDetails from "./pages/production/ProductionDetails";
 // import MainStocks from "./pages/stocks/MainStocks";
@@ -147,10 +148,17 @@ function App() {
                   element={<PurchaseDetails />}
                 />
                 <Route path="/purchases/ledger" element={<PurchaseLedger />} />
-                <Route path="/purchases/rice-purchase" element={<RicePurchase />} />
-                <Route path="/purchases/rice-purchase/ledger" element={<RicePurchaseLedger />} />
-                {/* <Route path="/sales" element={<SalesList />} /> */}
-                {/* <Route path="/sale/ledger" element={<SalesLedger />} /> */}
+                <Route
+                  path="/purchases/rice-purchase"
+                  element={<RicePurchase />}
+                />
+                <Route
+                  path="/purchases/rice-purchase/ledger"
+                  element={<RicePurchaseLedger />}
+                />
+                <Route path="/sales" element={<SalesList />} />
+                <Route path="/sales/:id" element={<SaleDetails />} />
+                <Route path="/sales/ledger" element={<SalesLedger />} />
                 {/* <Route path="/productions" element={<ProductionOrder />} /> */}
                 {/* <Route path="/production/details" element={<ProductionDetails />} /> */}
                 {/* <Route path="/stocks" element={<MainStocks />} /> */}

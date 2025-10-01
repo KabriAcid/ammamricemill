@@ -249,13 +249,6 @@ All modals must use the shared modal props pattern and close on 'esc'.
 - Modal: name (string), capacity (number), description (string), Save/Update, Cancel.
 - Show loading/empty states.
 
-## Sales Ledger Page
-
-Table columns (Invoices): #, Date, Party, Description, Amount.
-Table columns (Receives): #, Date, Party, Description, Amount.
-Filter/search bar: date range, search, print.
-Show totals at bottom of each table.
-
 - If summary/stat cards (e.g., total silos, total capacity) would improve UX, include them at the top.
 - All fields, columns, and actions are compulsory; do not remove or rename.
 - Layout, modal, and table can be improved for a premium feel (cards, transitions, skeletons), but core functionality must remain.
@@ -313,6 +306,17 @@ Show totals at bottom of each table.
 - Filter/search bar: date range, search, print.
 - Show totals at bottom of each table.
 - The main ledger view is a page. The View action navigates to `/transactions/:id` (not a modal). New and Edit actions use responsive modals.
+
+## Sales Ledger Page
+
+Table columns (Invoices): #, Date, Party, Description, Amount.
+Table columns (Receives): #, Date, Party, Description, Amount.
+Filter/search bar: date range, search, print.
+Show totals at bottom of each table.
+
+### Sales Ledger
+
+- Table (Invoices): #, Date, Party, Description, Amount. Table (Receives): #, Date, Party, Description, Amount. Filter/search: date range, search, print. Show totals at bottom.
 
 ## Expense Head List Page
 
