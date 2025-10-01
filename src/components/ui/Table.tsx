@@ -1,9 +1,16 @@
-import React from 'react';
-import { ChevronLeft, ChevronRight, CreditCard as Edit, Trash2, Eye, MoreHorizontal } from 'lucide-react';
-import { TableProps } from '../../types';
-import { Button } from './Button';
-import { Spinner } from './Spinner';
-import { EmptyState } from './EmptyState';
+import React from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CreditCard as Edit,
+  Trash2,
+  Eye,
+  MoreHorizontal,
+} from "lucide-react";
+import { TableProps } from "../../types/index";
+import { Button } from "./Button";
+import { Spinner } from "./Spinner";
+import { EmptyState } from "./EmptyState";
 
 export function Table<T extends { id: string }>({
   data,
@@ -11,11 +18,11 @@ export function Table<T extends { id: string }>({
   loading = false,
   pagination,
   selection,
-  actions
+  actions,
 }: TableProps<T>) {
   const handleSelectAll = (checked: boolean) => {
     if (selection) {
-      const newSelection = checked ? data.map(item => item.id) : [];
+      const newSelection = checked ? data.map((item) => item.id) : [];
       selection.onSelectionChange(newSelection);
     }
   };
@@ -25,18 +32,24 @@ export function Table<T extends { id: string }>({
       const currentSelection = selection.selectedItems;
       const newSelection = checked
         ? [...currentSelection, itemId]
-        : currentSelection.filter(id => id !== itemId);
+        : currentSelection.filter((id) => id !== itemId);
       selection.onSelectionChange(newSelection);
     }
   };
 
-  const isAllSelected = selection && selection.selectedItems.length === data.length && data.length > 0;
-  const isIndeterminate = selection && selection.selectedItems.length > 0 && selection.selectedItems.length < data.length;
+  const isAllSelected =
+    selection &&
+    selection.selectedItems.length === data.length &&
+    data.length > 0;
+  const isIndeterminate =
+    selection &&
+    selection.selectedItems.length > 0 &&
+    selection.selectedItems.length < data.length;
 
   if (loading) {
     return (
       <div className="flex justify-center items-center py-8">
-        <Spinner size="lg" />
+        <Spinner size={40} />
       </div>
     );
   }
@@ -84,17 +97,18 @@ export function Table<T extends { id: string }>({
                     <input
                       type="checkbox"
                       checked={selection.selectedItems.includes(item.id)}
-                      onChange={(e) => handleSelectItem(item.id, e.target.checked)}
+                      onChange={(e) =>
+                        handleSelectItem(item.id, e.target.checked)
+                      }
                       className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
                     />
                   </td>
                 )}
                 {columns.map((column) => (
                   <td key={column.key} className="table-cell">
-                    {column.render 
+                    {column.render
                       ? column.render((item as any)[column.key], item)
-                      : (item as any)[column.key]
-                    }
+                      : (item as any)[column.key]}
                   </td>
                 ))}
                 {actions && (
@@ -107,7 +121,10 @@ export function Table<T extends { id: string }>({
                           icon={Eye}
                           onClick={() => actions.onView!(item)}
                           className="p-1"
-                        />
+                          loading={false}
+                        >
+                          {""}
+                        </Button>
                       )}
                       {actions.onEdit && (
                         <Button
@@ -116,12 +133,15 @@ export function Table<T extends { id: string }>({
                           icon={Edit}
                           onClick={() => actions.onEdit!(item)}
                           className="p-1"
-                        />
+                          loading={false}
+                        >
+                          {""}
+                        </Button>
                       )}
                       {actions.custom?.map((action, idx) => (
                         <Button
                           key={idx}
-                          variant={action.variant || 'ghost'}
+                          variant={action.variant || "ghost"}
                           size="sm"
                           onClick={() => action.onClick(item)}
                           className="p-1"
@@ -137,14 +157,16 @@ export function Table<T extends { id: string }>({
           </tbody>
         </table>
       </div>
-      
+
       {pagination && (
         <div className="px-6 py-3 bg-gray-50 border-t border-gray-200 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-700">Show</span>
             <select
               value={pagination.pageSize}
-              onChange={(e) => pagination.onPageSizeChange(Number(e.target.value))}
+              onChange={(e) =>
+                pagination.onPageSizeChange(Number(e.target.value))
+              }
               className="border border-gray-300 rounded px-2 py-1 text-sm"
             >
               <option value={10}>10</option>
@@ -154,28 +176,41 @@ export function Table<T extends { id: string }>({
             </select>
             <span className="text-sm text-gray-700">entries</span>
           </div>
-          
+
           <div className="flex items-center space-x-2">
             <span className="text-sm text-gray-700">
-              {((pagination.currentPage - 1) * pagination.pageSize) + 1} to{' '}
-              {Math.min(pagination.currentPage * pagination.pageSize, pagination.totalItems)} of{' '}
-              {pagination.totalItems} entries
+              {(pagination.currentPage - 1) * pagination.pageSize + 1} to{" "}
+              {Math.min(
+                pagination.currentPage * pagination.pageSize,
+                pagination.totalItems
+              )}{" "}
+              of {pagination.totalItems} entries
             </span>
             <div className="flex space-x-1">
               <Button
                 variant="outline"
                 size="sm"
                 icon={ChevronLeft}
-                onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                onClick={() =>
+                  pagination.onPageChange(pagination.currentPage - 1)
+                }
                 disabled={pagination.currentPage === 1}
-              />
+                loading={false}
+              >
+                {""}
+              </Button>
               <Button
                 variant="outline"
                 size="sm"
                 icon={ChevronRight}
-                onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                onClick={() =>
+                  pagination.onPageChange(pagination.currentPage + 1)
+                }
                 disabled={pagination.currentPage === pagination.totalPages}
-              />
+                loading={false}
+              >
+                {""}
+              </Button>
             </div>
           </div>
         </div>
