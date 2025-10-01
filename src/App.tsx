@@ -21,9 +21,15 @@ import DesignationList from "./pages/hr/DesignationList";
 import EmployeeList from "./pages/hr/EmployeeList";
 import AttendanceList from "./pages/hr/AttendanceList";
 import { AttendanceSheet } from "./pages/hr/AttendanceSheet";
-import { SalarySheet } from "./pages/hr/SalarySheet";
+import SalarySheet from "./pages/hr/SalarySheet";
 import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
 import MonthlySalarySheet from "./pages/hr/MonthlySalarySheet";
+import HeadIncome from "./pages/accounts/HeadIncome";
+
+import HeadExpense from "./pages/accounts/HeadExpense";
+import HeadBank from "./pages/accounts/HeadBank";
+import HeadOthers from "./pages/accounts/HeadOthers";
+import Transactions from "./pages/accounts/Transactions";
 
 function App() {
   return (
@@ -58,6 +64,17 @@ function App() {
                   element={<MonthlyAttendance />}
                 />
                 <Route path="/hr/salary" element={<MonthlySalarySheet />} />
+                <Route path="/accounts/head-income" element={<HeadIncome />} />
+                <Route
+                  path="/accounts/head-expense"
+                  element={<HeadExpense />}
+                />
+                <Route path="/accounts/head-bank" element={<HeadBank />} />
+                <Route path="/accounts/head-others" element={<HeadOthers />} />
+                <Route
+                  path="/accounts/transactions"
+                  element={<Transactions />}
+                />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
