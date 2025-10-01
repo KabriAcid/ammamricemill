@@ -2,7 +2,14 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
-import { Plus, Trash2 } from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import {
+  Plus,
+  Trash2,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Banknote,
+} from "lucide-react";
 
 type BankRow = {
   id: string;
@@ -129,6 +136,38 @@ const HeadBank = () => {
           Manage your bank heads and monitor receive, payment, and balance.
         </p>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card icon={<ArrowDownCircle className="w-8 h-8 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Receive
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalReceive.toLocaleString()}
+            </div>
+          </div>
+        </Card>
+        <Card icon={<ArrowUpCircle className="w-8 h-8 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Payment
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalPayment.toLocaleString()}
+            </div>
+          </div>
+        </Card>
+        <Card icon={<Banknote className="w-8 h-8 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Balance
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalBalance.toLocaleString()}
+            </div>
+          </div>
+        </Card>
+      </div>
       <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <div className="flex items-center space-x-2">
           <Button
@@ -153,26 +192,6 @@ const HeadBank = () => {
               Delete ({selectedRows.length})
             </Button>
           )}
-        </div>
-        <div className="flex flex-col sm:flex-row sm:gap-6 gap-2 text-gray-700 font-semibold">
-          <span>
-            Receive:{" "}
-            <span className="text-primary-700">
-              {totalReceive.toLocaleString()}
-            </span>
-          </span>
-          <span>
-            Payment:{" "}
-            <span className="text-primary-700">
-              {totalPayment.toLocaleString()}
-            </span>
-          </span>
-          <span>
-            Balance:{" "}
-            <span className="text-primary-700">
-              {totalBalance.toLocaleString()}
-            </span>
-          </span>
         </div>
       </div>
       <Table
@@ -202,6 +221,12 @@ const HeadBank = () => {
             });
             setModalOpen(true);
           },
+        }}
+        summaryRow={{
+          name: "Total",
+          receive: totalReceive.toLocaleString(),
+          payment: totalPayment.toLocaleString(),
+          balance: totalBalance.toLocaleString(),
         }}
       />
       <Modal

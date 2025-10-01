@@ -19,6 +19,7 @@ export function Table<T extends { id: string }>({
   pagination,
   selection,
   actions,
+  summaryRow,
 }: TableProps<T>) {
   const handleSelectAll = (checked: boolean) => {
     if (selection) {
@@ -154,6 +155,17 @@ export function Table<T extends { id: string }>({
                 )}
               </tr>
             ))}
+            {summaryRow && (
+              <tr className="bg-gray-100 font-semibold">
+                {selection && <td className="table-cell" />}
+                {columns.map((column) => (
+                  <td key={column.key} className="table-cell">
+                    {summaryRow[column.key] ?? ""}
+                  </td>
+                ))}
+                {actions && <td className="table-cell" />}
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

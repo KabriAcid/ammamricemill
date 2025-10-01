@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
-import { Plus, Trash2 } from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import { Plus, Trash2, ArrowUpCircle } from "lucide-react";
 
 type ExpenseRow = {
   id: string;
@@ -92,6 +93,18 @@ const HeadExpense = () => {
           Manage your expense heads and monitor total payments.
         </p>
       </div>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card icon={<ArrowUpCircle className="w-8 h-8 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Payments
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {totalPayments.toLocaleString()}
+            </div>
+          </div>
+        </Card>
+      </div>
       <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
         <div className="flex items-center space-x-2">
           <Button
@@ -117,12 +130,6 @@ const HeadExpense = () => {
             </Button>
           )}
         </div>
-        <div className="text-gray-700 font-semibold">
-          Total Payments:{" "}
-          <span className="text-primary-700">
-            {totalPayments.toLocaleString()}
-          </span>
-        </div>
       </div>
       <Table
         data={data}
@@ -146,6 +153,12 @@ const HeadExpense = () => {
             setFormData({ name: row.name, payments: row.payments });
             setModalOpen(true);
           },
+        }}
+        summaryRow={{
+          name: <span className="font-semibold">Total</span>,
+          payments: (
+            <span className="font-bold">{totalPayments.toLocaleString()}</span>
+          ),
         }}
       />
       <Modal

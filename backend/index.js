@@ -4,10 +4,13 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import routes from "./routes/index.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
-import dashboardRoutes from "./routes/dashboard.js";
-import employeesRouter from "./routes/employees.js";
-import siloRoutes from "./routes/silos.js";
-import Settings from "./routes/settings.js";
+import dashboardRoutes from "./routes/dashboard/dashboard.js";
+
+// 
+import siloRoutes from "./routes/settings/silos.js";
+import Settings from "./routes/settings/general-settings.js";
+
+import employeesRouter from "./routes/hr/employees.js";
 
 dotenv.config();
 

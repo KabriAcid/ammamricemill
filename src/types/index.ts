@@ -235,6 +235,7 @@ export interface TableProps<T> {
       variant?: "primary" | "secondary" | "danger";
     }>;
   };
+  summaryRow?: { [key: string]: React.ReactNode };
 }
 
 export interface ModalProps {
