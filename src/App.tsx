@@ -54,12 +54,12 @@ function App() {
                 />
                 <Route path="/hr/salary" element={<SalarySheet />} />
                 <Route
-                  path="/hr/monthly-attendance"
+                  path="/hr/attendance/monthly"
                   element={<MonthlyAttendance />}
                 />
                 <Route
-                  path="/hr/monthly-salary"
-                  element={<MonthlySalarySheet />}
+                  path="/hr/salary"
+                  element={<MonthlySalarySheet />}  
                 />
               </Route>
               <Route path="*" element={<NotFound />} />
