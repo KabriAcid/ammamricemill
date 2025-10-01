@@ -1,3 +1,9 @@
+// Party module types
+export interface PartyType {
+  id: number;
+  name: string;
+  description: string;
+}
 // Centralized entity types for Accounts module and others
 
 export interface HeadIncome {
