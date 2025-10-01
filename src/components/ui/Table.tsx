@@ -1,11 +1,8 @@
-import React from "react";
 import {
   ChevronLeft,
   ChevronRight,
   CreditCard as Edit,
-  Trash2,
   Eye,
-  MoreHorizontal,
 } from "lucide-react";
 import { TableProps } from "../../types/index";
 import { Button } from "./Button";

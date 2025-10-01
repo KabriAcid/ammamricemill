@@ -1,16 +1,43 @@
-
 # Amam Rice Mill (Admin Dashboard) — Bolt AI Prompt (Final, Modular, Compact)
 
 **IMPORTANT: For this phase, focus ONLY on generating the sidebar, navbar (topbar), and main content layout. Do NOT generate any page/module internals or any irrelevant pages, forms, or business logic. The output should be a modular, maintainable layout shell with a responsive sidebar, a top navigation bar, and a main content area that renders routed pages. Sidebar and navbar must use shared components, support config-driven navigation, and be visually consistent with the premium UI/UX guidelines below.**
 
-
 ## 1. Global Rules & Tech Stack
 
-- **Tech Stack:** React, TypeScript, Vite, Tailwind CSS (with `dark:` variants), Lucide icons, Chart.js. **Preserve v1:** All v1 fields, columns, and actions are compulsory; do not remove or rename any required element. v2+ can add optional enhancements. **DRY & Maintainable:** Use only shared components/utilities for all UI/UX. All code must be DRY, maintainable, and production-ready. **Premium UI/UX:** You may suggest or implement premium, modern, or user-friendly layouts, but all required data/actions must remain. **Accessibility:** All forms must have labels, aria attributes, high-contrast support, and keyboard navigation (modals close on `esc`). **Color Palette:** Primary: #AF792F (bg-primary), Secondary: #b8c4a7 (bg-secondary), use only these for accents/highlights/focus. **Layout:** Responsive, mobile-first, grid-based, compact, clean, consistent spacing/typography. Avoid excessive gradients/custom styles unless specified. **Navigation:** Each main sidebar link is a directory; each sub-nav link is a file in that directory. Use React Router for navigation. Route paths mirror directory structure. **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use TypeScript types/interfaces for all data. Centralize types in `types/entities.ts`. **UX:** Robust error handling and empty states. All pages must be visually/functionally consistent.
+- **Tech Stack:** React, TypeScript, Vite, Tailwind CSS (with `dark:` variants), Lucide icons, Chart.js.
+- **Preserve v1:** All v1 fields, columns, and actions are compulsory; do not remove or rename any required element. v2+ can add optional enhancements.
+- **DRY & Maintainable:** Use only shared components/utilities for all UI/UX. All code must be DRY, maintainable, and production-ready.
+- **Premium UI/UX:** All pages must use shared UI components (Card, Button, Table, Modal, Tabs, FilterBar, etc.) for every action, stat, and layout. No custom styles for buttons, tables, or modals—always use the shared component and its props (icon, variant, loading, etc.).
+- **Config-Driven:** All tables, columns, summary rows, and actions must be config-driven and defined at the top of each page. Navigation and permissions are config-driven.
+- **State/Data:** All CRUD/data logic is handled in the page component using useState/useEffect. Table columns, summary logic, and actions are always config-driven and DRY.
+- **Card Stat Layout:** All stat/KPI cards use the Card component with a left-aligned Lucide icon, right-stacked title/value, and premium styling (`shadow-card-hover`, responsive, animated). See Card.tsx for implementation details.
+- **Accessibility:** All forms must have labels, aria attributes, high-contrast support, and keyboard navigation (modals close on `esc`).
+- **Color Palette:** Primary: #AF792F (bg-primary), Secondary: #b8c4a7 (bg-secondary), use only these for accents/highlights/focus.
+- **Layout:** Responsive, mobile-first, grid-based, compact, clean, consistent spacing/typography. Avoid excessive gradients/custom styles unless specified.
+- **Navigation:** Each main sidebar link is a directory; each sub-nav link is a file in that directory. Use React Router for navigation. Route paths mirror directory structure.
+- **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use TypeScript types/interfaces for all data. Centralize types in `types/entities.ts`.
+- **UX:** Robust error handling and empty states. All pages must be visually/functionally consistent.
 
 ## 2. UI/UX & Shared Components
 
-- **Shared Components:** Button, Spinner, EmptyState, Tabs, DataTable, Card, FormField, etc. **Tables:** Use shared DataTable everywhere (pagination, filters, actions as props). All tables/lists must support: pagination (10, 25, 50, 100), search/filter (all relevant fields), row selection (checkboxes), bulk delete, actions (edit, delete, print, new, view as applicable). **Forms:** Use shared FormField utilities (label, error, validation). Input widths should match expected content. All forms use shared input styles and Button for actions. **Modals:** All "New"/"Edit" modals use the same fields; Edit pre-fills data. Use shared modal props pattern: `item: EntityType | null`, `onClose`, `onSave`. Modals close on 'esc'. Long modals: scrollable, no visible scrollbars, action buttons fixed at bottom. **Photo Columns:** Any table with photo data must include a photo column. **KPI/Stat Cards:** Use Card layout: left icon (primary-800), right stacked title/value, white, rounded, subtle shadow, hover effect, responsive, animated. Use for summary/stat cards where relevant (AI may suggest). **Charts:** Use Chart.js for all charts. **Micro-interactions:** Fade-in, success toast, error shake, etc. **Loading/Empty/Error:** Use Spinner, EmptyState, and skeletons for loading. All tables/lists must be responsive and visually consistent.
+- **Shared Components:** Button, Spinner, EmptyState, Tabs, Table (DataTable), Card, FormField, Modal, FilterBar, etc. All pages must use these for every action, stat, and layout. Always check and reuse their props (e.g., variant, size, icon, loading for Button) to maximize flexibility and consistency.
+- **Tables:** Use shared Table everywhere (pagination, filters, actions as props, summaryRow for totals). All tables/lists must support: pagination (10, 25, 50, 100), search/filter (all relevant fields), row selection (checkboxes), bulk delete, actions (edit, delete, print, new, view as applicable). Table columns and summary logic must be config-driven.
+- **Forms:** Use shared FormField utilities (label, error, validation). Input widths should match expected content. All forms use shared input styles and Button for actions.
+- **Modals:** All "New"/"Edit" modals use the same fields; Edit pre-fills data. Use shared modal props pattern: `item: EntityType | null`, `onClose`, `onSave`. Modals close on 'esc'. Long modals: scrollable, no visible scrollbars, action buttons fixed at bottom. All forms and modals use the same input and Button styles.
+- **Photo Columns:** Any table with photo data must include a photo column.
+- **KPI/Stat Cards:** Use Card layout: left icon (primary-800), right stacked title/value, white, rounded, subtle shadow, hover effect, responsive, animated. Use for summary/stat cards where relevant. All stat cards must use the Card component and icon prop as in Card.tsx.
+- **Charts:** Use Chart.js for all charts.
+- **Micro-interactions:** Fade-in, success toast, error shake, etc.
+- **Loading/Empty/Error:** Use Spinner, EmptyState, and skeletons for loading. All tables/lists must be responsive and visually consistent.
+
+## 2a. Implementation Blueprint (Pattern to Follow for All Pages)
+
+- Scaffold new pages with: heading, stat cards (Card), action bar (Button), Table (with summaryRow), and Modal (form).
+- Use config-driven columns, summary, and actions for all tables.
+- Always use shared UI components and pass Lucide icons as props.
+- Add FilterBar and Tabs where needed for filtering and sectioning.
+- Keep all state management and CRUD logic in the page component, using useState/useEffect.
+- All new pages and features must follow these patterns for maximum maintainability and consistency.
 
 ## 3. Directory, Routing & Naming
 
@@ -18,13 +45,13 @@
 
 ## 4. Do vs Don’t Table
 
-| Do                             | Don’t                         |
-| ------------------------------ | ----------------------------- |
+| Do                                           | Don’t                         |
+| -------------------------------------------- | ----------------------------- |
 | Use shared `Button` and other UIs with props | Create custom styled buttons  |
-| Use Chart.js for charts        | Use random chart libs         |
-| Use DataTable everywhere       | Repeat table logic per page   |
-| Use config-driven routes       | Hardcode routes in many files |
-| Use FormField utilities        | Repeat input markup           |
+| Use Chart.js for charts                      | Use random chart libs         |
+| Use DataTable everywhere                     | Repeat table logic per page   |
+| Use config-driven routes                     | Hardcode routes in many files |
+| Use FormField utilities                      | Repeat input markup           |
 
 ## 5. Page Prioritization
 
