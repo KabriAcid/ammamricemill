@@ -157,7 +157,7 @@ const PartyPayments = () => {
           vouchers.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
         <Card icon={<CreditCard className="w-8 h-8 text-primary-800" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
@@ -176,6 +176,14 @@ const PartyPayments = () => {
             <div className="text-2xl font-bold text-gray-900">
               {totalAmount.toLocaleString()}
             </div>
+          </div>
+        </Card>
+        <Card icon={<Plus className="w-8 h-8 text-blue-700" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              New Payments
+            </div>
+            <div className="text-2xl font-bold text-gray-900">0</div>
           </div>
         </Card>
       </div>
@@ -290,7 +298,13 @@ const PartyPayments = () => {
         title={editItem ? "Edit Payment" : "New Payment"}
         size="md"
       >
-        <div className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editItem ? handleUpdate() : handleCreate();
+          }}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Date *
@@ -385,14 +399,11 @@ const PartyPayments = () => {
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={editItem ? handleUpdate : handleCreate}
-              loading={loading}
-            >
+            <Button type="submit" loading={loading}>
               {editItem ? "Update" : "Save"}
             </Button>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );

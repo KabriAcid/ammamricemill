@@ -111,7 +111,7 @@ const PartyTypes = () => {
           Manage all party types for classification and reporting.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
         <Card icon={<Badge className="w-8 h-8 text-primary-800" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
@@ -186,7 +186,13 @@ const PartyTypes = () => {
         title={editItem ? "Edit Party Type" : "New Party Type"}
         size="md"
       >
-        <div className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editItem ? handleUpdate() : handleCreate();
+          }}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Name *
@@ -221,14 +227,11 @@ const PartyTypes = () => {
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={editItem ? handleUpdate : handleCreate}
-              loading={loading}
-            >
+            <Button type="submit" loading={loading}>
               {editItem ? "Update" : "Save"}
             </Button>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );

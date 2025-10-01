@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -242,7 +241,10 @@ const CategoryList = () => {
               type="text"
               value={formData.description}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, description: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  description: e.target.value,
+                }))
               }
               className="input-base"
             />

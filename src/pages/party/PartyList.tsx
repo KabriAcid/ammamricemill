@@ -277,21 +277,13 @@ const PartyList = () => {
         title={editItem ? "Edit Party" : "New Party"}
         size="md"
       >
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Party Type *
-            </label>
-            <input
-              type="text"
-              value={formData.type}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, type: e.target.value }))
-              }
-              className="input-base"
-              required
-            />
-          </div>
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editItem ? handleUpdate() : handleCreate();
+          }}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Name *
@@ -308,31 +300,16 @@ const PartyList = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Company Name
+              Type *
             </label>
             <input
               type="text"
-              value={formData.company}
+              value={formData.type}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, company: e.target.value }))
+                setFormData((prev) => ({ ...prev, type: e.target.value }))
               }
               className="input-base"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Bank Account No
-            </label>
-            <input
-              type="text"
-              value={formData.bankAccountNo}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  bankAccountNo: e.target.value,
-                }))
-              }
-              className="input-base"
+              required
             />
           </div>
           <div>
@@ -365,14 +342,11 @@ const PartyList = () => {
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={editItem ? handleUpdate : handleCreate}
-              loading={loading}
-            >
+            <Button type="submit" loading={loading}>
               {editItem ? "Update" : "Save"}
             </Button>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );

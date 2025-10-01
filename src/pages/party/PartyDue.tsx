@@ -4,7 +4,16 @@ import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { AlertCircle, Trash2, Printer, BookOpen, Plus } from "lucide-react";
+import {
+  AlertCircle,
+  Trash2,
+  Printer,
+  BookOpen,
+  Plus,
+  BadgeDollarSign,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 
 // Party Due entity type for this page
 export interface PartyDue {
@@ -144,15 +153,29 @@ const PartyDue = () => {
           View and manage all party dues. Print and filter as needed.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 mb-6">
-        <Card icon={<AlertCircle className="w-8 h-8 text-primary-800" />}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card icon={<BadgeDollarSign className="w-8 h-8 text-primary-800" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
               Total Due
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {totalDue.toLocaleString()}
+            <div className="text-2xl font-bold text-gray-900">₹{totalDue}</div>
+          </div>
+        </Card>
+        <Card icon={<UserCheck className="w-8 h-8 text-green-700" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Cleared
             </div>
+            <div className="text-2xl font-bold text-gray-900">0</div>
+          </div>
+        </Card>
+        <Card icon={<UserX className="w-8 h-8 text-red-700" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Pending
+            </div>
+            <div className="text-2xl font-bold text-gray-900">0</div>
           </div>
         </Card>
       </div>
@@ -239,7 +262,13 @@ const PartyDue = () => {
         title={editItem ? "Edit Due" : "New Due"}
         size="md"
       >
-        <div className="space-y-4">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editItem ? handleUpdate() : handleCreate();
+          }}
+        >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Name *
@@ -315,14 +344,11 @@ const PartyDue = () => {
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={editItem ? handleUpdate : handleCreate}
-              loading={loading}
-            >
+            <Button type="submit" loading={loading}>
               {editItem ? "Update" : "Save"}
             </Button>
           </div>
-        </div>
+        </form>
       </Modal>
     </div>
   );
