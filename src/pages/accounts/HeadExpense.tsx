@@ -1,162 +1,209 @@
-import React, { useEffect, useState } from "react";
-import { Card, DataTable, Button, FilterBar, Modal, Spinner, EmptyState, DashboardCard } from "../../components";
-import type { HeadExpense } from "../../types/entities";
+import { useEffect, useState } from "react";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { Modal } from "../../components/ui/Modal";
+import { Plus, Trash2 } from "lucide-react";
 
-interface Filters {
-  page: number;
-  pageSize: number;
-  search: string;
-  sort: "asc" | "desc";
-  dateFrom: string;
-  dateTo: string;
-}
-
-const initialFilters: Filters = {
-  page: 1,
-  pageSize: 25,
-  search: "",
-  sort: "asc",
-  dateFrom: "",
-  dateTo: "",
+type ExpenseRow = {
+  id: string;
+  name: string;
+  payments: number;
 };
 
-const HeadExpensePage: React.FC = () => {
-  const [data, setData] = useState<HeadExpense[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedRows, setSelectedRows] = useState<number[]>([]);
-  const [modalOpen, setModalOpen] = useState<boolean>(false);
-  const [editItem, setEditItem] = useState<HeadExpense | null>(null);
-  const [filters, setFilters] = useState<Filters>(initialFilters);
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+const HeadExpense = () => {
+  const [data, setData] = useState<ExpenseRow[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<ExpenseRow | null>(null);
+  const [formData, setFormData] = useState({ name: "", payments: 0 });
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/head-expense?page=${filters.page}&pageSize=${filters.pageSize}&search=${filters.search}&sort=${filters.sort}&dateFrom=${filters.dateFrom}&dateTo=${filters.dateTo}`)
-      .then(res => res.json())
-      .then(json => { setData(json.data || []); setError(null); })
-      .catch(() => setError("Failed to fetch data."))
-      .finally(() => setLoading(false));
-  }, [filters]);
-
-  const handleCreate = async (item: HeadExpense) => {
-    setLoading(true);
-    try {
-      await fetch("/api/head-expense", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item),
-      });
-      setModalOpen(false);
-      setFilters({ ...filters });
-    } catch {
-      setError("Failed to create.");
-    } finally {
+    setTimeout(() => {
+      setData([
+        { id: "1", name: "Raw Material", payments: 90000 },
+        { id: "2", name: "Utilities", payments: 12000 },
+        { id: "3", name: "Maintenance", payments: 3500 },
+      ]);
       setLoading(false);
-    }
+    }, 400);
+  }, []);
+
+  // Create
+  const handleCreate = () => {
+    setLoading(true);
+    setTimeout(() => {
+      setData((prev) => [{ id: Date.now().toString(), ...formData }, ...prev]);
+      setModalOpen(false);
+      setFormData({ name: "", payments: 0 });
+      setLoading(false);
+    }, 400);
   };
 
-  const handleUpdate = async (item: HeadExpense) => {
+  // Update
+  const handleUpdate = () => {
+    if (!editItem) return;
     setLoading(true);
-    try {
-      await fetch(`/api/head-expense/${item.id}", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(item),
-      });
+    setTimeout(() => {
+      setData((prev) =>
+        prev.map((row) =>
+          row.id === editItem.id ? { ...row, ...formData } : row
+        )
+      );
       setModalOpen(false);
-      setFilters({ ...filters });
-    } catch {
-      setError("Failed to update.");
-    } finally {
+      setEditItem(null);
+      setFormData({ name: "", payments: 0 });
       setLoading(false);
-    }
+    }, 400);
   };
 
-  const handleDelete = async (ids: number[]) => {
+  // Delete (single or bulk)
+  const handleDelete = (ids: string[]) => {
     setLoading(true);
-    try {
-      await fetch("/api/head-expense", {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids }),
-      });
+    setTimeout(() => {
+      setData((prev) => prev.filter((row) => !ids.includes(row.id)));
       setSelectedRows([]);
-      setFilters({ ...filters });
-    } catch {
-      setError("Failed to delete.");
-    } finally {
       setLoading(false);
-    }
+    }, 400);
   };
 
-  const columns: Array<{ key: string; label: string; render?: (row: HeadExpense) => React.ReactNode }> = [
-    { key: "sl", label: "#" },
+  // Table columns
+  const columns = [
     { key: "name", label: "Head Name" },
-    { key: "payments", label: "Payments" },
     {
-      key: "actions",
-      label: "Actions",
-      render: (row: HeadExpense) => (
-        <div className="flex gap-2">
-          <Button icon="Edit" size="sm" onClick={() => { setEditItem(row); setModalOpen(true); }}>Edit</Button>
-          <Button icon="Trash" size="sm" variant="danger" onClick={() => handleDelete([row.id])}>Delete</Button>
-          <Button icon="BookOpen" size="sm" variant="secondary" onClick={() => { /* navigate to ledger */ }}>Ledger</Button>
-        </div>
-      ),
+      key: "payments",
+      label: "Payments",
+      render: (value: number) => value.toLocaleString(),
     },
   ];
 
-  const totalPayments = data.reduce((sum: number, d: HeadExpense) => sum + (d.payments || 0), 0);
+  const totalPayments = data.reduce((sum, d) => sum + (d.payments || 0), 0);
 
   return (
-    <div className="space-y-4 animate-fade-in">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <DashboardCard icon="ArrowUpCircle" title="Total Payments" value={totalPayments.toLocaleString()} />
+    <div className="animate-fade-in">
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Expense Head Management
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Manage your expense heads and monitor total payments.
+        </p>
       </div>
-      <Card>
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-2">
-          <FilterBar
-            filters={filters}
-            onChange={setFilters}
-            fields={[
-              { key: "search", label: "Search" },
-              { key: "dateFrom", label: "From", type: "date" },
-              { key: "dateTo", label: "To", type: "date" },
-            ]}
-            pageSizeOptions={[10, 25, 50, 100]}
-          />
-          <div className="flex gap-2">
-            <Button icon="Plus" onClick={() => { setEditItem(null); setModalOpen(true); }}>New</Button>
-            {selectedRows.length > 0 && (
-              <Button icon="Trash" variant="danger" onClick={() => handleDelete(selectedRows)}>Delete Selected</Button>
-            )}
+      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+        <div className="flex items-center space-x-2">
+          <Button
+            onClick={() => {
+              setEditItem(null);
+              setFormData({ name: "", payments: 0 });
+              setModalOpen(true);
+            }}
+            icon={Plus}
+            size="sm"
+          >
+            New Expense Head
+          </Button>
+          {selectedRows.length > 0 && (
+            <Button
+              variant="danger"
+              size="sm"
+              icon={Trash2}
+              onClick={() => handleDelete(selectedRows)}
+              loading={loading}
+            >
+              Delete ({selectedRows.length})
+            </Button>
+          )}
+        </div>
+        <div className="text-gray-700 font-semibold">
+          Total Payments:{" "}
+          <span className="text-primary-700">
+            {totalPayments.toLocaleString()}
+          </span>
+        </div>
+      </div>
+      <Table
+        data={data}
+        columns={columns}
+        loading={loading}
+        pagination={{
+          currentPage: 1,
+          totalPages: 1,
+          pageSize: PAGE_SIZE_OPTIONS[1],
+          totalItems: data.length,
+          onPageChange: () => {},
+          onPageSizeChange: () => {},
+        }}
+        selection={{
+          selectedItems: selectedRows,
+          onSelectionChange: setSelectedRows,
+        }}
+        actions={{
+          onEdit: (row) => {
+            setEditItem(row);
+            setFormData({ name: row.name, payments: row.payments });
+            setModalOpen(true);
+          },
+        }}
+      />
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={editItem ? "Edit Expense Head" : "New Expense Head"}
+        size="md"
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Head Name *
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
+              }
+              className="input-base"
+              placeholder="Enter head name"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Payments
+            </label>
+            <input
+              type="number"
+              value={formData.payments}
+              onChange={(e) =>
+                setFormData((prev) => ({
+                  ...prev,
+                  payments: Number(e.target.value),
+                }))
+              }
+              className="input-base"
+              placeholder="Enter payments amount"
+              min="0"
+              required
+            />
+          </div>
+          <div className="flex justify-end space-x-3 pt-4">
+            <Button variant="outline" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={editItem ? handleUpdate : handleCreate}
+              loading={loading}
+            >
+              {editItem ? "Update" : "Save"}
+            </Button>
           </div>
         </div>
-        {loading ? <Spinner /> : error ? <EmptyState message={error} /> : (
-          <DataTable
-            columns={columns}
-            data={data}
-            page={filters.page}
-            pageSize={filters.pageSize}
-            total={data.length}
-            onPageChange={(page: number) => setFilters((f) => ({ ...f, page }))}
-            onPageSizeChange={(pageSize: number) => setFilters((f) => ({ ...f, pageSize }))}
-            rowSelection={selectedRows}
-            onRowSelection={setSelectedRows}
-            bulkActions={[{ label: "Delete", icon: "Trash", onClick: () => handleDelete(selectedRows) }]}
-          />
-        )}
-      </Card>
-      <Modal
-        open={modalOpen}
-        item={editItem}
-        onClose={() => setModalOpen(false)}
-        onSave={editItem ? handleUpdate : handleCreate}
-        fields={[{ key: "name", label: "Head Name", type: "text", required: true }]}
-        title={editItem ? "Edit Expense Head" : "New Expense Head"}
-      />
+      </Modal>
     </div>
   );
 };
 
-export default HeadExpensePage;
+export default HeadExpense;
