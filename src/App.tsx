@@ -39,13 +39,14 @@ import PartyDebts from "./pages/party/PartyDebts";
 // import PartyPaymentVoucher from "./pages/party/PartyPaymentVoucher";
 // import PartyDueLedger from "./pages/party/PartyDueLedger";
 // import PartyDebtsLedger from "./pages/party/PartyDebtsLedger";
-// import CategoryList from "./pages/products/CategoryList";
-// import ProductList from "./pages/products/ProductList";
-// import EmptybagPurchase from "./pages/emptybags/EmptybagPurchase";
-// import EmptybagSales from "./pages/emptybags/EmptybagSales";
+import CategoryList from "./pages/products/CategoryList";
+import ProductList from "./pages/products/ProductList";
+import EmptybagPurchaseList from "./pages/emptybags/EmptybagPurchaseList";
+import EmptybagSalesList from "./pages/emptybags/EmptybagSalesList";
 // import EmptybagReceive from "./pages/emptybags/EmptybagReceive";
-// import EmptybagPayment from "./pages/emptybags/EmptybagPayment";
-// import EmptybagStocks from "./pages/emptybags/EmptybagStocks";
+import EmptybagPaymentList from "./pages/emptybags/EmptybagPaymentList";
+import EmptybagStocksList from "./pages/emptybags/EmptybagStocksList";
+
 // import PurchaseList from "./pages/purchase/PurchaseList";
 // import PurchaseLedger from "./pages/purchase/PurchaseLedger";
 // import RicePurchase from "./pages/purchase/RicePurchase";
@@ -120,13 +121,13 @@ function App() {
                 {/* <Route path="/party/payments/:id" element={<PartyPaymentVoucher />} /> */}
                 {/* <Route path="/party/due/ledger" element={<PartyDueLedger />} /> */}
                 {/* <Route path="/party/debts/ledger" element={<PartyDebtsLedger />} /> */}
-                {/* <Route path="/category" element={<CategoryList />} /> */}
-                {/* <Route path="/products" element={<ProductList />} /> */}
-                {/* <Route path="/empty/emptybag-purchase" element={<EmptybagPurchase />} /> */}
-                {/* <Route path="/empty/emptybag-sales" element={<EmptybagSales />} /> */}
+                <Route path="/category" element={<CategoryList />} />
+                <Route path="/products" element={<ProductList />} />
+                <Route path="/empty/emptybag-purchase" element={<EmptybagPurchaseList />} />
+                <Route path="/empty/emptybag-sales" element={<EmptybagSalesList />} />
                 {/* <Route path="/empty/emptybag-receive" element={<EmptybagReceive />} /> */}
-                {/* <Route path="/empty/emptybag-payment" element={<EmptybagPayment />} /> */}
-                {/* <Route path="/empty/emptybag-stocks" element={<EmptybagStocks />} /> */}
+                <Route path="/empty/emptybag-payment" element={<EmptybagPaymentList />} />
+                <Route path="/empty/emptybag-stocks" element={<EmptybagStocksList />} />
                 {/* <Route path="/purchase/purchases" element={<PurchaseList />} /> */}
                 {/* <Route path="/purchase/purchase/ledger" element={<PurchaseLedger />} /> */}
                 {/* <Route path="/purchase/rice-purchase" element={<RicePurchase />} /> */}

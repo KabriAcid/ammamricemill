@@ -68,7 +68,7 @@ const SiloList: React.FC = () => {
       sortable: true,
       render: (value: number) => value.toLocaleString(),
     },
-    { key: "description", label: "Description" },
+    { key: "description", label: "Description" }, 
   ];
 
   const handleEdit = (silo: Silo) => {

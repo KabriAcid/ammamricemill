@@ -1,0 +1,368 @@
+import { useEffect, useState } from "react";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { Modal } from "../../components/ui/Modal";
+import { Card } from "../../components/ui/Card";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Plus, PackageCheck, Printer } from "lucide-react";
+
+export interface EmptybagSale {
+  id: string;
+  date: string;
+  invoiceNo: string;
+  party: string;
+  items: number;
+  quantity: number;
+  price: number;
+  description: string;
+}
+
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+const EmptybagSalesList = () => {
+  const [data, setData] = useState<EmptybagSale[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<EmptybagSale | null>(null);
+  const [formData, setFormData] = useState({
+    date: "",
+    invoiceNo: "",
+    party: "",
+    items: 0,
+    quantity: 0,
+    price: 0,
+    description: "",
+  });
+  const [search, setSearch] = useState("");
+  const [pageSize, setPageSize] = useState(25);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Fetch all (GET)
+  useEffect(() => {
+    setLoading(true);
+    fetch(`/api/emptybag-sales?search=${encodeURIComponent(search)}`)
+      .then((res) => res.json())
+      .then((res) =>
+        setData(res.map((item: any) => ({ ...item, id: String(item.id) })))
+      )
+      .finally(() => setLoading(false));
+  }, [search]);
+
+  // Create
+  const handleCreate = () => {
+    setLoading(true);
+    fetch("/api/emptybag-sales", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => res.json())
+      .then((created) =>
+        setData((prev) => [{ ...created, id: String(created.id) }, ...prev])
+      )
+      .finally(() => {
+        setModalOpen(false);
+        setFormData({
+          date: "",
+          invoiceNo: "",
+          party: "",
+          items: 0,
+          quantity: 0,
+          price: 0,
+          description: "",
+        });
+        setLoading(false);
+      });
+  };
+
+  // Update
+  const handleUpdate = () => {
+    if (!editItem) return;
+    setLoading(true);
+    fetch(`/api/emptybag-sales/${editItem.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData),
+    })
+      .then((res) => res.json())
+      .then((updated) =>
+        setData((prev) =>
+          prev.map((row) =>
+            row.id === String(updated.id)
+              ? { ...updated, id: String(updated.id) }
+              : row
+          )
+        )
+      )
+      .finally(() => {
+        setModalOpen(false);
+        setEditItem(null);
+        setFormData({
+          date: "",
+          invoiceNo: "",
+          party: "",
+          items: 0,
+          quantity: 0,
+          price: 0,
+          description: "",
+        });
+        setLoading(false);
+      });
+  };
+
+  // Delete (single or bulk)
+  const handleDelete = (ids: string[]) => {
+    setLoading(true);
+    Promise.all(
+      ids.map((id) => fetch(`/api/emptybag-sales/${id}`, { method: "DELETE" }))
+    )
+      .then(() =>
+        setData((prev) => prev.filter((row) => !ids.includes(row.id)))
+      )
+      .finally(() => {
+        setSelectedRows([]);
+        setLoading(false);
+      });
+  };
+
+  // Table columns
+  const columns = [
+    { key: "id", label: "#", width: "60px" },
+    { key: "date", label: "Date" },
+    { key: "invoiceNo", label: "Invoice No" },
+    { key: "party", label: "Party" },
+    { key: "items", label: "Items" },
+    { key: "quantity", label: "Quantity" },
+    { key: "price", label: "Price", render: (v: number) => v.toLocaleString() },
+    { key: "description", label: "Description" },
+  ];
+
+  // Pagination
+  const filtered = data.filter(
+    (row) =>
+      row.invoiceNo.toLowerCase().includes(search.toLowerCase()) ||
+      row.party.toLowerCase().includes(search.toLowerCase())
+  );
+  const totalPages = Math.ceil(filtered.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginated = filtered.slice(startIndex, startIndex + pageSize);
+
+  // Stat cards
+  const totalSales = data.length;
+  const totalQuantity = data.reduce((sum, d) => sum + (d.quantity || 0), 0);
+  const totalPrice = data.reduce((sum, d) => sum + (d.price || 0), 0);
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-wrap gap-4">
+        <Card icon={<PackageCheck className="w-6 h-6 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500">Total Sales</div>
+            <div className="text-2xl font-bold">{totalSales}</div>
+          </div>
+        </Card>
+        <Card icon={<PackageCheck className="w-6 h-6 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500">
+              Total Quantity
+            </div>
+            <div className="text-2xl font-bold">{totalQuantity}</div>
+          </div>
+        </Card>
+        <Card icon={<PackageCheck className="w-6 h-6 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500">Total Price</div>
+            <div className="text-2xl font-bold">
+              {totalPrice.toLocaleString()}
+            </div>
+          </div>
+        </Card>
+      </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-bold">Emptybag Sales List</h1>
+        <Button
+          icon={Plus}
+          onClick={() => {
+            setModalOpen(true);
+            setEditItem(null);
+            setFormData({
+              date: "",
+              invoiceNo: "",
+              party: "",
+              items: 0,
+              quantity: 0,
+              price: 0,
+              description: "",
+            });
+          }}
+        >
+          New Sale
+        </Button>
+      </div>
+      <FilterBar onSearch={setSearch} />
+      <Table
+        data={paginated}
+        columns={columns}
+        loading={loading}
+        selection={{
+          selectedItems: selectedRows,
+          onSelectionChange: setSelectedRows,
+        }}
+        actions={{
+          onEdit: (row) => {
+            setEditItem(row);
+            setFormData({
+              date: row.date,
+              invoiceNo: row.invoiceNo,
+              party: row.party,
+              items: row.items,
+              quantity: row.quantity,
+              price: row.price,
+              description: row.description,
+            });
+            setModalOpen(true);
+          },
+          onDelete: (ids) => handleDelete(Array.isArray(ids) ? ids : [ids]),
+          custom: [
+            {
+              label: "Print",
+              icon: <Printer className="w-4 h-4" />,
+              onClick: () => {
+                /* Print logic */
+              },
+            },
+          ],
+        }}
+        pagination={{
+          currentPage,
+          totalPages,
+          pageSize,
+          totalItems: filtered.length,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: setPageSize,
+        }}
+        summaryRow={{
+          id: <span className="font-semibold">Total</span>,
+          date: "",
+          invoiceNo: "",
+          party: "",
+          items: "",
+          quantity: <span className="font-bold">{totalQuantity}</span>,
+          price: (
+            <span className="font-bold">{totalPrice.toLocaleString()}</span>
+          ),
+          description: "",
+        }}
+      />
+      <Modal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditItem(null);
+        }}
+        title={editItem ? "Edit Sale" : "New Sale"}
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            editItem ? handleUpdate() : handleCreate();
+          }}
+        >
+          <div>
+            <label className="block font-medium">Date</label>
+            <input
+              className="form-input w-full"
+              type="date"
+              value={formData.date}
+              onChange={(e) =>
+                setFormData({ ...formData, date: e.target.value })
+              }
+              required
+              aria-label="Date"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Invoice No</label>
+            <input
+              className="form-input w-full"
+              value={formData.invoiceNo}
+              onChange={(e) =>
+                setFormData({ ...formData, invoiceNo: e.target.value })
+              }
+              required
+              aria-label="Invoice No"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Party</label>
+            <input
+              className="form-input w-full"
+              value={formData.party}
+              onChange={(e) =>
+                setFormData({ ...formData, party: e.target.value })
+              }
+              required
+              aria-label="Party"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Items</label>
+            <input
+              className="form-input w-full"
+              type="number"
+              value={formData.items}
+              onChange={(e) =>
+                setFormData({ ...formData, items: Number(e.target.value) })
+              }
+              aria-label="Items"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Quantity</label>
+            <input
+              className="form-input w-full"
+              type="number"
+              value={formData.quantity}
+              onChange={(e) =>
+                setFormData({ ...formData, quantity: Number(e.target.value) })
+              }
+              aria-label="Quantity"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Price</label>
+            <input
+              className="form-input w-full"
+              type="number"
+              value={formData.price}
+              onChange={(e) =>
+                setFormData({ ...formData, price: Number(e.target.value) })
+              }
+              aria-label="Price"
+            />
+          </div>
+          <div>
+            <label className="block font-medium">Description</label>
+            <input
+              className="form-input w-full"
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+              aria-label="Description"
+            />
+          </div>
+          <div className="flex justify-end">
+            <Button type="submit" variant="primary" loading={loading}>
+              {editItem ? "Update" : "Create"}
+            </Button>
+          </div>
+        </form>
+      </Modal>
+    </div>
+  );
+};
+
+export default EmptybagSalesList;

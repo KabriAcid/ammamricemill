@@ -3,37 +3,37 @@
 ## 1. Global Rules & Tech Stack
 
 - **Preserve v1:** All v1 fields, columns, and actions are compulsory; do not remove or rename any required element. v2+ can add optional enhancements.
-- **DRY & Maintainable:** Use only shared components/utilities for all UI/UX. All code must be DRY, maintainable, and production-ready.
-- **Premium UI/UX:** All pages must use shared UI components (Card, Button, Table, Modal, Tabs, FilterBar, etc.) for every action, stat, and layout. No custom styles for buttons, tables, or modals—always use the shared component and its props (icon, variant, loading, etc.).
-- **Config-Driven:** All tables, columns, summary rows, and actions must be config-driven and defined at the top of each page. Navigation and permissions are config-driven.
+- **DRY & Maintainable:** Use only shared components from `src/components/ui/` for all UI/UX. All code must be DRY, maintainable, and production-ready. Never import from `src/components/` directly—always use the `/ui/` subdirectory.
+- **Premium UI/UX:** All pages must use shared UI components (Card, Button, Table, Modal, Tabs, FilterBar, etc.) for every action, stat, and layout. No custom styles for buttons, tables, or modals—always use the shared component and its props (icon, variant, loading, children, etc.).
+- **Config-Driven:** All tables, columns, summary rows, and actions must be config-driven and defined at the top of each page. Navigation and permissions are config-driven. Table columns use the `TableColumn[]` type from `types/index.ts`.
 - **State/Data:** All CRUD/data logic is handled in the page component using useState/useEffect. Table columns, summary logic, and actions are always config-driven and DRY.
 - **Card Stat Layout:** All stat/KPI cards use the Card component with a left-aligned Lucide icon, right-stacked title/value, and premium styling (`shadow-card-hover`, responsive, animated). See Card.tsx for implementation details.
 - **Accessibility:** All forms must have labels, aria attributes, high-contrast support, and keyboard navigation (modals close on `esc`).
 - **Color Palette:** Primary: #AF792F (bg-primary), Secondary: #b8c4a7 (bg-secondary), use only these for accents/highlights/focus.
 - **Layout:** Responsive, mobile-first, grid-based, compact, clean, consistent spacing/typography. Avoid excessive gradients/custom styles unless specified.
 - **Navigation:** Each main sidebar link is a directory; each sub-nav link is a file in that directory. Use React Router for navigation. Route paths mirror directory structure.
-- **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use TypeScript types/interfaces for all data. Centralize types in `types/entities.ts`.
+- **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use 
 - **UX:** Robust error handling and empty states. All pages must be visually/functionally consistent.
 
 ## 2. UI/UX & Shared Components
 
-- **Shared Components:** Button, Spinner, EmptyState, Tabs, Table (DataTable), Card, FormField, Modal, FilterBar, etc. All pages must use these for every action, stat, and layout. Always check and reuse their props (e.g., variant, size, icon, loading for Button) to maximize flexibility and consistency.
-- **Tables:** Use shared Table everywhere (pagination, filters, actions as props, summaryRow for totals). All tables/lists must support: pagination (10, 25, 50, 100), search/filter (all relevant fields), row selection (checkboxes), bulk delete, actions (edit, delete, print, new, view as applicable). Table columns and summary logic must be config-driven.
-- **Forms:** Use shared FormField utilities (label, error, validation). Input widths should match expected content. All forms use shared input styles and Button for actions.
-- **Modals:** All "New"/"Edit" modals use the same fields; Edit pre-fills data. Use shared modal props pattern: `item: EntityType | null`, `onClose`, `onSave`. Modals close on 'esc'. Long modals: scrollable, no visible scrollbars, action buttons fixed at bottom. All forms and modals use the same input and Button styles.
+- **Shared Components:** Button, Spinner, EmptyState, Tabs, Table (DataTable), Card, Modal, FilterBar, etc. All pages must use these for every action, stat, and layout. Always check and reuse their props (e.g., variant, size, icon, loading, children for Button) to maximize flexibility and consistency. All imports must be from `src/components/ui/`.
+- **Tables:** Use the shared Table component from `src/components/ui/Table` everywhere. Table columns are defined as `TableColumn[]` from `types/index.ts`. Table props include `data`, `columns`, `loading`, `selection`, `actions`, `summaryRow`, and `pagination`. All tables/lists must support: pagination, search/filter (via FilterBar), row selection (checkboxes), bulk delete, and config-driven actions. Do not use non-existent props like `rowKey`, `onAction`, or `pageSizes`.
+- **Forms:** Use shared input styles and Button for actions. All forms must use accessible labels and aria attributes. The Button component always requires a `children` prop (even if just `""`).
+- **Modals:** All "New"/"Edit" modals use the same fields; Edit pre-fills data. Use the shared Modal component from `src/components/ui/Modal` with props: `isOpen`, `onClose`, `title`, `children`, and optional `size`. Modals close on 'esc'. Long modals: scrollable, no visible scrollbars, action buttons fixed at bottom. All forms and modals use the same input and Button styles. Do not use non-existent props like `open`, `onSave`, or `item` on Modal.
 - **Photo Columns:** Any table with photo data must include a photo column.
-- **KPI/Stat Cards:** Use Card layout: left icon (primary-800), right stacked title/value, white, rounded, subtle shadow, hover effect, responsive, animated. Use for summary/stat cards where relevant. All stat cards must use the Card component and icon prop as in Card.tsx.
+- **KPI/Stat Cards:** Use Card layout: left icon (primary-800, as a ReactNode), right stacked title/value, white, rounded, subtle shadow, hover effect, responsive, animated. Use for summary/stat cards where relevant. All stat cards must use the Card component and icon prop as in Card.tsx. Pass Lucide icons as `<Icon className="w-6 h-6 text-primary-800" />` to the `icon` prop.
 - **Charts:** Use Chart.js for all charts.
 - **Micro-interactions:** Fade-in, success toast, error shake, etc.
-- **Loading/Empty/Error:** Use Spinner, EmptyState, and skeletons for loading. All tables/lists must be responsive and visually consistent.
+- **Loading/Empty/Error:** Use Spinner, EmptyState, and skeletons for loading. All tables/lists must be responsive and visually consistent. Table shows EmptyState if `data.length === 0` and Spinner if `loading` is true.
 
 ## 2a. Implementation Blueprint (Pattern to Follow for All Pages)
 
 - Scaffold new pages with: heading, stat cards (Card), action bar (Button), Table (with summaryRow), and Modal (form).
 - Use config-driven columns, summary, and actions for all tables.
 - Always use shared UI components and pass Lucide icons as props.
-- Add FilterBar and Tabs where needed for filtering and sectioning.
-- Keep all state management and CRUD logic in the page component, using useState/useEffect.
+- Add FilterBar and Tabs where needed for filtering and sectioning. The FilterBar component from `src/components/ui/FilterBar` uses `onSearch`, `onDateRange`, and `onFilterChange` props, not `fields`, `value`, or `onChange`.
+- Keep all state management and CRUD logic in the page component, using useState/useEffect. Use centralized types from `types/index.ts` for all data and forms.
 - All new pages and features must follow these patterns for maximum maintainability and consistency.
 
 ## 3. Directory, Routing & Naming
@@ -56,7 +56,7 @@
 
 ## 6. Code, Docs & Premium Enhancements
 
-- **Centralized Types:** All entity types/interfaces in `types/entities.ts` (Employee, Party, Product, etc.). **Config-Driven:** Sidebar/routes are config-driven. All modals use the same fields for New/Edit; Edit pre-fills data. **Docs:** Add sample table schemas and page mockups (pseudo-code or Figma link). Add glossary (e.g., Godown = warehouse, Emptybag = packaging bag). **Premium Features:** Role-Based Access Control (RBAC) for all modules/pages. Offline-first support (service workers, caching for key pages). Audit logs/activity history for financial & HR operations.
+**Config-Driven:** Sidebar/routes are config-driven. All modals use the same fields for New/Edit; Edit pre-fills data. **Docs:** Add sample table schemas and page mockups (pseudo-code or Figma link). Add glossary (e.g., Godown = warehouse, Emptybag = packaging bag). **Premium Features:** Role-Based Access Control (RBAC) for all modules/pages. Offline-first support (service workers, caching for key pages). Audit logs/activity history for financial & HR operations.
 
 ## 7. Tailwind Custom Utilities (Concise)
 
@@ -143,97 +143,6 @@
 
 - Godown = warehouse. Emptybag = packaging bag.
 
-## 11. Final Project Structure Note
-
-- Single `pages` directory, sidebar navigation as subdirectories, sub-nav/page as files. All code must follow above rules: preserve all v1 fields/features, allow premium UI/UX improvements, use shared components/utilities.
-
-**Dashboard**
-
-- /dashboard
-
-**Settings**
-
-- /settings/general
-- /settings/silo
-- /settings/godown
-
-**Human Resource**
-
-- /hr/designation
-- /hr/employee
-- /hr/attendance
-- /hr/attendance/monthly
-- /hr/salary
-
-**Accounts**
-
-- /head-income
-- /head-expense
-- /head-bank
-- /head-others
-- /transactions
-
-**Party**
-
-- /party-types
-- /parties
-- /parties/payments
-- /parties/due
-- /parties/debts
-
-**Products**
-
-- /category
-- /products
-
-**Empty Bags**
-
-- /emptybag-purchase
-- /emptybag-sales
-- /emptybag-receive
-- /emptybag-payment
-- /emptybag-stocks
-
-**Purchase**
-
-- /purchases
-- /purchase/ledger
-- /rice-purchase
-- /ricepurchase/ledger
-
-**Sales**
-
-- /sales
-- /sale/ledger
-
-**Production**
-
-- /productions
-- /production/details
-
-**Stocks**
-
-- /stocks
-- /stocks-godown
-- /stocks/details
-- /addstocks
-- /production-stocks
-- /production-stock/details
-- /emptybag-stocks
-
-**Reporting**
-
-- /dailyreport
-- /financial-statement
-
-**SMS Service**
-
-- /sms-templates
-- /sendsms
-
-**Database Backup**
-
-- /backup
 
 ## Project Overview
 
@@ -289,10 +198,7 @@ You are generating code for a modern rice mill management system using React, Ty
 
 ## Final Project Structure Note
 
-- The final codebase should have a single `pages` directory.
-- Each main sidebar navigation link is a subdirectory inside `pages`.
-- Each sub-nav/page is a file within its respective directory.
-- All code must follow the above rules: preserve all v1 fields/features, allow premium UI/UX improvements, and use shared components/utilities.
+- All code must follow the above rules: preserve all v1 fields/features, allow premium UI/UX improvements, and use shared components/ui.
 
 ## General Modal & Form Rules
 
