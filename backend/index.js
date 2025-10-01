@@ -7,8 +7,8 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import dashboardRoutes from "./routes/dashboard/dashboard.js";
 
 // 
-import siloRoutes from "./routes/settings/silos.js";
-import Settings from "./routes/settings/general-settings.js";
+import siloRoutes from "./routes/settings/silo.js";
+import Settings from "./routes/settings/general.js";
 
 import employeesRouter from "./routes/hr/employees.js";
 

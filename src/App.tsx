@@ -29,6 +29,7 @@ import HeadIncome from "./pages/accounts/HeadIncome";
 import HeadExpense from "./pages/accounts/HeadExpense";
 import HeadBank from "./pages/accounts/HeadBank";
 import HeadOthers from "./pages/accounts/HeadOthers";
+import Transactions from "./pages/accounts/Transactions";
 
 function App() {
   return (
@@ -70,7 +71,10 @@ function App() {
                 />
                 <Route path="/accounts/head-bank" element={<HeadBank />} />
                 <Route path="/accounts/head-others" element={<HeadOthers />} />
-                {/* Transactions route removed: file does not exist */}
+                <Route
+                  path="/accounts/transactions"
+                  element={<Transactions />}
+                />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
