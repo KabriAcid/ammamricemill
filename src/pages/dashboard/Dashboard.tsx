@@ -13,6 +13,7 @@ import {
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
 import { useToast } from "../../components/ui/Toast";
+import { EmptyState } from "../../components/ui/EmptyState";
 
 interface StatCard {
   title: string;
@@ -42,10 +43,10 @@ const defaultStats: StatCard[] = [
   {
     title: "Total Revenue",
     value: "₦0",
-    change: "0%",
+    change: "-",
     changeType: "positive",
     icon: "revenue",
-    color: "text-green-600",
+    color: "text-primary-600",
   },
   {
     title: "Active Employees",
@@ -53,31 +54,31 @@ const defaultStats: StatCard[] = [
     change: "Active",
     changeType: "positive",
     icon: "employees",
-    color: "text-blue-600",
+    color: "text-primary-600",
   },
   {
     title: "Stock Value",
     value: "₦0",
-    change: "No data",
-    changeType: "negative",
+    change: "-",
+    changeType: "positive",
     icon: "stock",
-    color: "text-orange-600",
+    color: "text-primary-600",
   },
   {
     title: "Active Productions",
     value: "0",
-    change: "No active",
-    changeType: "negative",
+    change: "-",
+    changeType: "positive",
     icon: "productions",
-    color: "text-purple-600",
+    color: "text-primary-600",
   },
   {
     title: "Monthly Sales",
     value: "₦0",
-    change: "0%",
+    change: "-",
     changeType: "positive",
     icon: "sales",
-    color: "text-indigo-600",
+    color: "text-primary-600",
   },
 ];
 
@@ -170,23 +171,15 @@ const Dashboard: React.FC = () => {
   const getActivityIcon = (type: string) => {
     switch (type) {
       case "sale":
-        return <ShoppingCart className="w-4 h-4 text-green-500" />;
+        return <ShoppingCart className="w-4 h-4 text-primary-600" />;
       case "purchase":
-        return <Package className="w-4 h-4 text-blue-500" />;
+        return <Package className="w-4 h-4 text-primary-600" />;
       case "production":
-        return <Factory className="w-4 h-4 text-purple-500" />;
+        return <Factory className="w-4 h-4 text-primary-600" />;
       default:
-        return <Clock className="w-4 h-4 text-gray-500" />;
+        return <Clock className="w-4 h-4 text-primary-600" />;
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -233,12 +226,17 @@ const Dashboard: React.FC = () => {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {stats.map((stat, index) => (
-          <Card key={index} hover className="animate-slide-in">
+          <Card
+            key={index}
+            hover
+            className="animate-slide-in"
+            loading={loading}
+          >
             <div
               className="flex items-center"
               style={{ animationDelay: `${index * 0.1}s` }}
             >
-              <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
+              <div className="p-2 rounded-lg text-primary-600 bg-opacity-10">
                 {iconMap[stat.icon]}
               </div>
               <div className="ml-4 flex-1">
@@ -249,13 +247,7 @@ const Dashboard: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900">
                     {stat.value}
                   </p>
-                  <span
-                    className={`ml-2 text-sm font-medium ${
-                      stat.changeType === "positive"
-                        ? "text-green-600"
-                        : "text-red-600"
-                    }`}
-                  >
+                  <span className="ml-2 text-sm font-medium text-primary-600">
                     {stat.change}
                   </span>
                 </div>
@@ -308,19 +300,26 @@ const Dashboard: React.FC = () => {
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             Recent Activities
           </h3>
-          <div className="space-y-4">
-            {recentActivities.map((activity) => (
-              <div key={activity.id} className="flex items-center space-x-3">
-                <div className="flex-shrink-0">
-                  {getActivityIcon(activity.type)}
+          {recentActivities.length === 0 ? (
+            <EmptyState
+              message="No recent activities"
+              className="py-8"
+            />
+          ) : (
+            <div className="space-y-4">
+              {recentActivities.map((activity) => (
+                <div key={activity.id} className="flex items-center space-x-3">
+                  <div className="flex-shrink-0">
+                    {getActivityIcon(activity.type)}
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-900">{activity.action}</p>
+                    <p className="text-xs text-gray-500">{activity.time}</p>
+                  </div>
                 </div>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-900">{activity.action}</p>
-                  <p className="text-xs text-gray-500">{activity.time}</p>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </Card>
       </div>
 
