@@ -7,8 +7,16 @@ export default function SMSModule() {
   const [activeTab, setActiveTab] = useState("templates");
 
   const tabs = [
-    { id: "templates", label: "SMS Templates" },
-    { id: "send", label: "Send SMS" },
+    {
+      id: "templates",
+      label: "SMS Templates",
+      content: <SMSTemplates />,
+    },
+    {
+      id: "send",
+      label: "Send SMS",
+      content: <SendSMS />,
+    },
   ];
 
   return (
@@ -16,10 +24,6 @@ export default function SMSModule() {
       <h1 className="text-2xl font-bold">SMS Management</h1>
 
       <Tabs tabs={tabs} activeTab={activeTab} onChange={setActiveTab} />
-
-      <div className="mt-6">
-        {activeTab === "templates" ? <SMSTemplates /> : <SendSMS />}
-      </div>
     </div>
   );
 }
