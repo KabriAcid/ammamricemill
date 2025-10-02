@@ -30,10 +30,13 @@ export async function fetcher<T>(
     if (res.status === 401 || res.status === 403) {
       // Don't trigger handler for login-related endpoints
       if (!url.includes("/auth/login") && !url.includes("/auth/logout")) {
-        console.warn(`Auth token invalid/expired - Auto logout triggered
+        console.warn(
+          `Auth token invalid/expired - Auto logout triggered
 Status: ${res.status}
 URL: ${url}
-Response:`, data);
+Response:`,
+          data
+        );
         unauthorizedHandler?.();
       }
     }
