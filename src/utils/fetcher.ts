@@ -1,7 +1,5 @@
-import { ApiResponse } from "../types";
-
 const BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "https://ammamricemill.com";
+  import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
 export async function fetcher<T>(
   url: string,
@@ -15,14 +13,18 @@ export async function fetcher<T>(
       credentials: "include",
       headers: {
         "Content-Type": "application/json",
-        "X-Requested-With": "XMLHttpRequest",
         ...(options.headers || {}),
       },
     });
 
     if (!res.ok) {
-      const errorText = await res.text();
-      throw new ApiError(errorText || `HTTP ${res.status}`, res.status);
+      const errorData = await res.json().catch(() => null);
+      
+      if (errorData && errorData.message) {
+        throw new ApiError(errorData.message, res.status);
+      }
+      
+      throw new ApiError(`Request failed with status ${res.status}`, res.status);
     }
 
     const data = await res.json();

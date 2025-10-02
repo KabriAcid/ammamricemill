@@ -4,55 +4,86 @@ import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
+import { useToast } from "../../components/ui/Toast";
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState("");
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     // Basic validation
     if (!email.trim() || !password.trim()) {
-      setError("Please enter both email and password");
+      showToast(
+        "Please fill in both your email and password to sign in.",
+        "info"
+      );
       return;
     }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      setError("Please enter a valid email address");
+      showToast(
+        "Please enter a valid email address like example@ammamricemill.com",
+        "info"
+      );
       return;
     }
 
     try {
       await login(email, password);
+      showToast("Welcome back! You've successfully signed in.", "success");
       navigate("/dashboard", { replace: true });
     } catch (err) {
       if (err instanceof Error) {
         switch (err.message) {
           case "401":
-            setError("Invalid email or password");
+            showToast(
+              "Oops! The email or password doesn't match our records. Please try again.",
+              "error"
+            );
             break;
           case "403":
-            setError("Your account is inactive. Please contact administrator.");
+            showToast(
+              "Hi there! Your account is currently inactive. Please contact your administrator to activate it.",
+              "error"
+            );
             break;
           case "429":
-            setError("Too many login attempts. Please try again later.");
+            showToast(
+              "For security reasons, please wait a moment before trying again.",
+              "error"
+            );
             break;
           case "500":
-            setError("Server error. Please try again later.");
+            showToast(
+              "We're experiencing some technical difficulties. Please try again in a moment.",
+              "error"
+            );
+            break;
+          case "404":
+            showToast(
+              "Oops! Something went wrong. Please try again in a moment.",
+              "error"
+            );
             break;
           default:
-            setError(err.message || "Login failed. Please try again.");
+            showToast(
+              err.message || "Something went wrong. Please try again.",
+              "error"
+            );
         }
       } else {
-        setError("An unexpected error occurred. Please try again.");
+        showToast(
+          "We're having trouble connecting. Please check your internet connection and try again.",
+          "error"
+        );
       }
     }
   };
@@ -80,17 +111,6 @@ export const Login: React.FC = () => {
             </h1>
             <p className="text-gray-600">Sign in to your account</p>
           </div>
-
-          {/* Error Message */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6"
-            >
-              {error}
-            </motion.div>
-          )}
 
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">

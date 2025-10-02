@@ -2,6 +2,15 @@ export function errorHandler(err, req, res, next) {
   console.error("Error:", err);
 
   // Database connection error
+  if (err.code === "ER_ACCESS_DENIED_ERROR") {
+    return res.status(503).json({
+      success: false,
+      error: "database_auth_error",
+      message: "Unable to connect to database. Please check database credentials.",
+      details: process.env.NODE_ENV === "development" ? err.message : undefined,
+    });
+  }
+
   if (err.code === "ECONNREFUSED" || err.code === "ER_CON_COUNT_ERROR") {
     return res.status(503).json({
       success: false,
