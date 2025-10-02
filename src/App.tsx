@@ -35,15 +35,11 @@ import PartyList from "./pages/party/PartyList";
 import PartyPayments from "./pages/party/PartyPayments";
 import PartyDue from "./pages/party/PartyDue";
 import PartyDebts from "./pages/party/PartyDebts";
-// import PartyLedger from "./pages/party/PartyLedger";
-// import PartyPaymentVoucher from "./pages/party/PartyPaymentVoucher";
-// import PartyDueLedger from "./pages/party/PartyDueLedger";
-// import PartyDebtsLedger from "./pages/party/PartyDebtsLedger";
+
 import CategoryList from "./pages/products/CategoryList";
 import ProductList from "./pages/products/ProductList";
 import EmptybagPurchaseList from "./pages/emptybags/EmptybagPurchaseList";
 import EmptybagSalesList from "./pages/emptybags/EmptybagSalesList";
-// import EmptybagReceive from "./pages/emptybags/EmptybagReceive";
 import EmptybagPaymentList from "./pages/emptybags/EmptybagPaymentList";
 import EmptybagStocksList from "./pages/emptybags/EmptybagStocksList";
 
@@ -55,20 +51,20 @@ import RicePurchaseLedger from "./pages/purchase/RicePurchaseLedger";
 import SalesList from "./pages/sales/SalesList";
 import SaleDetails from "./pages/sales/SaleDetails";
 import SalesLedger from "./pages/sales/SalesLedger";
-import ProductionOrder from "./pages/production/ProductionOrder";
+import ProductionList from "./pages/production/ProductionList";
 import ProductionDetails from "./pages/production/ProductionDetails";
-// import MainStocks from "./pages/stocks/MainStocks";
-// import GodownStocks from "./pages/stocks/GodownStocks";
-// import StockRegister from "./pages/stocks/StockRegister";
-// import AddStocks from "./pages/stocks/AddStocks";
-// import ProductionStocksList from "./pages/stocks/ProductionStocksList";
-// import ProductionStocksDetails from "./pages/stocks/ProductionStocksDetails";
-// import EmptyBagStocks from "./pages/stocks/EmptyBagStocks";
-// import DailyReport from "./pages/reporting/DailyReport";
-// import FinancialStatement from "./pages/reporting/FinancialStatement";
-// import SMSTemplates from "./pages/sms/SMSTemplates";
-// import SendSMS from "./pages/sms/SendSMS";
-// import DatabaseBackup from "./pages/backup/DatabaseBackup";
+import ProductionStockList from "./pages/production/ProductionStockList";
+import ProductionStockDetails from "./pages/production/ProductionStockDetails";
+import StocksDetails from "./pages/stocks/StocksDetails";
+import GodownStocks from "./pages/stocks/GodownStocks";
+import StockRegisterPage from "./pages/stocks/StockRegisterPage";
+import AddStocksList from "./pages/stocks/AddStocksList";
+import EmptyBagStocks from "./pages/stocks/EmptyBagStocks";
+import DailyReport from "./pages/reporting/DailyReport";
+import FinancialStatement from "./pages/reporting/FinancialStatement";
+import { SMSTemplates } from "./pages/sms/SMSTemplates";
+import { SendSMS } from "./pages/sms/SendSMS";
+import DatabaseBackup from "./pages/backup/DatabaseBackup";
 
 function App() {
   return (
@@ -119,10 +115,6 @@ function App() {
                 <Route path="/party/payments" element={<PartyPayments />} />
                 <Route path="/party/due" element={<PartyDue />} />
                 <Route path="/party/debts" element={<PartyDebts />} />
-                {/* <Route path="/party/ledger" element={<PartyLedger />} /> */}
-                {/* <Route path="/party/payments/:id" element={<PartyPaymentVoucher />} /> */}
-                {/* <Route path="/party/due/ledger" element={<PartyDueLedger />} /> */}
-                {/* <Route path="/party/debts/ledger" element={<PartyDebtsLedger />} /> */}
                 <Route path="/category" element={<CategoryList />} />
                 <Route path="/products" element={<ProductList />} />
                 <Route
@@ -133,7 +125,7 @@ function App() {
                   path="/empty/emptybag-sales"
                   element={<EmptybagSalesList />}
                 />
-                {/* <Route path="/empty/emptybag-receive" element={<EmptybagReceive />} /> */}
+
                 <Route
                   path="/empty/emptybag-payment"
                   element={<EmptybagPaymentList />}
@@ -159,20 +151,35 @@ function App() {
                 <Route path="/sales" element={<SalesList />} />
                 <Route path="/sales/:id" element={<SaleDetails />} />
                 <Route path="/sales/ledger" element={<SalesLedger />} />
-                {/* <Route path="/productions" element={<ProductionOrder />} /> */}
-                {/* <Route path="/production/details" element={<ProductionDetails />} /> */}
-                {/* <Route path="/stocks" element={<MainStocks />} /> */}
-                {/* <Route path="/stocks-godown" element={<GodownStocks />} /> */}
-                {/* <Route path="/stocks/details" element={<StockRegister />} /> */}
-                {/* <Route path="/stocks/addstocks" element={<AddStocks />} /> */}
-                {/* <Route path="/stocks/production-stocks" element={<ProductionStocksList />} /> */}
-                {/* <Route path="/stocks/production-stock/details" element={<ProductionStocksDetails />} /> */}
-                {/* <Route path="/stocks/emptybag-stocks" element={<EmptyBagStocks />} /> */}
-                {/* <Route path="/dailyreport" element={<DailyReport />} /> */}
-                {/* <Route path="/financial-statement" element={<FinancialStatement />} /> */}
-                {/* <Route path="/sms-templates" element={<SMSTemplates />} /> */}
-                {/* <Route path="/sendsms" element={<SendSMS />} /> */}
-                {/* <Route path="/backup" element={<DatabaseBackup />} /> */}
+                <Route path="/productions" element={<ProductionList />} />
+                <Route
+                  path="/production/details"
+                  element={<ProductionDetails />}
+                />
+                <Route path="/stocks" element={<StocksDetails />} />
+                <Route path="/stocks-godown" element={<GodownStocks />} />
+                <Route path="/stocks/details" element={<StockRegisterPage />} />
+                <Route path="/stocks/addstocks" element={<AddStocksList />} />
+                <Route
+                  path="/stocks/production-stocks"
+                  element={<ProductionStockList />}
+                />
+                <Route
+                  path="/stocks/production-stock/details"
+                  element={<ProductionStockDetails />}
+                />
+                <Route
+                  path="/stocks/emptybag-stocks"
+                  element={<EmptyBagStocks />}
+                />
+                <Route path="/dailyreport" element={<DailyReport />} />
+                <Route
+                  path="/financial-statement"
+                  element={<FinancialStatement />}
+                />
+                <Route path="/sms-templates" element={<SMSTemplates />} />
+                <Route path="/sendsms" element={<SendSMS />} />
+                <Route path="/backup" element={<DatabaseBackup />} />
               </Route>
               <Route path="*" element={<NotFound />} />
             </Routes>
