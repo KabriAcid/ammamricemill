@@ -88,6 +88,13 @@ dotenv.config();
 
 const app = express();
 
+// Request logging middleware
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  console.log("Headers:", req.headers);
+  next();
+});
+
 app.use(
   cors({
     origin: ["http://localhost:5173", "http://localhost:3000"],
@@ -101,6 +108,7 @@ app.use(
       "Origin",
     ],
     exposedHeaders: ["Content-Range", "X-Content-Range"],
+    optionsSuccessStatus: 200,
   })
 );
 
@@ -110,14 +118,13 @@ app.options("*", cors());
 app.use(express.json());
 app.use(cookieParser());
 
-app.use(errorHandler);
+// Routes
 app.use("/api", routes);
-
-// auth
 app.use("/api/auth", authRoutes);
-
-// dashboard
 app.use("/api/dashboard", dashboardRoutes);
+
+// Error handler should be after all routes
+app.use(errorHandler);
 /*
 app.use("/api/backup", backupRoutes);
 

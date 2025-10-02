@@ -19,6 +19,11 @@ import {
 
 const router = express.Router();
 
+// Verify environment variables
+console.log("Environment check:");
+console.log("JWT_SECRET exists:", !!JWT_SECRET);
+console.log("REFRESH_TOKEN_SECRET exists:", !!REFRESH_TOKEN_SECRET);
+
 // Login route
 router.post("/login", async (req, res, next) => {
   try {
@@ -31,19 +36,26 @@ router.post("/login", async (req, res, next) => {
       });
     }
 
+    console.log("Attempting login for email:", email);
+
     const [rows] = await pool.query(
       "SELECT id, name, email, password_hash, role, status FROM users WHERE email = ?",
       [email]
     );
 
+    console.log("Query result:", rows);
+
     const user = rows[0];
 
     if (!user) {
+      console.log("No user found with email:", email);
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
+
+    console.log("Found user:", { ...user, password_hash: "[HIDDEN]" });
 
     if (user.status !== "active") {
       return res.status(403).json({
@@ -53,66 +65,121 @@ router.post("/login", async (req, res, next) => {
     }
 
     try {
+      console.log("Attempting password verification");
       const valid = await verifyPassword(password, user.password_hash);
+      console.log("Password verification result:", valid);
+
       if (!valid) {
+        console.log("Password verification failed");
         return res.status(401).json({
           success: false,
           message: "Invalid email or password",
         });
       }
+      console.log("Password verification successful");
     } catch (error) {
-      console.error("Password verification failed:", error);
+      console.error("Password verification error:", error);
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
       });
     }
 
-    const accessToken = jwt.sign(
-      {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-      },
-      JWT_SECRET,
-      { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
-    );
-
-    const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
-      expiresIn: REFRESH_TOKEN_EXPIRES_IN,
-    });
-    // Set cookies with secure options
-    res.cookie("token", accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 24 hours
-    });
-
-    res.cookie("refreshToken", refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/api/auth/refresh",
-      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-    });
-
-    res.json({
-      success: true,
-      data: {
-        user: {
+    console.log("Creating tokens...");
+    try {
+      const accessToken = jwt.sign(
+        {
           id: user.id,
-          name: user.name,
           email: user.email,
+          name: user.name,
           role: user.role,
         },
-        accessToken,
-        refreshToken,
-      },
-    });
+        JWT_SECRET,
+        { expiresIn: ACCESS_TOKEN_EXPIRES_IN }
+      );
+      console.log("Access token created");
+
+      const refreshToken = jwt.sign({ id: user.id }, REFRESH_TOKEN_SECRET, {
+        expiresIn: REFRESH_TOKEN_EXPIRES_IN,
+      });
+      console.log("Refresh token created");
+
+      // Set cookies with secure options
+      console.log("Setting cookies...");
+      console.log("Cookie options:", {
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.DOMAIN
+            : "localhost",
+      });
+      const tokenCookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        maxAge: 24 * 60 * 60 * 1000, // 24 hours
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.DOMAIN
+            : "localhost",
+        path: "/",
+      };
+
+      const refreshTokenCookieOptions = {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+        path: "/api/auth/refresh",
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        domain:
+          process.env.NODE_ENV === "production"
+            ? process.env.DOMAIN
+            : "localhost",
+      };
+
+      console.log(
+        "Setting access token cookie with options:",
+        tokenCookieOptions
+      );
+      res.cookie("token", accessToken, tokenCookieOptions);
+
+      console.log(
+        "Setting refresh token cookie with options:",
+        refreshTokenCookieOptions
+      );
+      res.cookie("refreshToken", refreshToken, refreshTokenCookieOptions);
+      console.log("Cookies set successfully");
+
+      console.log("Sending response...");
+      res.json({
+        success: true,
+        data: {
+          user: {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+          },
+          accessToken,
+          refreshToken,
+        },
+      });
+      console.log("Response sent successfully");
+    } catch (error) {
+      console.error("Error in final login steps:", error);
+      return res.status(500).json({
+        success: false,
+        message: "Error completing login process",
+      });
+    }
   } catch (err) {
-    next(err);
+    console.error("Error in login route:", err);
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error during login",
+      error: err.message,
+    });
   }
 });
 
