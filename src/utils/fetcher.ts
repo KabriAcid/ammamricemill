@@ -17,23 +17,19 @@ export async function fetcher<T>(
       },
     });
 
+    const data = await res.json();
+
+    // If response is not ok, throw error even if we got JSON
     if (!res.ok) {
-      const errorData = await res.json().catch(() => null);
-
-      if (errorData && errorData.message) {
-        throw new ApiError(errorData.message, res.status);
-      }
-
       throw new ApiError(
-        `Request failed with status ${res.status}`,
+        data?.message || `Request failed with status ${res.status}`,
         res.status
       );
     }
 
-    const data = await res.json();
-
-    if (!data) {
-      throw new ApiError("No data returned from server", 204);
+    // Check if we have a valid API response
+    if (!data || (typeof data.success === "boolean" && !data.success)) {
+      throw new ApiError(data?.message || "Operation failed", res.status);
     }
 
     return data;

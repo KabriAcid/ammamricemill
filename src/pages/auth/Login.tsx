@@ -37,47 +37,38 @@ export const Login: React.FC = () => {
     }
 
     try {
+      // Add a delay before login (1.2 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       await login(email, password);
+
+      // Add a small delay before showing success message and redirecting (0.5 seconds)
+      await new Promise((resolve) => setTimeout(resolve, 500));
       showToast("Welcome back! You've successfully signed in.", "success");
       navigate("/dashboard", { replace: true });
     } catch (err) {
+      console.error("Login error:", err);
       if (err instanceof Error) {
-        switch (err.message) {
-          case "401":
-            showToast(
-              "Oops! The email or password doesn't match our records. Please try again.",
-              "error"
-            );
-            break;
-          case "403":
-            showToast(
-              "Hi there! Your account is currently inactive. Please contact your administrator to activate it.",
-              "error"
-            );
-            break;
-          case "429":
-            showToast(
-              "For security reasons, please wait a moment before trying again.",
-              "error"
-            );
-            break;
-          case "500":
-            showToast(
-              "We're experiencing some technical difficulties. Please try again in a moment.",
-              "error"
-            );
-            break;
-          case "404":
-            showToast(
-              "Oops! Something went wrong. Please try again in a moment.",
-              "error"
-            );
-            break;
-          default:
-            showToast(
-              err.message || "Something went wrong. Please try again.",
-              "error"
-            );
+        const message = err.message.toLowerCase();
+        if (message.includes("invalid email or password")) {
+          showToast(
+            "Oops! The email or password doesn't match our records. Please try again.",
+            "error"
+          );
+        } else if (message.includes("inactive")) {
+          showToast(
+            "Hi there! Your account is currently inactive. Please contact your administrator to activate it.",
+            "error"
+          );
+        } else if (message.includes("too many")) {
+          showToast(
+            "For security reasons, please wait a moment before trying again.",
+            "error"
+          );
+        } else {
+          showToast(
+            err.message || "Something went wrong. Please try again.",
+            "error"
+          );
         }
       } else {
         showToast(
@@ -166,7 +157,7 @@ export const Login: React.FC = () => {
               loading={isLoading}
               className="w-full"
             >
-              Sign In
+              {isLoading ? "Signing in..." : "Sign In"}
             </Button>
           </form>
 

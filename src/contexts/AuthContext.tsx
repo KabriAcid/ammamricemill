@@ -107,16 +107,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
         throw new Error("Please enter both email and password");
       }
 
-      const { data } = await api.post<ApiResponse<LoginResponse>>(
-        "/auth/login",
-        { email, password }
-      );
+      const response = await api.post<LoginResponse>("/auth/login", {
+        email,
+        password,
+      });
 
-      if (!data || !data.success) {
-        throw new Error(data?.message || "Login failed");
+      if (!response.success || !response.data) {
+        throw new Error(response.message || "Login failed");
       }
 
-      const { user } = data.data!;
+      const { user } = response.data;
 
       dispatch({ type: "SET_USER", payload: user });
 
@@ -141,12 +141,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const logout = async () => {
     try {
-      // For development - just clear localStorage
+      dispatch({ type: "SET_LOADING", payload: true });
+      
+      // Call backend logout endpoint
+      const response = await api.post<ApiResponse>("/auth/logout", {});
+      
+      if (!response.success) {
+        throw new Error(response.message || "Logout failed");
+      }
+
+      // Clear local storage
       localStorage.removeItem("ammam_user");
+      
+      // Clear state
+      dispatch({ type: "LOGOUT" });
     } catch (error) {
       console.error("Logout error:", error);
-    } finally {
+      // Still clear local storage and state even if API call fails
+      localStorage.removeItem("ammam_user");
       dispatch({ type: "LOGOUT" });
+      throw error;
+    } finally {
+      dispatch({ type: "SET_LOADING", payload: false });
     }
   };
 

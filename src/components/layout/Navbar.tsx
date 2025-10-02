@@ -1,13 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Menu,
-  User,
-  LogOut,
-  ChevronDown,
-  Home,
-  Lock,
-} from "lucide-react";
+import { Menu, User, LogOut, ChevronDown, Home, Lock } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUI } from "../../contexts/UIContext";
 import { useNavigate } from "react-router-dom";
@@ -106,11 +99,29 @@ export const Navbar: React.FC = () => {
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200"
+                className={`
+                  flex items-center space-x-3 p-2 rounded-lg
+                  transition-all duration-200 relative
+                  ${
+                    dropdownOpen
+                      ? "bg-primary-50 ring-2 ring-primary-200"
+                      : "hover:bg-gray-100"
+                  }
+                `}
                 aria-expanded={dropdownOpen}
                 aria-haspopup="true"
               >
-                <div className="w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center">
+                <div
+                  className={`
+                  w-8 h-8 rounded-lg flex items-center justify-center
+                  transition-all duration-200
+                  ${
+                    dropdownOpen
+                      ? "bg-primary-500 scale-110"
+                      : "bg-primary-500 hover:scale-110"
+                  }
+                `}
+                >
                   <User size={18} className="text-white" />
                 </div>
                 <div className="hidden md:block text-left">
@@ -123,9 +134,10 @@ export const Navbar: React.FC = () => {
                 </div>
                 <ChevronDown
                   size={16}
-                  className={`text-gray-500 transition-transform duration-200 ${
-                    dropdownOpen ? "rotate-180" : ""
-                  }`}
+                  className={`
+                    text-gray-500 transition-transform duration-200
+                    ${dropdownOpen ? "rotate-180 text-primary-500" : ""}
+                  `}
                 />
               </button>
 
@@ -135,19 +147,22 @@ export const Navbar: React.FC = () => {
                     initial={{ opacity: 0, y: -10, scale: 0.95 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{ duration: 0.2 }}
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2"
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 overflow-hidden"
                   >
                     {menuItems.map((item, index) => (
-                      <button
+                      <motion.button
                         key={index}
+                        initial={{ x: -20, opacity: 0 }}
+                        animate={{ x: 0, opacity: 1 }}
+                        transition={{ delay: index * 0.05 }}
                         onClick={() => {
                           item.onClick();
                           setDropdownOpen(false);
                         }}
                         className={`
-                          w-full flex items-center space-x-3 px-4 py-2 text-left text-sm
-                          transition-colors duration-200
+                          w-full flex items-center px-4 py-2.5 text-left text-sm
+                          transition-colors duration-200 relative group
                           ${
                             item.danger
                               ? "text-red-600 hover:bg-red-50"
@@ -155,9 +170,24 @@ export const Navbar: React.FC = () => {
                           }
                         `}
                       >
-                        <item.icon size={16} />
-                        <span>{item.label}</span>
-                      </button>
+                        <span className="flex items-center w-full">
+                          <span
+                            className={`
+                            flex items-center justify-center w-8 h-8 rounded-lg
+                            ${item.danger ? "bg-red-100" : "bg-gray-100"}
+                            group-hover:scale-110 transition-transform duration-200
+                          `}
+                          >
+                            <item.icon
+                              size={16}
+                              className={
+                                item.danger ? "text-red-600" : "text-gray-600"
+                              }
+                            />
+                          </span>
+                          <span className="ml-3 font-medium">{item.label}</span>
+                        </span>
+                      </motion.button>
                     ))}
                   </motion.div>
                 )}
