@@ -1,9 +1,16 @@
-import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Menu, User, LogOut, ChevronDown, Home, Lock } from "lucide-react";
-import { useAuth } from "../../contexts/AuthContext";
-import { useUI } from "../../contexts/UIContext";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { 
+  Menu, 
+  User, 
+  LogOut, 
+  ChevronDown,
+  Home,
+  Lock
+} from 'lucide-react';
+import { useAuth } from '../../contexts/AuthContext';
+import { useUI } from '../../contexts/UIContext';
+import { useNavigate } from 'react-router-dom';
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
@@ -14,64 +21,61 @@ export const Navbar: React.FC = () => {
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
     };
 
     const handleEscape = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === 'Escape') {
         setDropdownOpen(false);
       }
     };
 
-    document.addEventListener("mousedown", handleClickOutside);
-    document.addEventListener("keydown", handleEscape);
-
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+    
     return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
     };
   }, []);
 
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login");
+      navigate('/login');
     } catch (error) {
-      console.error("Logout failed:", error);
+      console.error('Logout failed:', error);
     }
   };
 
   const menuItems = [
     {
       icon: Home,
-      label: "Dashboard",
-      onClick: () => navigate("/dashboard"),
+      label: 'Dashboard',
+      onClick: () => navigate('/dashboard'),
     },
     {
       icon: User,
-      label: "Profile",
-      onClick: () => navigate("/profile"),
+      label: 'Profile',
+      onClick: () => navigate(`/user/${user?.id}`),
     },
     {
       icon: Lock,
-      label: "Change Password",
-      onClick: () => navigate("/change-password"),
+      label: 'Change Password',
+      onClick: () => navigate(`/user/${user?.id}/password`),
     },
     {
       icon: LogOut,
-      label: "Logout",
+      label: 'Logout',
       onClick: handleLogout,
       danger: true,
     },
   ];
 
   return (
-    <nav className="bg-white ml-3 shadow-lg border-b border-gray-200 rounded z-40">
+    <nav className="bg-white shadow-lg border-b border-gray-200 fixed top-0 left-0 right-0 z-40">
       <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Left side */}
@@ -83,6 +87,15 @@ export const Navbar: React.FC = () => {
             >
               <Menu size={24} />
             </button>
+            
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-primary-500 rounded-lg flex items-center justify-center">
+                <span className="text-white font-bold text-sm">A</span>
+              </div>
+              <h1 className="text-xl font-bold text-gray-900 hidden sm:block">
+                AMMAM RICE MILL LTD.
+              </h1>
+            </div>
           </div>
 
           {/* Right side */}
@@ -99,17 +112,15 @@ export const Navbar: React.FC = () => {
                 </div>
                 <div className="hidden md:block text-left">
                   <p className="text-sm font-medium text-gray-900">
-                    Hi, {user?.name || "User"}
+                    Hi, {user?.name || 'User'}
                   </p>
-                  <p className="text-xs text-gray-500">
-                    {user?.role || "Admin"}
-                  </p>
+                  <p className="text-xs text-gray-500">{user?.role || 'Admin'}</p>
                 </div>
-                <ChevronDown
-                  size={16}
+                <ChevronDown 
+                  size={16} 
                   className={`text-gray-500 transition-transform duration-200 ${
-                    dropdownOpen ? "rotate-180" : ""
-                  }`}
+                    dropdownOpen ? 'rotate-180' : ''
+                  }`} 
                 />
               </button>
 
@@ -132,10 +143,9 @@ export const Navbar: React.FC = () => {
                         className={`
                           w-full flex items-center space-x-3 px-4 py-2 text-left text-sm
                           transition-colors duration-200
-                          ${
-                            item.danger
-                              ? "text-red-600 hover:bg-red-50"
-                              : "text-gray-700 hover:bg-gray-100"
+                          ${item.danger 
+                            ? 'text-red-600 hover:bg-red-50' 
+                            : 'text-gray-700 hover:bg-gray-100'
                           }
                         `}
                       >

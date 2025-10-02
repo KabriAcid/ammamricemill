@@ -483,7 +483,7 @@ Shows all details of a single emptybag sales in printable format, including: inv
 ## Emptybag Payment List Page
 
 - Table columns: #, Date, Invoice No, Party, Items, Quantity, Description, Actions, row selection (checkbox).
-- Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, Search, Clear, Print.
+- Filter/search bar: page size, date range (from/to), invoice search, party/mobile/address search, Search, Print.
 - Actions: New, Delete (multi-select), Print.
 - Modal for New: opens responsive modal (see below).
 - Show totals at bottom (e.g., total quantity).
@@ -501,7 +501,7 @@ Shows all details of a single emptybag sales in printable format, including: inv
 ## Emptybag Stocks List Page
 
 - Table columns: #, Category, Product Name, Size, Weight, Opening, Receive, Purchase, Payment, Sales, Stocks.
-- Filter/search bar: page size, party (dropdown), product search, Search, Clear, Print.
+- Filter/search bar: page size, party (dropdown), product search, Search, Print.
 - Actions: Opening Stock (opens Opening Stock Details form), Print.
 - Show company header, address, and current date above the table.
 - Show totals row at the bottom for all numeric columns.
@@ -632,7 +632,7 @@ Shows all details of a single emptybag sales in printable format, including: inv
 
 ## Daily Report Page
 
-- Date picker, Search, Clear, Print.
+- Date picker, Search, Print.
 - Show opening balance at top.
 - Two tables: Receives (SL, Party, From Head, To Head, Description, Amount), Payments (SL, Party, From Head, To Head, Description, Amount).
 - Show totals at bottom of each table.
@@ -642,7 +642,7 @@ Shows all details of a single emptybag sales in printable format, including: inv
 
 ## Financial Statement Page
 
-- Filter/search bar: date range (from/to), Search, Clear, Print.
+- Filter/search bar: date range (from/to), Search, Print.
 - Show opening balance at top.
 - Two tables: Receives (SL, Head, Amount), Payments (SL, Head, Amount).
 - Show totals at bottom of each table.
