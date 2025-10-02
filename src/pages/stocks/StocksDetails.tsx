@@ -38,8 +38,12 @@ const StocksDetails: React.FC = () => {
   const [categoryFilter, setCategoryFilter] = useState("");
   const [godownFilter, setGodownFilter] = useState("");
   const [loading, setLoading] = useState(false);
-  const [categories, setCategories] = useState<Array<{ id: string; name: string }>>([]);
-  const [godowns, setGodowns] = useState<Array<{ id: string; name: string }>>([]);
+  const [categories, setCategories] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
+  const [godowns, setGodowns] = useState<Array<{ id: string; name: string }>>(
+    []
+  );
 
   // Fetch stocks details
   useEffect(() => {
@@ -97,14 +101,18 @@ const StocksDetails: React.FC = () => {
     const matchesSearch =
       stock.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       stock.categoryName?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory = !categoryFilter || stock.categoryId === categoryFilter;
+    const matchesCategory =
+      !categoryFilter || stock.categoryId === categoryFilter;
     return matchesSearch && matchesCategory;
   });
 
   // Pagination
   const totalPages = Math.ceil(filteredStocks.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedStocks = filteredStocks.slice(startIndex, startIndex + pageSize);
+  const paginatedStocks = filteredStocks.slice(
+    startIndex,
+    startIndex + pageSize
+  );
 
   // Table columns
   const columns = [
@@ -149,12 +157,12 @@ const StocksDetails: React.FC = () => {
     {
       key: "avgPrice",
       label: "Avg Price",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
     {
       key: "totalPrice",
       label: "Total Price",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
   ];
 
@@ -163,7 +171,7 @@ const StocksDetails: React.FC = () => {
     totalStock: stocks.reduce((sum, s) => sum + s.stock, 0),
     totalValue: stocks.reduce((sum, s) => sum + s.totalPrice, 0),
     totalProducts: stocks.length,
-    totalCategories: new Set(stocks.map(s => s.categoryId)).size,
+    totalCategories: new Set(stocks.map((s) => s.categoryId)).size,
   };
 
   // Calculate totals for table footer
@@ -203,7 +211,7 @@ const StocksDetails: React.FC = () => {
         <Card icon={<DollarSign size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              ₹{stats.totalValue.toLocaleString()}
+              ₦{stats.totalValue.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Total Value</p>
           </div>
@@ -236,7 +244,10 @@ const StocksDetails: React.FC = () => {
       </div>
 
       {/* Filter Bar */}
-      <FilterBar onSearch={setSearchQuery} placeholder="Search by product or category...">
+      <FilterBar
+        onSearch={setSearchQuery}
+        placeholder="Search by product or category..."
+      >
         <div className="flex items-center space-x-2">
           <select
             value={categoryFilter}
@@ -297,7 +308,7 @@ const StocksDetails: React.FC = () => {
           production: totals.production.toLocaleString(),
           productionStocks: totals.productionStocks.toLocaleString(),
           stock: totals.stock.toLocaleString(),
-          totalPrice: `₹${totals.totalPrice.toLocaleString()}`,
+          totalPrice: `₦${totals.totalPrice.toLocaleString()}`,
         }}
       />
     </div>

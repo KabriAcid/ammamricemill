@@ -102,17 +102,17 @@ const SalesLedger: React.FC = () => {
     {
       key: "debit",
       label: "Debit",
-      render: (value: number) => (value ? `₹${value.toLocaleString()}` : "-"),
+      render: (value: number) => (value ? `₦${value.toLocaleString()}` : "-"),
     },
     {
       key: "credit",
       label: "Credit",
-      render: (value: number) => (value ? `₹${value.toLocaleString()}` : "-"),
+      render: (value: number) => (value ? `₦${value.toLocaleString()}` : "-"),
     },
     {
       key: "balance",
       label: "Balance",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
   ];
 
@@ -139,19 +139,19 @@ const SalesLedger: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Debit</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₹{summary.totalDebit.toLocaleString()}
+            ₦{summary.totalDebit.toLocaleString()}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Credit</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₹{summary.totalCredit.toLocaleString()}
+            ₦{summary.totalCredit.toLocaleString()}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Current Balance</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₹{summary.currentBalance.toLocaleString()}
+            ₦{summary.currentBalance.toLocaleString()}
           </p>
         </div>
       </div>

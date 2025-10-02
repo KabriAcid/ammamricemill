@@ -166,10 +166,10 @@ const PurchaseDetails: React.FC = () => {
                   {item.netWeight.toLocaleString()}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  ₹{item.rate.toLocaleString()}
+                  ₦{item.rate.toLocaleString()}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  ₹{item.totalPrice.toLocaleString()}
+                  ₦{item.totalPrice.toLocaleString()}
                 </td>
               </tr>
             ))}
@@ -187,7 +187,7 @@ const PurchaseDetails: React.FC = () => {
               </td>
               <td className="px-3 py-2"></td>
               <td className="px-3 py-2 text-sm font-medium">
-                ₹{purchase.invoiceAmount.toLocaleString()}
+                ₦{purchase.invoiceAmount.toLocaleString()}
               </td>
             </tr>
           </tfoot>
@@ -200,31 +200,31 @@ const PurchaseDetails: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Invoice Amount:</span>
-            <span>₹{purchase.invoiceAmount.toLocaleString()}</span>
+            <span>₦{purchase.invoiceAmount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Discount:</span>
-            <span>₹{purchase.discount.toLocaleString()}</span>
+            <span>₦{purchase.discount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Total Amount:</span>
-            <span>₹{purchase.totalAmount.toLocaleString()}</span>
+            <span>₦{purchase.totalAmount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Previous Balance:</span>
-            <span>₹{purchase.previousBalance.toLocaleString()}</span>
+            <span>₦{purchase.previousBalance.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Net Payable:</span>
-            <span>₹{purchase.netPayable.toLocaleString()}</span>
+            <span>₦{purchase.netPayable.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Paid Amount:</span>
-            <span>₹{purchase.paidAmount.toLocaleString()}</span>
+            <span>₦{purchase.paidAmount.toLocaleString()}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Current Balance:</span>
-            <span>₹{purchase.currentBalance.toLocaleString()}</span>
+            <span>₦{purchase.currentBalance.toLocaleString()}</span>
           </div>
         </div>
       </div>

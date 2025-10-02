@@ -159,7 +159,7 @@ const PartyDebts = () => {
               Total Debts
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              ₹{totalDebts}
+              ₦{totalDebts}
             </div>
           </div>
         </Card>

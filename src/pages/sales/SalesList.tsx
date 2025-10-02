@@ -119,17 +119,17 @@ const SalesList: React.FC = () => {
     {
       key: "totalAmount",
       label: "Total",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
     {
       key: "paidAmount",
       label: "Paid",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
     {
       key: "currentBalance",
       label: "Balance",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
   ];
 
@@ -223,13 +223,13 @@ const SalesList: React.FC = () => {
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₹{stats.totalAmount.toLocaleString()}
+            ₦{stats.totalAmount.toLocaleString()}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
           <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₹{stats.totalBalance.toLocaleString()}
+            ₦{stats.totalBalance.toLocaleString()}
           </p>
         </div>
       </div>

@@ -74,7 +74,7 @@ router.get("/stats", authenticateToken, async (req, res, next) => {
     const statsData = [
       {
         title: "Total Revenue",
-        value: `₹${Number(revenue).toLocaleString()}`,
+        value: `₦${Number(revenue).toLocaleString()}`,
         change: `${monthlyGrowth}%`,
         changeType: Number(monthlyGrowth) >= 0 ? "positive" : "negative",
         icon: "revenue",
@@ -90,7 +90,7 @@ router.get("/stats", authenticateToken, async (req, res, next) => {
       },
       {
         title: "Stock Value",
-        value: `₹${Number(stock).toLocaleString()}`,
+        value: `₦${Number(stock).toLocaleString()}`,
         change: lowStock > 0 ? `${lowStock} low stock` : "Healthy",
         changeType: lowStock > 0 ? "negative" : "positive",
         icon: "stock",
@@ -106,7 +106,7 @@ router.get("/stats", authenticateToken, async (req, res, next) => {
       },
       {
         title: "Monthly Sales",
-        value: `₹${Number(monthlySales).toLocaleString()}`,
+        value: `₦${Number(monthlySales).toLocaleString()}`,
         change: `${monthlyGrowth}%`,
         changeType: Number(monthlyGrowth) >= 0 ? "positive" : "negative",
         icon: "sales",
@@ -130,7 +130,7 @@ router.get("/activities", authenticateToken, async (req, res, next) => {
     const [activities] = await pool.query(
       `(SELECT 
           'sale' as type,
-          CONCAT('New sale of ₹', total_amount, ' to ', 
+          CONCAT('New sale of ₦', total_amount, ' to ', 
                  COALESCE((SELECT name FROM parties WHERE id = sales.party_id), 'Unknown')) as action,
           date as date
         FROM sales
@@ -140,7 +140,7 @@ router.get("/activities", authenticateToken, async (req, res, next) => {
       UNION ALL
       (SELECT 
           'purchase' as type,
-          CONCAT('New purchase of ₹', total_amount, ' from ',
+          CONCAT('New purchase of ₦', total_amount, ' from ',
                  COALESCE((SELECT name FROM parties WHERE id = purchases.party_id), 'Unknown')) as action,
           date as date
         FROM purchases

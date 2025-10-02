@@ -159,7 +159,7 @@ const PartyDue = () => {
             <div className="text-xs uppercase text-gray-500 font-semibold">
               Total Due
             </div>
-            <div className="text-2xl font-bold text-gray-900">₹{totalDue}</div>
+            <div className="text-2xl font-bold text-gray-900">₦{totalDue}</div>
           </div>
         </Card>
         <Card icon={<UserCheck className="w-8 h-8 text-green-700" />}>

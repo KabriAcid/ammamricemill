@@ -134,7 +134,7 @@ const EmployeeList: React.FC = () => {
       label: "Salary",
       render: (value: number, item: Employee) => (
         <span>
-          ₹{value.toLocaleString()}{" "}
+          ₦{value.toLocaleString()}{" "}
           <small className="text-gray-500">/{item.salaryType}</small>
         </span>
       ),
@@ -339,7 +339,7 @@ const EmployeeList: React.FC = () => {
         <Card icon={<Wallet size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              ₹{totalSalary.toLocaleString()}
+              ₦{totalSalary.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Total Monthly Salary</p>
           </div>

@@ -105,12 +105,12 @@ const PurchaseLedger: React.FC = () => {
     {
       key: "rate",
       label: "Rate",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
     {
       key: "totalPrice",
       label: "Total Price",
-      render: (value: number) => `₹${value.toLocaleString()}`,
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
   ];
 
@@ -163,7 +163,7 @@ const PurchaseLedger: React.FC = () => {
         <Card icon={<DollarSign size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              ₹{stats.totalAmount.toLocaleString()}
+              ₦{stats.totalAmount.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Total Amount</p>
           </div>

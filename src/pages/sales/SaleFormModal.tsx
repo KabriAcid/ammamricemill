@@ -465,7 +465,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Invoice Amount:</div>
               <div className="text-sm font-medium">
-                ₹{formData.invoiceAmount?.toLocaleString()}
+                ₦{formData.invoiceAmount?.toLocaleString()}
               </div>
             </div>
             <div>
@@ -502,7 +502,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Total Amount:</div>
               <div className="text-sm font-medium">
-                ₹{formData.totalAmount?.toLocaleString()}
+                ₦{formData.totalAmount?.toLocaleString()}
               </div>
             </div>
             <div>
@@ -535,7 +535,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Net Payable:</div>
               <div className="text-sm font-medium">
-                ₹{formData.netPayable?.toLocaleString()}
+                ₦{formData.netPayable?.toLocaleString()}
               </div>
             </div>
             <div>
@@ -565,7 +565,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Current Balance:</div>
               <div className="text-sm font-medium">
-                ₹{formData.currentBalance?.toLocaleString()}
+                ₦{formData.currentBalance?.toLocaleString()}
               </div>
             </div>
           </div>

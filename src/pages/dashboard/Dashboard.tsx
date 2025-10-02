@@ -38,8 +38,51 @@ interface Activity {
   type: string;
 }
 
+const defaultStats: StatCard[] = [
+  {
+    title: "Total Revenue",
+    value: "₦0",
+    change: "0%",
+    changeType: "positive",
+    icon: "revenue",
+    color: "text-green-600",
+  },
+  {
+    title: "Active Employees",
+    value: "0",
+    change: "Active",
+    changeType: "positive",
+    icon: "employees",
+    color: "text-blue-600",
+  },
+  {
+    title: "Stock Value",
+    value: "₦0",
+    change: "No data",
+    changeType: "negative",
+    icon: "stock",
+    color: "text-orange-600",
+  },
+  {
+    title: "Active Productions",
+    value: "0",
+    change: "No active",
+    changeType: "negative",
+    icon: "productions",
+    color: "text-purple-600",
+  },
+  {
+    title: "Monthly Sales",
+    value: "₦0",
+    change: "0%",
+    changeType: "positive",
+    icon: "sales",
+    color: "text-indigo-600",
+  },
+];
+
 const Dashboard: React.FC = () => {
-  const [stats, setStats] = useState<StatCard[]>([]);
+  const [stats, setStats] = useState<StatCard[]>(defaultStats);
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -84,14 +127,24 @@ const Dashboard: React.FC = () => {
 
       if (statsData.success && activitiesData.success) {
         console.log("Setting stats:", statsData.data);
-        setStats(statsData.data);
+        const updatedStats = defaultStats.map((defaultStat) => {
+          const receivedStat = statsData.data.find(
+            (s: StatCard) => s.title === defaultStat.title
+          );
+          return receivedStat || defaultStat;
+        });
+        setStats(updatedStats);
         setRecentActivities(activitiesData.data);
       } else {
+        setStats(defaultStats);
+        setRecentActivities([]);
         throw new Error("Invalid data received from server");
       }
     } catch (error) {
       console.error("Dashboard fetch failed:", error);
       showToast("Failed to load dashboard data. Please try again.", "error");
+      setStats(defaultStats);
+      setRecentActivities([]);
     } finally {
       setLoading(false);
     }

@@ -135,47 +135,47 @@ const SaleDetails: React.FC = () => {
                   Invoice Amount:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.invoiceAmount.toLocaleString()}
+                  ₦{sale.invoiceAmount.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">Discount:</dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.discount.toLocaleString()}
+                  ₦{sale.discount.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">
                   Total Amount:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.totalAmount.toLocaleString()}
+                  ₦{sale.totalAmount.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">
                   Previous Balance:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.previousBalance.toLocaleString()}
+                  ₦{sale.previousBalance.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">
                   Net Payable:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.netPayable.toLocaleString()}
+                  ₦{sale.netPayable.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">
                   Paid Amount:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.paidAmount.toLocaleString()}
+                  ₦{sale.paidAmount.toLocaleString()}
                 </dd>
 
                 <dt className="text-sm font-medium text-gray-500">
                   Current Balance:
                 </dt>
                 <dd className="text-sm text-gray-900">
-                  ₹{sale.currentBalance.toLocaleString()}
+                  ₦{sale.currentBalance.toLocaleString()}
                 </dd>
               </dl>
             </div>
@@ -228,10 +228,10 @@ const SaleDetails: React.FC = () => {
                       {item.netWeight.toLocaleString()}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ₹{item.rate.toLocaleString()}
+                      ₦{item.rate.toLocaleString()}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                      ₹{item.totalPrice.toLocaleString()}
+                      ₦{item.totalPrice.toLocaleString()}
                     </td>
                   </tr>
                 ))}
