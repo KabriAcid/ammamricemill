@@ -6,6 +6,7 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 
 // dashboard
 import dashboardRoutes from "./routes/dashboard.js";
+/*
 import backupRoutes from "./routes/backup.js";
 
 // settings
@@ -76,6 +77,8 @@ import financialStatementRoutes from "./routes/reporting/financial-statement.js"
 import smsTemplatesRoutes from "./routes/sms/templates.js";
 import smsSendRoutes from "./routes/sms/send.js";
 
+*/
+
 // global index
 import routes from "./routes/index.js";
 
@@ -98,7 +101,8 @@ app.use("/api", routes);
 
 // dashboard
 app.use("/api/dashboard", dashboardRoutes);
-// app.use("/api/backup", backupRoutes);
+/*
+app.use("/api/backup", backupRoutes);
 
 // settings
 app.use("/api/general", generalRoutes);

@@ -7,7 +7,24 @@ const router = Router();
 // GET /api/general  → fetch settings
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM settings LIMIT 1");
+    const [rows] = await pool.query(`
+      SELECT 
+        id,
+        site_name as siteName,
+        description,
+        address,
+        proprietor,
+        proprietor_email as proprietorEmail,
+        contact_no as contactNo,
+        items_per_page as itemsPerPage,
+        copyright_text as copyrightText,
+        logo_url as logoUrl,
+        favicon_url as faviconUrl,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM settings 
+      LIMIT 1
+    `);
     res.json({ success: true, data: rows[0] || {} });
   } catch (err) {
     next(err);
@@ -42,8 +59,9 @@ router.post("/", authenticateToken, async (req, res, next) => {
 
     const [result] = await pool.query(
       `INSERT INTO settings 
-       (company_name, address, phone, email, tax_rate, currency, timezone, date_format) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+       (site_name, description, address, proprietor, proprietor_email, 
+        contact_no, items_per_page, copyright_text, logo_url, favicon_url, created_at, updated_at) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
         siteName,
         description,
@@ -87,7 +105,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     const { id } = req.params;
 
     const [result] = await pool.query(
-      `UPDATE general_settings 
+      `UPDATE settings 
        SET site_name=?, description=?, address=?, proprietor=?, proprietor_email=?, 
            contact_no=?, items_per_page=?, copyright_text=?, 
            logo_url=?, favicon_url=?, updated_at=NOW() 

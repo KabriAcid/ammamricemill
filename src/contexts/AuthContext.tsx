@@ -2,6 +2,20 @@ import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { User, AuthState } from "../types";
 import { api, ApiError } from "../utils/fetcher";
 
+interface ApiResponse<T = any> {
+  success: boolean;
+  message?: string;
+  data?: T;
+}
+
+interface LoginResponseData {
+  user: User;
+  accessToken: string;
+  refreshToken: string;
+}
+
+type LoginResponse = ApiResponse<LoginResponseData>;
+
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -55,15 +69,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      // For development - check if user is stored in localStorage
+      // First try to get the stored user
       const storedUser = localStorage.getItem("ammam_user");
-      if (storedUser) {
-        const user = JSON.parse(storedUser);
-        dispatch({ type: "SET_USER", payload: user });
-      } else {
+
+      if (!storedUser) {
+        dispatch({ type: "SET_USER", payload: null });
+        return;
+      }
+
+      // Verify token with backend
+      try {
+        const response = await api.get<ApiResponse>("/auth/verify");
+        if (response.data.success) {
+          const user = JSON.parse(storedUser);
+          dispatch({ type: "SET_USER", payload: user });
+        } else {
+          // If verification fails, clear stored data
+          localStorage.removeItem("ammam_user");
+          dispatch({ type: "SET_USER", payload: null });
+        }
+      } catch (err) {
+        // If verification request fails, clear stored data
+        localStorage.removeItem("ammam_user");
         dispatch({ type: "SET_USER", payload: null });
       }
     } catch (error) {
+      localStorage.removeItem("ammam_user");
       dispatch({ type: "SET_USER", payload: null });
     }
   };
@@ -72,29 +103,38 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       dispatch({ type: "SET_LOADING", payload: true });
 
-      // For development - accept any email/password combination
-      // In production, this should call your actual API
-      if (email && password) {
-        // Mock user data for development
-        const mockUser: User = {
-          id: 23,
-          name: "ADAM CHEKO",
-          email: email,
-          role: "Admin",
-        };
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        dispatch({ type: "SET_USER", payload: mockUser });
-
-        // Store user in localStorage for development
-        localStorage.setItem("ammam_user", JSON.stringify(mockUser));
-      } else {
+      if (!email || !password) {
         throw new Error("Please enter both email and password");
       }
+
+      const { data } = await api.post<ApiResponse<LoginResponse>>(
+        "/auth/login",
+        { email, password }
+      );
+
+      if (!data || !data.success) {
+        throw new Error(data?.message || "Login failed");
+      }
+
+      const { user } = data.data!;
+
+      dispatch({ type: "SET_USER", payload: user });
+
+      // Only store minimal user info in localStorage for persistence
+      localStorage.setItem(
+        "ammam_user",
+        JSON.stringify({
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        })
+      );
     } catch (error) {
       dispatch({ type: "SET_LOADING", payload: false });
+      if (error instanceof ApiError) {
+        throw new Error(error.message);
+      }
       throw error;
     }
   };

@@ -1,27 +1,59 @@
-import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
-import { useAuth } from '../../contexts/AuthContext';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/Button';
+import React, { useState } from "react";
+import { motion } from "framer-motion";
+import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { Button } from "../../components/ui/Button";
 
 export const Login: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { login, isLoading } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setError("");
+
+    // Basic validation
+    if (!email.trim() || !password.trim()) {
+      setError("Please enter both email and password");
+      return;
+    }
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setError("Please enter a valid email address");
+      return;
+    }
 
     try {
       await login(email, password);
-      navigate('/dashboard');
+      navigate("/dashboard", { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Login failed');
+      if (err instanceof Error) {
+        switch (err.message) {
+          case "401":
+            setError("Invalid email or password");
+            break;
+          case "403":
+            setError("Your account is inactive. Please contact administrator.");
+            break;
+          case "429":
+            setError("Too many login attempts. Please try again later.");
+            break;
+          case "500":
+            setError("Server error. Please try again later.");
+            break;
+          default:
+            setError(err.message || "Login failed. Please try again.");
+        }
+      } else {
+        setError("An unexpected error occurred. Please try again.");
+      }
     }
   };
 
@@ -112,7 +144,6 @@ export const Login: React.FC = () => {
               variant="primary"
               size="lg"
               loading={isLoading}
-              icon={<LogIn size={20} />}
               className="w-full"
             >
               Sign In
