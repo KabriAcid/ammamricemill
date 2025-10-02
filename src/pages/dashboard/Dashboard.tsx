@@ -6,18 +6,31 @@ import {
   TrendingUp,
   Factory,
   ShoppingCart,
+  DollarSign,
+  Archive,
+  AlertTriangle,
+  Clock
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
+import { useToast } from "../../components/ui/Toast";
 
 interface StatCard {
   title: string;
   value: string;
   change: string;
   changeType: "positive" | "negative";
-  icon: React.ReactNode;
+  icon: string;
   color: string;
 }
+
+const iconMap: { [key: string]: React.ReactNode } = {
+  revenue: <DollarSign className="w-6 h-6" />,
+  employees: <Users className="w-6 h-6" />,
+  stock: <Archive className="w-6 h-6" />,
+  productions: <Factory className="w-6 h-6" />,
+  sales: <ShoppingCart className="w-6 h-6" />
+};
 
 interface Activity {
   id: number;
@@ -31,48 +44,90 @@ const Dashboard: React.FC = () => {
   const [recentActivities, setRecentActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const token = localStorage.getItem("token");
+  const { showToast } = useToast();
+  const [timeFrame, setTimeFrame] = useState('today');
 
   useEffect(() => {
-    const fetchDashboard = async () => {
-      try {
-        const statsRes = await fetch(
-          "http://localhost:5000/api/dashboard/stats",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const statsJson = await statsRes.json();
+    fetchDashboardData();
+  }, [timeFrame]);
 
-        const activitiesRes = await fetch(
-          "http://localhost:5000/api/dashboard/activities",
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const activitiesJson = await activitiesRes.json();
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
 
-        setStats(statsJson?.data ?? []);
-        setRecentActivities(activitiesJson?.data ?? []);
-      } catch (err) {
-        console.error("Dashboard fetch failed:", err);
-      } finally {
-        setLoading(false);
+      const [statsRes, activitiesRes] = await Promise.all([
+        fetch("/api/dashboard/stats", {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          }
+        }),
+        fetch("/api/dashboard/activities", {
+          headers: {
+            "Authorization": `Bearer ${localStorage.getItem("token")}`,
+          }
+        })
+      ]);
+
+      if (!statsRes.ok || !activitiesRes.ok) {
+        throw new Error("Failed to fetch dashboard data");
       }
-    };
 
-    fetchDashboard();
-  }, [token]);
+      const statsData = await statsRes.json();
+      const activitiesData = await activitiesRes.json();
+
+      if (statsData.success && activitiesData.success) {
+        setStats(statsData.data);
+        setRecentActivities(activitiesData.data);
+      } else {
+        throw new Error("Invalid data received from server");
+      }
+    } catch (error) {
+      console.error("Dashboard fetch failed:", error);
+      showToast(
+        "Failed to load dashboard data. Please try again.",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleQuickAction = (action: string) => {
+    switch (action) {
+      case "stock":
+        window.location.href = "/stocks/add";
+        break;
+      case "attendance":
+        window.location.href = "/hr/attendance";
+        break;
+      case "purchase":
+        window.location.href = "/purchases/purchase";
+        break;
+      case "production":
+        window.location.href = "/production/new";
+        break;
+    }
+  };
+
+  const getActivityIcon = (type: string) => {
+    switch (type) {
+      case "sale":
+        return <ShoppingCart className="w-4 h-4 text-green-500" />;
+      case "purchase":
+        return <Package className="w-4 h-4 text-blue-500" />;
+      case "production":
+        return <Factory className="w-4 h-4 text-purple-500" />;
+      default:
+        return <Clock className="w-4 h-4 text-gray-500" />;
+    }
+  };
 
   if (loading) {
-    return <p className="text-gray-500"><Spinner /></p>;
-  }
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner />
+      </div>
+    );
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -85,11 +140,34 @@ const Dashboard: React.FC = () => {
           </p>
         </div>
         <div className="flex items-center space-x-3">
-          <select className="input-base">
+          <select
+            className="input-base px-3 py-2 rounded-lg border border-gray-300"
+            value={timeFrame}
+            onChange={(e) => setTimeFrame(e.target.value)}
+          >
             <option value="today">Today</option>
             <option value="week">This Week</option>
             <option value="month">This Month</option>
           </select>
+          <button
+            onClick={() => fetchDashboardData()}
+            className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+            title="Refresh data"
+          >
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+              />
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -102,13 +180,13 @@ const Dashboard: React.FC = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
             >
               <div className={`p-2 rounded-lg ${stat.color} bg-opacity-10`}>
-                <div className={stat.color}>{stat.icon}</div>
+                {iconMap[stat.icon]}
               </div>
               <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-500">
                   {stat.title}
                 </p>
-                <div className="flex items-center">
+                <div className="flex items-baseline">
                   <p className="text-2xl font-bold text-gray-900">
                     {stat.value}
                   </p>
@@ -131,20 +209,35 @@ const Dashboard: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
         <Card hover>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h3>
           <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleQuickAction("stock")}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Package className="w-6 h-6 text-primary-600 mx-auto mb-2" />
               <p className="text-sm font-medium">Add Stock</p>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleQuickAction("attendance")}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Users className="w-6 h-6 text-primary-600 mx-auto mb-2" />
               <p className="text-sm font-medium">Mark Attendance</p>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleQuickAction("purchase")}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <ShoppingCart className="w-6 h-6 text-primary-600 mx-auto mb-2" />
               <p className="text-sm font-medium">New Purchase</p>
             </button>
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+            <button
+              onClick={() => handleQuickAction("production")}
+              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            >
               <Factory className="w-6 h-6 text-primary-600 mx-auto mb-2" />
               <p className="text-sm font-medium">Start Production</p>
             </button>
@@ -153,10 +246,15 @@ const Dashboard: React.FC = () => {
 
         {/* Recent Activities */}
         <Card hover>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Recent Activities
+          </h3>
           <div className="space-y-4">
             {recentActivities.map((activity) => (
               <div key={activity.id} className="flex items-center space-x-3">
-                <div className="w-2 h-2 bg-primary-500 rounded-full"></div>
+                <div className="flex-shrink-0">
+                  {getActivityIcon(activity.type)}
+                </div>
                 <div className="flex-1">
                   <p className="text-sm text-gray-900">{activity.action}</p>
                   <p className="text-xs text-gray-500">{activity.time}</p>

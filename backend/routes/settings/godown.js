@@ -37,12 +37,12 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
 // POST /api/godowns → create new godown
 router.post("/", authenticateToken, async (req, res, next) => {
   try {
-    const { name, capacity, description } = req.body;
+    const { name, capacity, unit, location, manager } = req.body;
 
     const [result] = await pool.query(
-      `INSERT INTO godowns (name, capacity, description, created_at, updated_at)
-       VALUES (?, ?, ?, NOW(), NOW())`,
-      [name, capacity, description]
+      `INSERT INTO godowns (name, capacity, current_stock, unit, location, manager, status)
+       VALUES (?, ?, 0, ?, ?, ?, 'active')`,
+      [name, capacity, unit, location, manager]
     );
 
     res.json({
@@ -58,14 +58,14 @@ router.post("/", authenticateToken, async (req, res, next) => {
 // PUT /api/godowns/:id → update godown
 router.put("/:id", authenticateToken, async (req, res, next) => {
   try {
-    const { name, capacity, description } = req.body;
+    const { name, capacity, unit, location, manager, status } = req.body;
     const { id } = req.params;
 
     const [result] = await pool.query(
       `UPDATE godowns 
-       SET name=?, capacity=?, description=?, updated_at=NOW() 
+       SET name=?, capacity=?, unit=?, location=?, manager=?, status=?
        WHERE id=?`,
-      [name, capacity, description, id]
+      [name, capacity, unit, location, manager, status, id]
     );
 
     if (result.affectedRows === 0) {

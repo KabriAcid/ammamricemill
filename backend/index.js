@@ -98,7 +98,7 @@ app.use("/api", routes);
 
 // dashboard
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/backup", backupRoutes);
+// app.use("/api/backup", backupRoutes);
 
 // settings
 app.use("/api/general", generalRoutes);
@@ -112,6 +112,7 @@ app.use("/api/attendance", attendanceRoutes);
 app.use("/api/monthly-attendance", monthlyAttendanceRoutes);
 app.use("/api/salary", salaryRoutes);
 
+/*
 // accounts
 app.use("/api/head-income", headIncomeRoutes);
 app.use("/api/head-expense", headExpenseRoutes);
@@ -167,6 +168,8 @@ app.use("/api/financial-statement", financialStatementRoutes);
 // sms
 app.use("/api/sms/templates", smsTemplatesRoutes);
 app.use("/api/sms/send", smsSendRoutes);
+
+*/
 
 // global index
 app.use("/api", routes);

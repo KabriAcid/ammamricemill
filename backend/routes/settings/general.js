@@ -7,7 +7,7 @@ const router = Router();
 // GET /api/general  → fetch settings
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    const [rows] = await pool.query("SELECT * FROM general_settings LIMIT 1");
+    const [rows] = await pool.query("SELECT * FROM settings LIMIT 1");
     res.json({ success: true, data: rows[0] || {} });
   } catch (err) {
     next(err);
@@ -31,7 +31,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
     } = req.body;
 
     // Check if settings already exist
-    const [rows] = await pool.query("SELECT id FROM general_settings LIMIT 1");
+    const [rows] = await pool.query("SELECT id FROM settings LIMIT 1");
 
     if (rows.length > 0) {
       return res.status(400).json({
@@ -41,11 +41,9 @@ router.post("/", authenticateToken, async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO general_settings 
-       (site_name, description, address, proprietor, proprietor_email, contact_no, 
-        items_per_page, copyright_text, 
-        logo_url, favicon_url) 
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO settings 
+       (company_name, address, phone, email, tax_rate, currency, timezone, date_format) 
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         siteName,
         description,
