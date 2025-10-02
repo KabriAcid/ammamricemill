@@ -11,7 +11,6 @@ import {
   Clock,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
-import { Spinner } from "../../components/ui/Spinner";
 import { useToast } from "../../components/ui/Toast";
 import { EmptyState } from "../../components/ui/EmptyState";
 
@@ -301,10 +300,7 @@ const Dashboard: React.FC = () => {
             Recent Activities
           </h3>
           {recentActivities.length === 0 ? (
-            <EmptyState
-              message="No recent activities"
-              className="py-8"
-            />
+            <EmptyState message="No recent activities" className="py-8" />
           ) : (
             <div className="space-y-4">
               {recentActivities.map((activity) => (
