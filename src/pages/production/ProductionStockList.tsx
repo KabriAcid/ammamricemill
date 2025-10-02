@@ -4,10 +4,9 @@ import {
   Plus,
   Trash2,
   Printer,
-  Factory,
+  Package,
   PackageCheck,
   Scale,
-  Activity,
 } from 'lucide-react';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -15,34 +14,35 @@ import { Table } from '../../components/ui/Table';
 import { FilterBar } from '../../components/ui/FilterBar';
 import { format } from 'date-fns';
 
-interface ProductionItem {
+interface ProductionStockItem {
   id: string;
   categoryId: string;
   productId: string;
+  size?: string;
+  weight?: string;
   godownId: string;
-  siloId: string;
   quantity: number;
   netWeight: number;
 }
 
-interface Production {
+interface ProductionStock {
   id: string;
   invoiceNo: string;
   date: string;
+  productionNo: string;
+  productionId: string;
   description?: string;
-  siloInfo?: string;
-  items: ProductionItem[];
+  items: ProductionStockItem[];
   totalQuantity: number;
-  totalWeight: number;
-  status?: string;
+  totalNetWeight: number;
   createdAt: string;
   updatedAt: string;
 }
 
-const ProductionList: React.FC = () => {
+const ProductionStocksList: React.FC = () => {
   // State management
-  const [productions, setProductions] = useState<Production[]>([]);
-  const [selectedProductions, setSelectedProductions] = useState<string[]>([]);
+  const [stocks, setStocks] = useState<ProductionStock[]>([]);
+  const [selectedStocks, setSelectedStocks] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,66 +50,68 @@ const ProductionList: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch productions
+  // Fetch production stocks
   useEffect(() => {
-    const fetchProductions = async () => {
+    const fetchProductionStocks = async () => {
       setLoading(true);
       try {
-        // TODO: API endpoint - GET /api/production/production-order
+        // TODO: API endpoint - GET /api/stocks/production-stocks-list
         // Query params: ?page={currentPage}&pageSize={pageSize}&search={searchQuery}&fromDate={dateRange.from}&toDate={dateRange.to}
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Mock data
-        const mockProductions: Production[] = [
+        const mockStocks: ProductionStock[] = [
           {
             id: '1',
-            invoiceNo: 'PROD-001',
+            invoiceNo: 'PS-001',
             date: '2024-01-15',
-            description: 'Regular production',
-            siloInfo: 'Silo A, Silo B',
+            productionNo: 'PROD-001',
+            productionId: '1',
+            description: 'Production stock entry',
             items: [
               {
                 id: '1',
                 categoryId: 'CAT-001',
                 productId: 'PROD-001',
+                size: '50kg',
+                weight: '50',
                 godownId: 'GD-001',
-                siloId: 'SILO-001',
                 quantity: 100,
                 netWeight: 5000
               }
             ],
             totalQuantity: 100,
-            totalWeight: 5000,
-            status: 'active',
+            totalNetWeight: 5000,
             createdAt: '2024-01-15T10:00:00Z',
             updatedAt: '2024-01-15T10:00:00Z'
           }
         ];
-        setProductions(mockProductions);
+        setStocks(mockStocks);
       } catch (error) {
-        console.error('Error fetching productions:', error);
+        console.error('Error fetching production stocks:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchProductions();
+    fetchProductionStocks();
   }, [currentPage, pageSize, searchQuery, dateRange]);
 
   // Filtering logic
-  const filteredProductions = productions.filter(production => {
+  const filteredStocks = stocks.filter(stock => {
     const matchesSearch = 
-      production.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase());
+      stock.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      stock.productionNo.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesDateRange = 
-      (!dateRange.from || production.date >= dateRange.from) &&
-      (!dateRange.to || production.date <= dateRange.to);
+      (!dateRange.from || stock.date >= dateRange.from) &&
+      (!dateRange.to || stock.date <= dateRange.to);
     return matchesSearch && matchesDateRange;
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredProductions.length / pageSize);
+  const totalPages = Math.ceil(filteredStocks.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedProductions = filteredProductions.slice(
+  const paginatedStocks = filteredStocks.slice(
     startIndex,
     startIndex + pageSize
   );
@@ -123,11 +125,11 @@ const ProductionList: React.FC = () => {
       render: (value: string) => format(new Date(value), 'dd/MM/yyyy')
     },
     { key: 'invoiceNo', label: 'Invoice No', sortable: true },
-    { key: 'siloInfo', label: 'Silo Info', sortable: true },
+    { key: 'productionNo', label: 'Production No', sortable: true },
     { 
       key: 'items',
       label: 'Items',
-      render: (items: Production['items']) => items.length
+      render: (items: ProductionStock['items']) => items.length
     },
     { 
       key: 'totalQuantity',
@@ -135,64 +137,59 @@ const ProductionList: React.FC = () => {
       render: (value: number) => value.toLocaleString()
     },
     { 
-      key: 'totalWeight',
-      label: 'Weight (Kg)',
+      key: 'totalNetWeight',
+      label: 'Net Weight (Kg)',
       render: (value: number) => value.toLocaleString()
     },
   ];
 
   // Action handlers
-  const handleDelete = async (productionIds: string[]) => {
-    if (confirm(`Are you sure you want to delete ${productionIds.length} production(s)?`)) {
+  const handleDelete = async (stockIds: string[]) => {
+    if (confirm(`Are you sure you want to delete ${stockIds.length} production stock(s)?`)) {
       setLoading(true);
       try {
-        // TODO: API endpoint - DELETE /api/production/production-order
-        // Body: { ids: productionIds }
+        // TODO: API endpoint - DELETE /api/stocks/production-stocks-list
+        // Body: { ids: stockIds }
         await new Promise(resolve => setTimeout(resolve, 1000));
-        setProductions(prev => 
-          prev.filter(production => !productionIds.includes(production.id))
+        setStocks(prev => 
+          prev.filter(stock => !stockIds.includes(stock.id))
         );
-        setSelectedProductions([]);
+        setSelectedStocks([]);
       } catch (error) {
-        console.error('Error deleting productions:', error);
+        console.error('Error deleting production stocks:', error);
       } finally {
         setLoading(false);
       }
     }
   };
 
-  const handleView = (production: Production) => {
-    navigate(`/production/production-order/${production.id}`);
-  };
-
   // Calculate summary statistics
   const stats = {
-    totalProductions: productions.length,
-    totalQuantity: productions.reduce((sum, p) => sum + p.totalQuantity, 0),
-    totalWeight: productions.reduce((sum, p) => sum + p.totalWeight, 0),
-    activeProductions: productions.filter(p => p.status === 'active').length
+    totalStocks: stocks.length,
+    totalQuantity: stocks.reduce((sum, s) => sum + s.totalQuantity, 0),
+    totalWeight: stocks.reduce((sum, s) => sum + s.totalNetWeight, 0),
   };
 
-  const loadingCards = loading && !productions.length;
+  const loadingCards = loading && !stocks.length;
 
   return (
     <div className="animate-fade-in">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Production Management</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Production Stocks List</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage production orders and track production progress.
+          Manage production stock entries and inventory.
         </p>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card icon={<Factory size={32} />} loading={loadingCards} hover>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <Card icon={<Package size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalProductions}
+              {stats.totalStocks}
             </p>
-            <p className="text-sm text-gray-500">Total Productions</p>
+            <p className="text-sm text-gray-500">Total Stock Entries</p>
           </div>
         </Card>
         <Card icon={<PackageCheck size={32} />} loading={loadingCards} hover>
@@ -211,20 +208,12 @@ const ProductionList: React.FC = () => {
             <p className="text-sm text-gray-500">Total Weight</p>
           </div>
         </Card>
-        <Card icon={<Activity size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {stats.activeProductions}
-            </p>
-            <p className="text-sm text-gray-500">Active Productions</p>
-          </div>
-        </Card>
       </div>
 
       {/* Filter Bar */}
       <FilterBar
         onSearch={setSearchQuery}
-        placeholder="Search by invoice number..."
+        placeholder="Search by invoice or production number..."
       >
         <div className="flex items-center space-x-2">
           <input
@@ -239,18 +228,18 @@ const ProductionList: React.FC = () => {
             onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
             className="input-base h-9"
           />
-          <Button onClick={() => navigate('/production/production-order/new')} icon={Plus} size="sm">
-            New Production
+          <Button onClick={() => navigate('/stocks/production-stocks-list/new')} icon={Plus} size="sm">
+            New Stock Entry
           </Button>
-          {selectedProductions.length > 0 && (
+          {selectedStocks.length > 0 && (
             <Button
               variant="danger"
               size="sm"
               icon={Trash2}
-              onClick={() => handleDelete(selectedProductions)}
+              onClick={() => handleDelete(selectedStocks)}
               loading={loading}
             >
-              Delete ({selectedProductions.length})
+              Delete ({selectedStocks.length})
             </Button>
           )}
           <Button
@@ -266,14 +255,14 @@ const ProductionList: React.FC = () => {
 
       {/* Table */}
       <Table
-        data={paginatedProductions}
+        data={paginatedStocks}
         columns={columns}
         loading={loading}
         pagination={{
           currentPage,
           totalPages,
           pageSize,
-          totalItems: filteredProductions.length,
+          totalItems: filteredStocks.length,
           onPageChange: setCurrentPage,
           onPageSizeChange: (size) => {
             setPageSize(size);
@@ -281,15 +270,12 @@ const ProductionList: React.FC = () => {
           },
         }}
         selection={{
-          selectedItems: selectedProductions,
-          onSelectionChange: setSelectedProductions,
-        }}
-        actions={{
-          onView: handleView,
+          selectedItems: selectedStocks,
+          onSelectionChange: setSelectedStocks,
         }}
       />
     </div>
   );
 };
 
-export default ProductionList;
+export default ProductionStocksList;

@@ -1,38 +1,62 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { format } from "date-fns";
-import { ArrowLeft, Edit, Printer } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
+import { Printer } from "lucide-react";
 import { Button } from "../../components/ui/Button";
-import { Production } from "../../types/production";
-import { ProductionFormModal } from "./ProductionFormModal";
+import { format } from "date-fns";
+
+interface ProductionItem {
+  id: string;
+  categoryId: string;
+  categoryName?: string;
+  productId: string;
+  productName?: string;
+  godownId: string;
+  godownName?: string;
+  siloId: string;
+  siloName?: string;
+  quantity: number;
+  netWeight: number;
+}
+
+interface Production {
+  id: string;
+  invoiceNo: string;
+  date: string;
+  description?: string;
+  items: ProductionItem[];
+  totalQuantity: number;
+  totalWeight: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 const ProductionDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const navigate = useNavigate();
   const [production, setProduction] = useState<Production | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProduction = async () => {
       setLoading(true);
       try {
-        // TODO: Replace with actual API call
+        // TODO: API endpoint - GET /api/production/production-order/:id
         await new Promise((resolve) => setTimeout(resolve, 1000));
-        // Mock data
-        const mockProduction: Production = {
-          id: id || "1",
+        setProduction({
+          id: "1",
           invoiceNo: "PROD-001",
           date: "2024-01-15",
-          description: "Rice production batch",
-          siloInfo: "Silo 1, 2",
+          description: "Regular production batch",
           items: [
             {
-              id: "ITEM-001",
+              id: "1",
               categoryId: "CAT-001",
+              categoryName: "Rice Category",
               productId: "PROD-001",
+              productName: "Basmati Rice",
               godownId: "GD-001",
+              godownName: "Main Godown",
               siloId: "SILO-001",
+              siloName: "Silo A",
               quantity: 100,
               netWeight: 5000,
             },
@@ -41,8 +65,7 @@ const ProductionDetails: React.FC = () => {
           totalWeight: 5000,
           createdAt: "2024-01-15T10:00:00Z",
           updatedAt: "2024-01-15T10:00:00Z",
-        };
-        setProduction(mockProduction);
+        });
       } catch (error) {
         console.error("Error fetching production:", error);
       } finally {
@@ -55,188 +78,148 @@ const ProductionDetails: React.FC = () => {
     }
   }, [id]);
 
-  const handleSave = async (data: Partial<Production>) => {
-    setLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      setProduction((prev) => ({ ...prev!, ...data }));
-      setIsModalOpen(false);
-    } catch (error) {
-      console.error("Error updating production:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handlePrint = () => {
-    window.print();
-  };
-
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
   }
 
   if (!production) {
-    return <div>Production not found</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-gray-500">Production not found</div>
+      </div>
+    );
   }
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="flex justify-between items-start mb-6">
+    <div className="max-w-4xl mx-auto p-6 bg-white shadow-sm rounded-lg print:shadow-none">
+      {/* Print Button */}
+      <div className="print:hidden mb-6">
+        <Button
+          variant="outline"
+          size="sm"
+          icon={Printer}
+          onClick={() => window.print()}
+        >
+          Print
+        </Button>
+      </div>
+
+      {/* Company Header */}
+      <div className="text-center mb-6">
+        <h1 className="text-2xl font-bold text-gray-900">Amam Rice Mill</h1>
+        <p className="text-sm text-gray-500">123 Rice Mill Road, City</p>
+        <p className="text-sm text-gray-500">Phone: (123) 456-7890</p>
+        <h2 className="text-xl font-semibold text-gray-700 mt-4">Production Order</h2>
+      </div>
+
+      {/* Production Details */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
         <div>
-          <Button
-            onClick={() => navigate("/productions")}
-            variant="ghost"
-            icon={ArrowLeft}
-          >
-            Back to Productions
-          </Button>
-          <h1 className="text-3xl font-bold text-gray-900 mt-4">
-            Production Details
-          </h1>
-          <p className="mt-2 text-sm text-gray-700">
-            View and manage production information
+          <p className="text-sm">
+            <span className="font-medium">Invoice No:</span>{" "}
+            {production.invoiceNo}
+          </p>
+          <p className="text-sm">
+            <span className="font-medium">Date:</span>{" "}
+            {format(new Date(production.date), "dd/MM/yyyy")}
           </p>
         </div>
-
-        <div className="flex gap-4">
-          <Button
-            onClick={() => setIsModalOpen(true)}
-            variant="outline"
-            icon={Edit}
-          >
-            Edit
-          </Button>
-          <Button onClick={handlePrint} icon={Printer}>
-            Print
-          </Button>
+        <div>
+          {production.description && (
+            <p className="text-sm">
+              <span className="font-medium">Description:</span>{" "}
+              {production.description}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div className="bg-white shadow rounded-lg overflow-hidden">
-        {/* Basic Details */}
-        <div className="p-6 border-b">
-          <h2 className="text-xl font-semibold mb-4">Basic Information</h2>
-          <div className="grid grid-cols-2 gap-6">
-            <div>
-              <p className="text-sm font-medium text-gray-500">Invoice No</p>
-              <p className="mt-1">{production.invoiceNo}</p>
+      {/* Products Table */}
+      <div className="mb-6">
+        <table className="min-w-full divide-y divide-gray-200">
+          <thead>
+            <tr>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                #
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Category
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Product
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Godown
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Silo
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Quantity (Bag)
+              </th>
+              <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                Weight (Kg)
+              </th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-gray-200">
+            {production.items.map((item, index) => (
+              <tr key={item.id}>
+                <td className="px-3 py-2 text-sm">{index + 1}</td>
+                <td className="px-3 py-2 text-sm">{item.categoryName}</td>
+                <td className="px-3 py-2 text-sm">{item.productName}</td>
+                <td className="px-3 py-2 text-sm">{item.godownName}</td>
+                <td className="px-3 py-2 text-sm">{item.siloName}</td>
+                <td className="px-3 py-2 text-sm">
+                  {item.quantity.toLocaleString()}
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  {item.netWeight.toLocaleString()}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+          <tfoot>
+            <tr className="bg-gray-50">
+              <td colSpan={5} className="px-3 py-2 text-sm font-medium">
+                Total
+              </td>
+              <td className="px-3 py-2 text-sm font-medium">
+                {production.totalQuantity.toLocaleString()}
+              </td>
+              <td className="px-3 py-2 text-sm font-medium">
+                {production.totalWeight.toLocaleString()}
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      {/* Authorized Seal and Signature Section */}
+      <div className="mt-16 pt-8 border-t border-gray-200">
+        <div className="grid grid-cols-2 gap-8">
+          <div className="text-center">
+            <div className="h-24 flex items-center justify-center mb-2">
+              <div className="w-24 h-24 border-2 border-dashed border-gray-300 rounded-full flex items-center justify-center">
+                <span className="text-xs text-gray-400">Seal</span>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium text-gray-500">Date</p>
-              <p className="mt-1">
-                {format(new Date(production.date), "dd/MM/yyyy")}
-              </p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm font-medium text-gray-500">Description</p>
-              <p className="mt-1">{production.description || "-"}</p>
-            </div>
-            <div className="col-span-2">
-              <p className="text-sm font-medium text-gray-500">
-                Silo Information
-              </p>
-              <p className="mt-1">{production.siloInfo || "-"}</p>
+            <div className="border-t border-gray-300 w-48 mx-auto pt-2">
+              <p className="text-sm text-gray-500">Authorized Seal</p>
             </div>
           </div>
-        </div>
-
-        {/* Production Items */}
-        <div className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Production Items</h2>
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead>
-                <tr className="bg-gray-50">
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Category
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Product
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Godown
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Silo
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity (Bags)
-                  </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Net Weight (Kg)
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {production.items.map((item) => (
-                  <tr key={item.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.categoryId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.productId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.godownId}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      {item.siloId}
-                    </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      {item.quantity.toLocaleString()}
-                    </td>
-                    <td className="px-6 py-4 text-right whitespace-nowrap">
-                      {item.netWeight.toLocaleString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot className="bg-gray-50">
-                <tr>
-                  <td
-                    colSpan={4}
-                    className="px-6 py-4 text-sm font-medium text-gray-900 text-right"
-                  >
-                    Total
-                  </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap font-medium">
-                    {production.totalQuantity.toLocaleString()}
-                  </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap font-medium">
-                    {production.totalWeight.toLocaleString()}
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        {/* Meta Information */}
-        <div className="bg-gray-50 px-6 py-4">
-          <div className="text-sm text-gray-500">
-            <p>
-              Created:{" "}
-              {format(new Date(production.createdAt), "dd/MM/yyyy HH:mm")}
-            </p>
-            <p>
-              Last Updated:{" "}
-              {format(new Date(production.updatedAt), "dd/MM/yyyy HH:mm")}
-            </p>
+          <div className="text-center">
+            <div className="h-24 mb-2"></div>
+            <div className="border-t border-gray-300 w-48 mx-auto pt-2">
+              <p className="text-sm text-gray-500">Authorized Signature</p>
+            </div>
           </div>
         </div>
       </div>
-
-      {/* Edit Modal */}
-      <ProductionFormModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSave}
-        item={production}
-      />
     </div>
   );
 };
