@@ -52,8 +52,16 @@ router.post("/login", async (req, res, next) => {
       });
     }
 
-    const valid = await verifyPassword(password, user.password_hash);
-    if (!valid) {
+    try {
+      const valid = await verifyPassword(password, user.password_hash);
+      if (!valid) {
+        return res.status(401).json({
+          success: false,
+          message: "Invalid email or password",
+        });
+      }
+    } catch (error) {
+      console.error("Password verification failed:", error);
       return res.status(401).json({
         success: false,
         message: "Invalid email or password",
