@@ -1,6 +1,13 @@
 const BASE_URL =
   import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api";
 
+// Global handler for unauthorized responses
+let unauthorizedHandler: (() => void) | null = null;
+
+export const setUnauthorizedHandler = (handler: () => void) => {
+  unauthorizedHandler = handler;
+};
+
 export async function fetcher<T>(
   url: string,
   options: RequestInit = {}
@@ -18,6 +25,18 @@ export async function fetcher<T>(
     });
 
     const data = await res.json();
+
+    // Handle unauthorized responses
+    if (res.status === 401 || res.status === 403) {
+      // Don't trigger handler for login-related endpoints
+      if (!url.includes("/auth/login") && !url.includes("/auth/logout")) {
+        console.warn(`Auth token invalid/expired - Auto logout triggered
+Status: ${res.status}
+URL: ${url}
+Response:`, data);
+        unauthorizedHandler?.();
+      }
+    }
 
     // If response is not ok, throw error even if we got JSON
     if (!res.ok) {

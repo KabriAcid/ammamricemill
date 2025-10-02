@@ -217,9 +217,29 @@ router.post("/refresh", (req, res, next) => {
 
 // Logout route
 router.post("/logout", (req, res) => {
-  res.clearCookie("token");
-  res.clearCookie("refreshToken");
-  res.json({ success: true, message: "Logged out successfully" });
+  // Clear access token with same options used when setting
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : "localhost",
+    path: "/"
+  });
+
+  // Clear refresh token with same options used when setting
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
+    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : "localhost",
+    path: "/api/auth/refresh"
+  });
+
+  // Send success response
+  res.json({
+    success: true,
+    message: "Logged out successfully"
+  });
 });
 
 // Setup initial admin account

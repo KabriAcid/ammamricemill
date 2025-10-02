@@ -4,11 +4,13 @@ import { Menu, User, LogOut, ChevronDown, Home, Lock } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useUI } from "../../contexts/UIContext";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "../ui/Toast";
 
 export const Navbar: React.FC = () => {
   const { user, logout } = useAuth();
   const { toggleSidebar } = useUI();
   const navigate = useNavigate();
+  const { showToast } = useToast();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -40,9 +42,11 @@ export const Navbar: React.FC = () => {
   const handleLogout = async () => {
     try {
       await logout();
-      navigate("/login");
+      navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
+      // Show error toast
+      showToast("There was an issue logging you out. Please try again.", "error");
     }
   };
 

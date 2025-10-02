@@ -51,7 +51,7 @@ export const Login: React.FC = () => {
         const message = err.message.toLowerCase();
         if (message.includes("invalid email or password")) {
           showToast(
-            "Oops! The email or password doesn't match our records. Please try again.",
+            "Email or password doesn't match our records. Please try again.",
             "error"
           );
         } else if (message.includes("inactive")) {

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from "react";
 import { User, AuthState } from "../types";
-import { api, ApiError } from "../utils/fetcher";
+import { api, ApiError, setUnauthorizedHandler } from "../utils/fetcher";
 
 interface ApiResponse<T = any> {
   success: boolean;
@@ -60,6 +60,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [state, dispatch] = useReducer(authReducer, initialState);
+
+  // Set up unauthorized response handler
+  useEffect(() => {
+    const handleUnauthorized = async () => {
+      console.log("Unauthorized response detected, logging out...");
+      try {
+        await logout();
+        // Don't navigate here - let the protected route handle it
+      } catch (error) {
+        console.error("Error during auto-logout:", error);
+      }
+    };
+
+    setUnauthorizedHandler(handleUnauthorized);
+  }, []);
 
   useEffect(() => {
     checkAuthStatus();
@@ -142,17 +157,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const logout = async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-      
+
       // Call backend logout endpoint
       const response = await api.post<ApiResponse>("/auth/logout", {});
-      
+
       if (!response.success) {
         throw new Error(response.message || "Logout failed");
       }
 
       // Clear local storage
       localStorage.removeItem("ammam_user");
-      
+
       // Clear state
       dispatch({ type: "LOGOUT" });
     } catch (error) {
