@@ -41,12 +41,20 @@ export const Navbar: React.FC = () => {
 
   const handleLogout = async () => {
     try {
+      // First set loading state and close dropdown
+      setDropdownOpen(false);
+
+      // Call logout
       await logout();
+
+      // Only navigate after successful logout
       navigate("/login", { replace: true });
     } catch (error) {
       console.error("Logout failed:", error);
-      // Show error toast
-      showToast("There was an issue logging you out. Please try again.", "error");
+      showToast(
+        "There was an issue logging you out. Please try again.",
+        "error"
+      );
     }
   };
 
@@ -152,7 +160,7 @@ export const Navbar: React.FC = () => {
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: -10, scale: 0.95 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 overflow-hidden"
+                    className="absolute right-0 top-full mt-1 w-56 bg-white rounded-lg shadow-lg border border-gray-200 py-2 overflow-hidden"
                   >
                     {menuItems.map((item, index) => (
                       <motion.button
