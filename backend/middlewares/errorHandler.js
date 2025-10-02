@@ -6,7 +6,8 @@ export function errorHandler(err, req, res, next) {
     return res.status(503).json({
       success: false,
       error: "database_auth_error",
-      message: "Unable to connect to database. Please check database credentials.",
+      message:
+        "Unable to connect to database. Please check database credentials.",
       details: process.env.NODE_ENV === "development" ? err.message : undefined,
     });
   }

@@ -105,7 +105,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
             <span className="flex-1 text-base font-medium tracking-tight">
               {toast.message}
             </span>
-            <button
+            {/* <button
               className="absolute top-2 right-2 text-gray-400 hover:text-gray-700 transition"
               onClick={() =>
                 setToasts((prev) => prev.filter((t) => t.id !== toast.id))
@@ -125,7 +125,7 @@ export const ToastProvider: React.FC<{ children: ReactNode }> = ({
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
-            </button>
+            </button> */}
           </div>
         ))}
       </div>

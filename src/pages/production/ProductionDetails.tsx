@@ -110,10 +110,12 @@ const ProductionDetails: React.FC = () => {
 
       {/* Company Header */}
       <div className="text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Amam Rice Mill</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Ammam Rice Mill</h1>
         <p className="text-sm text-gray-500">123 Rice Mill Road, City</p>
         <p className="text-sm text-gray-500">Phone: (123) 456-7890</p>
-        <h2 className="text-xl font-semibold text-gray-700 mt-4">Production Order</h2>
+        <h2 className="text-xl font-semibold text-gray-700 mt-4">
+          Production Order
+        </h2>
       </div>
 
       {/* Production Details */}

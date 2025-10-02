@@ -19,12 +19,15 @@ export async function fetcher<T>(
 
     if (!res.ok) {
       const errorData = await res.json().catch(() => null);
-      
+
       if (errorData && errorData.message) {
         throw new ApiError(errorData.message, res.status);
       }
-      
-      throw new ApiError(`Request failed with status ${res.status}`, res.status);
+
+      throw new ApiError(
+        `Request failed with status ${res.status}`,
+        res.status
+      );
     }
 
     const data = await res.json();

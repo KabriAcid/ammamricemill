@@ -1,4 +1,4 @@
-# Amam Rice Mill (Admin Dashboard) — Bolt AI Prompt (Final, Modular, Compact)
+# Ammam Rice Mill (Admin Dashboard) — Bolt AI Prompt (Final, Modular, Compact)
 
 ## 1. Global Rules & Tech Stack
 
@@ -12,7 +12,7 @@
 - **Color Palette:** Primary: #AF792F (bg-primary), Secondary: #b8c4a7 (bg-secondary), use only these for accents/highlights/focus.
 - **Layout:** Responsive, mobile-first, grid-based, compact, clean, consistent spacing/typography. Avoid excessive gradients/custom styles unless specified.
 - **Navigation:** Each main sidebar link is a directory; each sub-nav link is a file in that directory. Use React Router for navigation. Route paths mirror directory structure.
-- **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use 
+- **Code Quality:** DRY, readable, maintainable. No inline styles unless necessary. Use
 - **UX:** Robust error handling and empty states. All pages must be visually/functionally consistent.
 
 ## 2. UI/UX & Shared Components
@@ -142,7 +142,6 @@
 ## 10. Glossary
 
 - Godown = warehouse. Emptybag = packaging bag.
-
 
 ## Project Overview
 
