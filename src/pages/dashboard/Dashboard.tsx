@@ -8,8 +8,7 @@ import {
   ShoppingCart,
   DollarSign,
   Archive,
-  AlertTriangle,
-  Clock
+  Clock,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Spinner } from "../../components/ui/Spinner";
@@ -29,7 +28,7 @@ const iconMap: { [key: string]: React.ReactNode } = {
   employees: <Users className="w-6 h-6" />,
   stock: <Archive className="w-6 h-6" />,
   productions: <Factory className="w-6 h-6" />,
-  sales: <ShoppingCart className="w-6 h-6" />
+  sales: <ShoppingCart className="w-6 h-6" />,
 };
 
 interface Activity {
@@ -45,7 +44,7 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   const { showToast } = useToast();
-  const [timeFrame, setTimeFrame] = useState('today');
+  const [timeFrame, setTimeFrame] = useState("today");
 
   useEffect(() => {
     fetchDashboardData();
@@ -55,18 +54,23 @@ const Dashboard: React.FC = () => {
     try {
       setLoading(true);
 
+      console.log("Fetching dashboard data...");
+
       const [statsRes, activitiesRes] = await Promise.all([
-        fetch("/api/dashboard/stats", {
+        fetch("http://localhost:5000/api/dashboard/stats", {
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          }
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         }),
-        fetch("/api/dashboard/activities", {
+        fetch("http://localhost:5000/api/dashboard/activities", {
           headers: {
-            "Authorization": `Bearer ${localStorage.getItem("token")}`,
-          }
-        })
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }),
       ]);
+
+      console.log("Stats Response:", statsRes.status);
+      console.log("Activities Response:", activitiesRes.status);
 
       if (!statsRes.ok || !activitiesRes.ok) {
         throw new Error("Failed to fetch dashboard data");
@@ -75,7 +79,11 @@ const Dashboard: React.FC = () => {
       const statsData = await statsRes.json();
       const activitiesData = await activitiesRes.json();
 
+      console.log("Stats Data:", statsData);
+      console.log("Activities Data:", activitiesData);
+
       if (statsData.success && activitiesData.success) {
+        console.log("Setting stats:", statsData.data);
         setStats(statsData.data);
         setRecentActivities(activitiesData.data);
       } else {
@@ -83,10 +91,7 @@ const Dashboard: React.FC = () => {
       }
     } catch (error) {
       console.error("Dashboard fetch failed:", error);
-      showToast(
-        "Failed to load dashboard data. Please try again.",
-        "error"
-      );
+      showToast("Failed to load dashboard data. Please try again.", "error");
     } finally {
       setLoading(false);
     }
@@ -128,6 +133,7 @@ const Dashboard: React.FC = () => {
         <Spinner />
       </div>
     );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in">
