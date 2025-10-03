@@ -8,6 +8,9 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import authRoutes from "./routes/auth.js";
 // dashboard
 import dashboardRoutes from "./routes/dashboard.js";
+// production
+import productionOrderRoutes from "./routes/production/production-order.js";
+import productionDetailsRoutes from "./routes/production/production-details.js";
 
 // party
 import partyTypesRoutes from "./routes/party/party-types.js";
@@ -28,7 +31,6 @@ import salaryRoutes from "./routes/hr/salary.js";
 import routes from "./routes/index.js";
 
 dotenv.config();
-
 
 const app = express();
 
@@ -69,6 +71,10 @@ app.use("/api/dashboard", dashboardRoutes);
 // Core Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+
+// Production Routes
+app.use("/api/production/production-order", productionOrderRoutes);
+app.use("/api/production/production-details", productionDetailsRoutes);
 
 // Settings Routes
 app.use("/api/general", generalRoutes);

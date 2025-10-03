@@ -5,9 +5,6 @@ import uploadRoutes from "./settings/upload.js";
 import godownSettingsRoutes from "./settings/godown.js";
 import siloSettingsRoutes from "./settings/silo.js";
 
-// Party Routes
-import partyTypesRoutes from "./party/party-types.js";
-
 // HR Routes
 import employeeRoutes from "./hr/employees.js";
 import designationRoutes from "./hr/designation.js";
@@ -46,7 +43,5 @@ router.use("/accounts/head-expense", headExpenseRoutes);
 router.use("/accounts/head-bank", headBankRoutes);
 router.use("/accounts/head-others", headOthersRoutes);
 router.use("/accounts/transactions", transactionsRoutes);
-
-router.use("/party/types", partyTypesRoutes);
 
 export default router;

@@ -49,7 +49,7 @@ const PartyTypes = () => {
   const fetchPartyTypes = async () => {
     setLoading(true);
     try {
-      const response = await api.get<ApiResponse<PartyType[]>>("/party-types");
+      const response = await api.get<ApiResponse<PartyType[]>>("/party/types");
 
       if (response.success && response.data) {
         setData(
