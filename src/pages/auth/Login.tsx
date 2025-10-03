@@ -41,7 +41,6 @@ export const Login: React.FC = () => {
       await new Promise((resolve) => setTimeout(resolve, 1200));
       await login(email, password);
 
-      // Add a small delay before showing success message and redirecting (0.5 seconds)
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast("Welcome back! You've successfully signed in.", "success");
       navigate("/dashboard", { replace: true });

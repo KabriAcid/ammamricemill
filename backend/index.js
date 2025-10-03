@@ -123,13 +123,13 @@ app.use("/api", routes);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-// Import settings routes
-import siloRoutes from "./routes/settings/silo.js";
-import generalRoutes from "./routes/settings/general.js";
+// Import HR routes
+import employeeRoutes from "./routes/hr/employees.js";
+import designationRoutes from "./routes/hr/designation.js";
 
-// Register settings routes
-app.use("/api/settings/silo", siloRoutes);
-app.use("/api/settings/general", generalRoutes);
+// Register HR routes
+app.use("/api/hr/employee", employeeRoutes);
+app.use("/api/hr/designation", designationRoutes);
 
 // Error handler should be after all routes
 app.use(errorHandler);
