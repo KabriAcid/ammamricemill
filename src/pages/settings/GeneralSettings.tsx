@@ -4,6 +4,8 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Tabs } from "../../components/ui/Tabs";
 import { useToast } from "../../components/ui/Toast";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { api } from "../../utils/fetcher";
 
 interface GeneralSettingsData {
   id?: number;
@@ -57,23 +59,15 @@ const GeneralSettings: React.FC = () => {
 
   const fetchSettings = async () => {
     try {
-      const response = await fetch("/api/settings/general", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
+      const response = await api.get<{
+        success: boolean;
+        data: GeneralSettingsData;
+      }>("/settings/general");
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch settings: ${response.status} ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      if (data.success && data.data) {
-        setSettings(data.data);
+      if (response.success && response.data) {
+        setSettings(response.data);
       } else {
-        throw new Error(data.message || "Invalid response format");
+        throw new Error("Invalid response format");
       }
     } catch (error) {
       console.error("Error fetching settings:", error);
@@ -106,35 +100,24 @@ const GeneralSettings: React.FC = () => {
 
     setLoading(true);
     try {
-      const method = settings.id ? "PUT" : "POST";
-      const url = settings.id
-        ? `/api/settings/general/${settings.id}`
-        : "/api/settings/general";
+      const response = await (settings.id
+        ? api.put<{ success: boolean; message: string }>(
+            `/settings/general/${settings.id}`,
+            settings
+          )
+        : api.post<{ success: boolean; message: string; id: number }>(
+            "/settings/general",
+            settings
+          ));
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(settings),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(
-          errorData.message || `Failed to save settings: ${response.statusText}`
-        );
-      }
-
-      const data = await response.json();
-      if (data.success) {
+      if (response.success) {
         showToast("Settings saved successfully", "success");
-        if (data.id && !settings.id) {
-          setSettings((prev) => ({ ...prev, id: data.id }));
+        if ("id" in response && !settings.id) {
+          const newId = response.id as number;
+          setSettings((prev) => ({ ...prev, id: newId }));
         }
       } else {
-        throw new Error(data.message || "Failed to save settings");
+        throw new Error(response.message || "Failed to save settings");
       }
     } catch (error) {
       console.error("Error saving settings:", error);
@@ -203,28 +186,19 @@ const GeneralSettings: React.FC = () => {
           const formData = new FormData();
           formData.append("image", file);
 
-          const response = await fetch("/api/settings/upload", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: formData,
-          });
+          const response = await api.post<{
+            success: boolean;
+            url: string;
+            message?: string;
+          }>("/settings/upload", formData);
 
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw new Error(
-              errorData.message ||
-                `Failed to upload image: ${response.statusText}`
-            );
-          }
-
-          const data = await response.json();
-          if (data.success && data.url) {
-            handleInputChange(field, data.url);
+          if (response.success && response.url) {
+            handleInputChange(field, response.url);
             showToast("Image uploaded successfully", "success");
           } else {
-            throw new Error(data.message || "Invalid upload response format");
+            throw new Error(
+              response.message || "Invalid upload response format"
+            );
           }
         } catch (error) {
           console.error("Error uploading image:", error);
@@ -396,7 +370,16 @@ const GeneralSettings: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <div className="text-center">
-                {settings.logo_url ? (
+                {loading ? (
+                  <div className="mb-4">
+                    <Skeleton
+                      variant="rectangular"
+                      width={200}
+                      height={80}
+                      className="mx-auto"
+                    />
+                  </div>
+                ) : settings.logo_url ? (
                   <div className="mb-4">
                     <img
                       src={settings.logo_url}
@@ -423,7 +406,16 @@ const GeneralSettings: React.FC = () => {
 
             <Card>
               <div className="text-center">
-                {settings.favicon_url ? (
+                {loading ? (
+                  <div className="mb-4">
+                    <Skeleton
+                      variant="rectangular"
+                      width={32}
+                      height={32}
+                      className="mx-auto"
+                    />
+                  </div>
+                ) : settings.favicon_url ? (
                   <div className="mb-4">
                     <img
                       src={settings.favicon_url}
@@ -463,15 +455,25 @@ const GeneralSettings: React.FC = () => {
     return (
       <div className="animate-fade-in">
         <div className="mb-6">
-          <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-2" />
-          <div className="h-4 w-96 bg-gray-100 rounded animate-pulse" />
+          <Skeleton variant="text" width={240} height={32} className="mb-2" />
+          <Skeleton variant="text" width={480} height={16} />
         </div>
         <Card>
           <div className="space-y-6">
-            <div className="h-10 bg-gray-100 rounded animate-pulse" />
+            <Skeleton variant="text" width={120} height={24} className="mb-4" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-32 bg-gray-100 rounded animate-pulse" />
-              <div className="h-32 bg-gray-100 rounded animate-pulse" />
+              <div className="space-y-4">
+                <Skeleton variant="text" width={160} height={20} />
+                <Skeleton variant="rectangular" height={40} />
+              </div>
+              <div className="space-y-4">
+                <Skeleton variant="text" width={160} height={20} />
+                <Skeleton variant="rectangular" height={40} />
+              </div>
+            </div>
+            <div className="space-y-4">
+              <Skeleton variant="text" width={120} height={20} />
+              <Skeleton variant="rectangular" height={96} />
             </div>
           </div>
         </Card>

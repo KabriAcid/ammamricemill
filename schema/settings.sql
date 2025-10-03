@@ -1,0 +1,16 @@
+-- Create settings table if not exists
+CREATE TABLE IF NOT EXISTS settings (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  company_name VARCHAR(255) NOT NULL,
+  address TEXT,
+  phone VARCHAR(50) NOT NULL,
+  email VARCHAR(255) NOT NULL,
+  tax_rate DECIMAL(10,2) DEFAULT 0.00,
+  currency VARCHAR(10) DEFAULT 'NGN',
+  timezone VARCHAR(50) DEFAULT 'Africa/Lagos',
+  date_format VARCHAR(20) DEFAULT 'DD/MM/YYYY',
+  logo_url VARCHAR(255),
+  favicon_url VARCHAR(255),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);

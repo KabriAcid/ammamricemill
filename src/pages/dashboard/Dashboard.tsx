@@ -14,7 +14,7 @@ import { Card } from "../../components/ui/Card";
 import { useToast } from "../../components/ui/Toast";
 import { EmptyState } from "../../components/ui/EmptyState";
 import { api } from "../../utils/fetcher";
-
+import { SkeletonCard, SkeletonChart } from "../../components/ui/Skeleton";
 interface StatCard {
   title: string;
   value: string;
@@ -212,121 +212,146 @@ const Dashboard: React.FC = () => {
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {stats.map((stat, index) => (
-          <Card
-            key={index}
-            hover
-            className="animate-slide-in"
-            loading={loading}
-          >
-            <div
-              className="flex items-center"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <div className="p-2 rounded-lg text-primary-600 bg-opacity-10">
-                {iconMap[stat.icon]}
-              </div>
-              <div className="ml-4 flex-1">
-                <p className="text-sm font-medium text-gray-500">
-                  {stat.title}
-                </p>
-                <div className="flex items-baseline">
-                  <p className="text-2xl font-bold text-gray-900">
-                    {stat.value}
+        {loading ? (
+          <>
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+          </>
+        ) : (
+          stats.map((stat, index) => (
+            <Card key={index} hover className="animate-slide-in">
+              <div
+                className="flex items-center"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <div className="p-2 rounded-lg text-primary-600 bg-opacity-10">
+                  {iconMap[stat.icon]}
+                </div>
+                <div className="ml-4 flex-1">
+                  <p className="text-sm font-medium text-gray-500">
+                    {stat.title}
                   </p>
+                  <div className="flex items-baseline">
+                    <p className="text-2xl font-bold text-gray-900">
+                      {stat.value}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
-          </Card>
-        ))}
+            </Card>
+          ))
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
-        <Card hover>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              onClick={() => handleQuickAction("stock")}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Package className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Add Stock</p>
-            </button>
-            <button
-              onClick={() => handleQuickAction("attendance")}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Users className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Mark Attendance</p>
-            </button>
-            <button
-              onClick={() => handleQuickAction("purchase")}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <ShoppingCart className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">New Purchase</p>
-            </button>
-            <button
-              onClick={() => handleQuickAction("production")}
-              className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-            >
-              <Factory className="w-6 h-6 text-primary-600 mx-auto mb-2" />
-              <p className="text-sm font-medium">Start Production</p>
-            </button>
-          </div>
-        </Card>
+        {loading ? (
+          <SkeletonCard variant="action" />
+        ) : (
+          <Card hover>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Quick Actions
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => handleQuickAction("stock")}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Package className="w-6 h-6 text-primary-600 mx-auto mb-2" />
+                <p className="text-sm font-medium">Add Stock</p>
+              </button>
+              <button
+                onClick={() => handleQuickAction("attendance")}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Users className="w-6 h-6 text-primary-600 mx-auto mb-2" />
+                <p className="text-sm font-medium">Mark Attendance</p>
+              </button>
+              <button
+                onClick={() => handleQuickAction("purchase")}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <ShoppingCart className="w-6 h-6 text-primary-600 mx-auto mb-2" />
+                <p className="text-sm font-medium">New Purchase</p>
+              </button>
+              <button
+                onClick={() => handleQuickAction("production")}
+                className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <Factory className="w-6 h-6 text-primary-600 mx-auto mb-2" />
+                <p className="text-sm font-medium">Start Production</p>
+              </button>
+            </div>
+          </Card>
+        )}
 
         {/* Recent Activities */}
-        <Card hover>
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">
-            Recent Activities
-          </h3>
-          {recentActivities.length === 0 ? (
-            <EmptyState message="No recent activities" className="py-8" />
-          ) : (
-            <div className="space-y-4">
-              {recentActivities.map((activity) => (
-                <div key={activity.id} className="flex items-center space-x-3">
-                  <div className="flex-shrink-0">
-                    {getActivityIcon(activity.type)}
+        {loading ? (
+          <SkeletonCard variant="activity" />
+        ) : (
+          <Card hover>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              Recent Activities
+            </h3>
+            {recentActivities.length === 0 ? (
+              <EmptyState message="No recent activities" className="py-8" />
+            ) : (
+              <div className="space-y-4">
+                {recentActivities.map((activity) => (
+                  <div
+                    key={activity.id}
+                    className="flex items-center space-x-3"
+                  >
+                    <div className="flex-shrink-0">
+                      {getActivityIcon(activity.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm text-gray-900">{activity.action}</p>
+                      <p className="text-xs text-gray-500">{activity.time}</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-900">{activity.action}</p>
-                    <p className="text-xs text-gray-500">{activity.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </Card>
+                ))}
+              </div>
+            )}
+          </Card>
+        )}
       </div>
 
       {/* Charts Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card hover>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
-                Chart visualization would go here
-              </p>
-            </div>
-          </div>
-        </Card>
+        {loading ? (
+          <>
+            <SkeletonChart />
+            <SkeletonChart />
+          </>
+        ) : (
+          <>
+            <Card hover>
+              <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <BarChart3 className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">
+                    Chart visualization would go here
+                  </p>
+                </div>
+              </div>
+            </Card>
 
-        <Card hover>
-          <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-            <div className="text-center">
-              <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-              <p className="text-sm text-gray-500">
-                Production chart would go here
-              </p>
-            </div>
-          </div>
-        </Card>
+            <Card hover>
+              <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+                <div className="text-center">
+                  <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                  <p className="text-sm text-gray-500">
+                    Production chart would go here
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
     </div>
   );

@@ -10,18 +10,17 @@ router.get("/", authenticateToken, async (req, res, next) => {
     const [rows] = await pool.query(`
       SELECT 
         id,
-        site_name as siteName,
-        description,
+        company_name,
         address,
-        proprietor,
-        proprietor_email as proprietorEmail,
-        contact_no as contactNo,
-        items_per_page as itemsPerPage,
-        copyright_text as copyrightText,
-        logo_url as logoUrl,
-        favicon_url as faviconUrl,
-        created_at as createdAt,
-        updated_at as updatedAt
+        phone,
+        email,
+        tax_rate,
+        currency,
+        timezone,
+        date_format,
+        logo_url,
+        favicon_url,
+        updated_at
       FROM settings 
       LIMIT 1
     `);
@@ -35,16 +34,16 @@ router.get("/", authenticateToken, async (req, res, next) => {
 router.post("/", authenticateToken, async (req, res, next) => {
   try {
     const {
-      siteName,
-      description,
+      company_name,
       address,
-      proprietor,
-      proprietorEmail,
-      contactNo,
-      itemsPerPage,
-      copyrightText,
-      logoUrl,
-      faviconUrl,
+      phone,
+      email,
+      tax_rate,
+      currency,
+      timezone,
+      date_format,
+      logo_url,
+      favicon_url,
     } = req.body;
 
     // Check if settings already exist
@@ -59,20 +58,20 @@ router.post("/", authenticateToken, async (req, res, next) => {
 
     const [result] = await pool.query(
       `INSERT INTO settings 
-       (site_name, description, address, proprietor, proprietor_email, 
-        contact_no, items_per_page, copyright_text, logo_url, favicon_url, created_at, updated_at) 
+       (company_name, address, phone, email, tax_rate, 
+        currency, timezone, date_format, logo_url, favicon_url, created_at, updated_at) 
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
       [
-        siteName,
-        description,
+        company_name,
         address,
-        proprietor,
-        proprietorEmail,
-        contactNo,
-        itemsPerPage,
-        copyrightText,
-        logoUrl,
-        faviconUrl,
+        phone,
+        email,
+        tax_rate,
+        currency,
+        timezone,
+        date_format,
+        logo_url,
+        favicon_url,
       ]
     );
 
@@ -90,37 +89,37 @@ router.post("/", authenticateToken, async (req, res, next) => {
 router.put("/:id", authenticateToken, async (req, res, next) => {
   try {
     const {
-      siteName,
-      description,
+      company_name,
       address,
-      proprietor,
-      proprietorEmail,
-      contactNo,
-      itemsPerPage,
-      copyrightText,
-      logoUrl,
-      faviconUrl,
+      phone,
+      email,
+      tax_rate,
+      currency,
+      timezone,
+      date_format,
+      logo_url,
+      favicon_url,
     } = req.body;
 
     const { id } = req.params;
 
     const [result] = await pool.query(
       `UPDATE settings 
-       SET site_name=?, description=?, address=?, proprietor=?, proprietor_email=?, 
-           contact_no=?, items_per_page=?, copyright_text=?, 
+       SET company_name=?, address=?, phone=?, email=?, tax_rate=?, 
+           currency=?, timezone=?, date_format=?, 
            logo_url=?, favicon_url=?, updated_at=NOW() 
        WHERE id=?`,
       [
-        siteName,
-        description,
+        company_name,
         address,
-        proprietor,
-        proprietorEmail,
-        contactNo,
-        itemsPerPage,
-        copyrightText,
-        logoUrl,
-        faviconUrl,
+        phone,
+        email,
+        tax_rate,
+        currency,
+        timezone,
+        date_format,
+        logo_url,
+        favicon_url,
         id,
       ]
     );
