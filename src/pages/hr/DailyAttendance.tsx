@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, BarChart3, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, BarChart3, CheckCircle, XCircle, Save } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -143,9 +143,80 @@ const DailyAttendance: React.FC = () => {
     );
   };
 
+  const handleSaveIndividualAttendance = async (
+    employee: EmployeeAttendance
+  ) => {
+    // Validate time entries for present employees
+    if (
+      employee.attendance === "Present" &&
+      (!employee.inTime || !employee.outTime)
+    ) {
+      showToast(
+        "Please fill in both in and out times for present employee",
+        "error"
+      );
+      return;
+    }
+
+    try {
+      const attendanceData = {
+        date: dateFilter,
+        totalEmployee: 1,
+        totalPresent: employee.attendance === "Present" ? 1 : 0,
+        totalAbsent: employee.attendance === "Absent" ? 1 : 0,
+        totalLeave: employee.attendance === "Leave" ? 1 : 0,
+        description: "",
+        employees: [
+          {
+            employeeId: employee.id,
+            employeeName: employee.name,
+            status: employee.attendance.toLowerCase() as
+              | "present"
+              | "absent"
+              | "leave",
+            inTime: employee.inTime || null,
+            outTime: employee.outTime || null,
+            notes: employee.note || null,
+          },
+        ],
+      };
+
+      const response = await api.post<ApiResponse<void>>(
+        "/hr/attendance",
+        attendanceData
+      );
+
+      if (response.success) {
+        showToast(`Attendance saved for ${employee.name}`, "success");
+        fetchEmployees(); // Refresh data
+      } else {
+        throw new Error(response.message || "Failed to save attendance");
+      }
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to save attendance",
+        "error"
+      );
+    }
+  };
+
   const handleSaveAttendance = async () => {
     if (employees.length === 0) {
       showToast("No employees to record attendance for", "error");
+      return;
+    }
+
+    // Validate that all present employees have both in and out times
+    const invalidEntries = employees.filter(
+      (emp) => emp.attendance === "Present" && (!emp.inTime || !emp.outTime)
+    );
+
+    if (invalidEntries.length > 0) {
+      showToast(
+        "Please fill in both in and out times for all present employees",
+        "error"
+      );
       return;
     }
 
@@ -160,7 +231,7 @@ const DailyAttendance: React.FC = () => {
         totalLeave: employees.filter((e) => e.attendance === "Leave").length,
         description: "",
         employees: employees.map((emp) => ({
-          employeeId: emp.empId,
+          employeeId: emp.id,
           employeeName: emp.name,
           status: emp.attendance.toLowerCase() as
             | "present"
@@ -359,6 +430,7 @@ const DailyAttendance: React.FC = () => {
                         type="time"
                         className="input-base w-full"
                         value={value}
+                        required={row.attendance === "Present"}
                         onChange={(e) =>
                           handleInputChange(index, "inTime", e.target.value)
                         }
@@ -377,6 +449,7 @@ const DailyAttendance: React.FC = () => {
                         type="time"
                         className="input-base w-full"
                         value={value}
+                        required={row.attendance === "Present"}
                         onChange={(e) =>
                           handleInputChange(index, "outTime", e.target.value)
                         }
@@ -400,6 +473,20 @@ const DailyAttendance: React.FC = () => {
                       />
                     );
                   },
+                },
+                {
+                  key: "actions",
+                  label: "",
+                  width: "50px",
+                  render: (_, row) => (
+                    <button
+                      className="p-1 hover:bg-gray-100 rounded"
+                      onClick={() => handleSaveIndividualAttendance(row)}
+                      title="Save attendance for this employee"
+                    >
+                      <Save className="w-4 h-4 text-gray-500" />
+                    </button>
+                  ),
                 },
               ]}
             />

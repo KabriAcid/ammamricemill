@@ -62,6 +62,8 @@ router.get("/", authenticateToken, async (req, res, next) => {
             a.employee_id as employeeId,
             e.name as employeeName,
             a.status,
+            a.check_in as inTime,
+            a.check_out as outTime,
             a.working_hours as overtime,
             a.notes
           FROM attendance a
@@ -197,12 +199,14 @@ router.post("/", authenticateToken, async (req, res, next) => {
         emp.employeeId,
         date,
         emp.status || "present",
+        emp.inTime || null,
+        emp.outTime || null,
         emp.overtime || 0,
         emp.notes || description || null,
       ]);
 
       await pool.query(
-        `INSERT INTO attendance (employee_id, date, status, working_hours, notes) 
+        `INSERT INTO attendance (employee_id, date, status, check_in, check_out, working_hours, notes) 
          VALUES ?`,
         [values]
       );
@@ -280,12 +284,14 @@ router.put("/:date", authenticateToken, async (req, res, next) => {
         emp.employeeId,
         date,
         emp.status || "present",
+        emp.inTime || null,
+        emp.outTime || null,
         emp.overtime || 0,
         emp.notes || description || null,
       ]);
 
       await pool.query(
-        `INSERT INTO attendance (employee_id, date, status, working_hours, notes) 
+        `INSERT INTO attendance (employee_id, date, status, check_in, check_out, working_hours, notes) 
          VALUES ?`,
         [values]
       );
