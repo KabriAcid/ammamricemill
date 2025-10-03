@@ -135,7 +135,11 @@ const HeadIncome = () => {
     {
       key: "receives",
       label: "Receives",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) =>
+        value.toLocaleString("en-IN", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        }),
     },
   ];
 
@@ -158,7 +162,20 @@ const HeadIncome = () => {
               Total Receives
             </div>
             <div className="text-2xl font-bold text-gray-900">
-              {totalReceives.toLocaleString()}
+              {totalReceives.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          </div>
+        </Card>
+        <Card icon={<ArrowDownCircle className="w-8 h-8 text-primary-800" />}>
+          <div>
+            <div className="text-xs uppercase text-gray-500 font-semibold">
+              Total Heads
+            </div>
+            <div className="text-2xl font-bold text-gray-900">
+              {data.length}
             </div>
           </div>
         </Card>
@@ -214,7 +231,10 @@ const HeadIncome = () => {
         }}
         summaryRow={{
           name: "Total",
-          receives: totalReceives.toLocaleString(),
+          receives: totalReceives.toLocaleString("en-IN", {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          }),
         }}
       />
       <Modal

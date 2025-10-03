@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, BarChart3, CheckCircle, XCircle, Save, Check } from "lucide-react";
+import {
+  Calendar,
+  BarChart3,
+  CheckCircle,
+  XCircle,
+  Save,
+  Check,
+} from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -131,8 +138,8 @@ const DailyAttendance: React.FC = () => {
     value: "Present" | "Absent" | "Leave"
   ) => {
     setEmployees((prev) =>
-      prev.map((emp, i) => 
-        i === idx 
+      prev.map((emp, i) =>
+        i === idx
           ? { ...emp, attendance: value, saved: false } // Mark as unsaved when attendance changes
           : emp
       )
@@ -145,8 +152,8 @@ const DailyAttendance: React.FC = () => {
     value: string
   ) => {
     setEmployees((prev) =>
-      prev.map((emp, i) => 
-        i === idx 
+      prev.map((emp, i) =>
+        i === idx
           ? { ...emp, [field]: value, saved: false } // Mark as unsaved when changed
           : emp
       )
@@ -199,11 +206,9 @@ const DailyAttendance: React.FC = () => {
       if (response.success) {
         showToast(`Attendance saved for ${employee.name}`, "success");
         // Update the saved status in the local state
-        setEmployees(prev =>
-          prev.map(emp =>
-            emp.id === employee.id
-              ? { ...emp, saved: true }
-              : emp
+        setEmployees((prev) =>
+          prev.map((emp) =>
+            emp.id === employee.id ? { ...emp, saved: true } : emp
           )
         );
       } else {
@@ -500,8 +505,14 @@ const DailyAttendance: React.FC = () => {
                       className={`p-1 hover:bg-gray-100 rounded ${
                         row.saved ? "cursor-default" : ""
                       }`}
-                      onClick={() => !row.saved && handleSaveIndividualAttendance(row)}
-                      title={row.saved ? "Attendance saved" : "Save attendance for this employee"}
+                      onClick={() =>
+                        !row.saved && handleSaveIndividualAttendance(row)
+                      }
+                      title={
+                        row.saved
+                          ? "Attendance saved"
+                          : "Save attendance for this employee"
+                      }
                     >
                       {row.saved ? (
                         <Check className="w-4 h-4 text-green-500" />

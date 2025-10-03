@@ -9,13 +9,15 @@ router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [incomeHeads] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        0 as receives,
-        created_at as createdAt
-      FROM income_heads 
-      WHERE status = 'active'
-      ORDER BY created_at DESC`
+        ih.id, 
+        ih.name,
+        COALESCE(SUM(t.amount), 0) as receives,
+        ih.created_at as createdAt
+      FROM income_heads ih
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.type = 'receive' AND t.status = 'completed'
+      WHERE ih.status = 'active'
+      GROUP BY ih.id, ih.name, ih.created_at
+      ORDER BY ih.created_at DESC`
     );
 
     res.json({
@@ -30,7 +32,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
 // POST /api/accounts/head-income - Create new income head
 router.post("/", authenticateToken, async (req, res, next) => {
   try {
-    const { name } = req.body;
+    const { name, receives = 0 } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -40,12 +42,20 @@ router.post("/", authenticateToken, async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO income_heads (name, status) VALUES (?, 'active')`,
-      [name]
+      `INSERT INTO income_heads (name, receives, status) VALUES (?, ?, 'active')`,
+      [name, receives]
     );
 
     const [newHead] = await pool.query(
-      `SELECT id, name, 0 as receives, created_at as createdAt FROM income_heads WHERE id = ?`,
+      `SELECT 
+        ih.id, 
+        ih.name,
+        COALESCE(SUM(t.amount), 0) as receives,
+        ih.created_at as createdAt
+      FROM income_heads ih
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.type = 'receive' AND t.status = 'completed'
+      WHERE ih.id = ?
+      GROUP BY ih.id, ih.name, ih.created_at`,
       [result.insertId]
     );
 
@@ -63,7 +73,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
 router.put("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { name } = req.body;
+    const { name, receives } = req.body;
 
     if (!name) {
       return res.status(400).json({
@@ -72,13 +82,31 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       });
     }
 
-    await pool.query(`UPDATE income_heads SET name = ? WHERE id = ?`, [
-      name,
-      id,
-    ]);
+    const updateFields = ["name = ?"];
+    const updateValues = [name];
+
+    if (receives !== undefined) {
+      updateFields.push("receives = ?");
+      updateValues.push(receives);
+    }
+
+    updateValues.push(id);
+
+    await pool.query(
+      `UPDATE income_heads SET ${updateFields.join(", ")} WHERE id = ?`,
+      updateValues
+    );
 
     const [updated] = await pool.query(
-      `SELECT id, name, 0 as receives, created_at as createdAt FROM income_heads WHERE id = ?`,
+      `SELECT 
+        ih.id, 
+        ih.name,
+        COALESCE(SUM(t.amount), 0) as receives,
+        ih.created_at as createdAt
+      FROM income_heads ih
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.type = 'receive' AND t.status = 'completed'
+      WHERE ih.id = ?
+      GROUP BY ih.id, ih.name, ih.created_at`,
       [id]
     );
 
