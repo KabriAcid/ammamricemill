@@ -1,49 +1,50 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
+import type { ApiResponse } from "../../types";
 
-// Mock employee data for attendance sheet
-const mockEmployees = [
-  {
-    id: 1,
-    designation: "Accountant",
-    empId: "250043",
-    name: "MUSA ABUBAKAR SALISU",
-  },
-  { id: 2, designation: "Accountant", empId: "250050", name: "ABUBAKAR ADAM" },
-  {
-    id: 3,
-    designation: "GENERAL MANAGER",
-    empId: "250001",
-    name: "MUSTAPHA ABDULLATEEF",
-  },
-  {
-    id: 4,
-    designation: "MILLING OPERATOR",
-    empId: "250003",
-    name: "SHEHU NASIDI LABARAN",
-  },
-  {
-    id: 5,
-    designation: "MILLING OPERATOR",
-    empId: "250009",
-    name: "ABUBAKAR HAKILU",
-  },
-];
+interface Employee {
+  id: number;
+  designation: string;
+  empId: string;
+  name: string;
+}
 
 export const AttendanceSheet: React.FC = () => {
   const navigate = useNavigate();
+  const { showToast } = useToast();
+  const [loading, setLoading] = useState(false);
   const [date, setDate] = useState(new Date().toISOString().slice(0, 10));
   const [description, setDescription] = useState("");
-  const [rows, setRows] = useState(
-    mockEmployees.map((emp) => ({
-      ...emp,
-      attendance: "Present",
-      inTime: "",
-      outTime: "",
-      note: "",
-    }))
-  );
+  const [rows, setRows] = useState<Array<any>>([]);
+
+  useEffect(() => {
+    fetchEmployees();
+  }, []);
+
+  const fetchEmployees = async () => {
+    try {
+      const response = await api.get<ApiResponse<{ employees: Employee[] }>>(
+        "/hr/employees"
+      );
+      if (response.success && response.data?.employees) {
+        setRows(
+          response.data.employees.map((emp: Employee) => ({
+            ...emp,
+            attendance: "Present",
+            inTime: "",
+            outTime: "",
+            note: "",
+          }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      showToast("Failed to load employees", "error");
+    }
+  };
 
   const handleAttendanceChange = (idx: number, value: string) => {
     setRows((prev) =>
@@ -200,17 +201,74 @@ export const AttendanceSheet: React.FC = () => {
       </div>
       {/* Action Buttons */}
       <div className="flex justify-end gap-4 py-6">
-        <Button variant="primary" className="min-w-[100px]">
+        <Button
+          variant="primary"
+          className="min-w-[100px]"
+          onClick={handleSave}
+          loading={loading}
+        >
           Save
         </Button>
         <Button
           variant="outline"
           className="min-w-[100px] border-primary-500 text-primary-500 hover:bg-primary-50"
           onClick={() => navigate(-1)}
+          disabled={loading}
         >
           Cancel
         </Button>
       </div>
     </div>
   );
+
+  async function handleSave() {
+    if (!date) {
+      showToast("Please select a date", "error");
+      return;
+    }
+
+    if (rows.length === 0) {
+      showToast("No employees to record attendance for", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const attendanceData = {
+        date,
+        description,
+        totalEmployee: rows.length,
+        totalPresent: rows.filter((r) => r.attendance === "Present").length,
+        totalAbsent: rows.filter((r) => r.attendance === "Absent").length,
+        totalLeave: rows.filter((r) => r.attendance === "Leave").length,
+        employees: rows.map((row) => ({
+          employeeId: row.empId,
+          status: row.attendance.toLowerCase(),
+          inTime: row.inTime || null,
+          outTime: row.outTime || null,
+          note: row.note || null,
+        })),
+      };
+
+      const response = await api.post<ApiResponse<void>>(
+        "/hr/attendance",
+        attendanceData
+      );
+
+      if (response.success) {
+        showToast("Attendance recorded successfully", "success");
+        navigate("/hr/attendance");
+      } else {
+        throw new Error(response.message || "Failed to save attendance");
+      }
+    } catch (error) {
+      console.error("Error saving attendance:", error);
+      showToast(
+        error instanceof Error ? error.message : "Failed to save attendance",
+        "error"
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
 };

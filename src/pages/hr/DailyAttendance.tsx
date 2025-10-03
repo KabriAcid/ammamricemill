@@ -14,15 +14,19 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
+// Navigation
+import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { Attendance, AttendanceRecord } from "../../types";
 import type { ApiResponse } from "../../types";
 
-const AttendanceList: React.FC = () => {
+const DailyAttendance: React.FC = () => {
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [initialLoading, setInitialLoading] = useState(true);
   const [connectionError, setConnectionError] = useState(false);
+
+  const navigate = useNavigate();
 
   const [selectedAttendances, setSelectedAttendances] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -382,6 +386,13 @@ const AttendanceList: React.FC = () => {
             onChange={(e) => setDateFilter(e.target.value)}
             className="input-base"
           />
+          <Button
+            onClick={() => navigate("/hr/attendance/new")}
+            variant="primary"
+            size="sm"
+          >
+            Record Attendance
+          </Button>
           <Button onClick={handleNew} icon={Plus} size="sm">
             New
           </Button>
@@ -562,4 +573,4 @@ const AttendanceList: React.FC = () => {
   );
 };
 
-export default AttendanceList;
+export default DailyAttendance;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Printer,
   TrendingUp,
@@ -14,33 +14,10 @@ import { FilterBar } from "../../components/ui/FilterBar";
 import { Attendance } from "../../types";
 
 const MonthlyAttendance: React.FC = () => {
-  const [attendances] = useState<Attendance[]>([
-    {
-      id: "1",
-      date: "2024-01-31",
-      totalEmployee: 45,
-      totalPresent: 1260, // 42 avg * 30 days
-      totalAbsent: 90,
-      totalLeave: 30,
-      description: "January 2024 Summary",
-      employees: [],
-      createdAt: "2024-01-31T10:00:00Z",
-      updatedAt: "2024-01-31T10:00:00Z",
-    },
-    {
-      id: "2",
-      date: "2023-12-31",
-      totalEmployee: 43,
-      totalPresent: 1204,
-      totalAbsent: 86,
-      totalLeave: 43,
-      description: "December 2023 Summary",
-      employees: [],
-      createdAt: "2023-12-31T10:00:00Z",
-      updatedAt: "2023-12-31T10:00:00Z",
-    },
-  ]);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Filters
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [searchQuery, setSearchQuery] = useState("");
@@ -48,6 +25,24 @@ const MonthlyAttendance: React.FC = () => {
   const [monthFilter, setMonthFilter] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("");
 
+  // ✅ Fetch data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const res = await fetch("/api/attendance/monthly");
+        const data = await res.json();
+        setAttendances(data);
+      } catch (err) {
+        console.error("Error fetching attendance:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  // ✅ Filtering logic
   const filteredAttendances = attendances.filter((attendance) => {
     const date = new Date(attendance.date);
     const year = date.getFullYear().toString();
@@ -62,6 +57,7 @@ const MonthlyAttendance: React.FC = () => {
     return matchesSearch && matchesYear && matchesMonth;
   });
 
+  // ✅ Pagination
   const totalPages = Math.ceil(filteredAttendances.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedAttendances = filteredAttendances.slice(
@@ -69,6 +65,7 @@ const MonthlyAttendance: React.FC = () => {
     startIndex + pageSize
   );
 
+  // ✅ Table Columns
   const columns = [
     { key: "id", label: "#", width: "80px" },
     {
@@ -108,6 +105,7 @@ const MonthlyAttendance: React.FC = () => {
     { key: "description", label: "Description" },
   ];
 
+  // Filter options
   const years = ["2024", "2023", "2022"];
   const months = [
     { value: "01", label: "January" },
@@ -124,7 +122,7 @@ const MonthlyAttendance: React.FC = () => {
     { value: "12", label: "December" },
   ];
 
-  // Calculate summary stats
+  // ✅ Summary stats
   const totalMonths = attendances.length;
   const totalPresent = attendances.reduce(
     (sum, att) => sum + att.totalPresent,
@@ -138,10 +136,10 @@ const MonthlyAttendance: React.FC = () => {
     totalPresent + totalAbsent > 0
       ? (totalPresent / (totalPresent + totalAbsent)) * 100
       : 0;
-  const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
+      {/* Header */}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Monthly Attendance</h1>
         <p className="mt-1 text-sm text-gray-500">
@@ -149,14 +147,15 @@ const MonthlyAttendance: React.FC = () => {
         </p>
       </div>
 
+      {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
+        <Card icon={<BarChart3 size={32} />} loading={loading} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">{totalMonths}</p>
             <p className="text-sm text-gray-500">Months Recorded</p>
           </div>
         </Card>
-        <Card icon={<CheckCircle size={32} />} loading={loadingCards} hover>
+        <Card icon={<CheckCircle size={32} />} loading={loading} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
               {totalPresent.toLocaleString()}
@@ -164,7 +163,7 @@ const MonthlyAttendance: React.FC = () => {
             <p className="text-sm text-gray-500">Total Present Days</p>
           </div>
         </Card>
-        <Card icon={<XCircle size={32} />} loading={loadingCards} hover>
+        <Card icon={<XCircle size={32} />} loading={loading} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
               {totalAbsent.toLocaleString()}
@@ -172,7 +171,7 @@ const MonthlyAttendance: React.FC = () => {
             <p className="text-sm text-gray-500">Total Absent Days</p>
           </div>
         </Card>
-        <Card icon={<Percent size={32} />} loading={loadingCards} hover>
+        <Card icon={<Percent size={32} />} loading={loading} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
               {Math.round(attendanceRate)}%
@@ -182,6 +181,7 @@ const MonthlyAttendance: React.FC = () => {
         </Card>
       </div>
 
+      {/* Filters */}
       <FilterBar
         onSearch={setSearchQuery}
         placeholder="Search by description..."
@@ -231,6 +231,7 @@ const MonthlyAttendance: React.FC = () => {
         </div>
       </FilterBar>
 
+      {/* Attendance Table */}
       <Table
         data={paginatedAttendances}
         columns={columns}
@@ -247,7 +248,7 @@ const MonthlyAttendance: React.FC = () => {
         }}
       />
 
-      {/* Monthly Trend Chart Placeholder */}
+      {/* Trend Section */}
       <Card className="mt-6">
         <div className="px-6 pt-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-2">
@@ -258,7 +259,7 @@ const MonthlyAttendance: React.FC = () => {
           <div className="text-center">
             <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
             <p className="text-sm text-gray-500">
-              Monthly attendance trend chart would be displayed here
+              Trend chart will be connected here once backend provides data
             </p>
           </div>
         </div>

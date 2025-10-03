@@ -19,11 +19,10 @@ import GodownList from "./pages/settings/GodownList";
 // hr
 import DesignationList from "./pages/hr/DesignationList";
 import EmployeeList from "./pages/hr/EmployeeList";
-import AttendanceList from "./pages/hr/AttendanceList";
+import DailyAttendance from "./pages/hr/DailyAttendance";
 import { AttendanceSheet } from "./pages/hr/AttendanceSheet";
 import SalarySheet from "./pages/hr/SalarySheet";
 import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
-import MonthlySalarySheet from "./pages/hr/MonthlySalarySheet";
 import HeadIncome from "./pages/accounts/HeadIncome";
 
 import HeadExpense from "./pages/accounts/HeadExpense";
@@ -88,7 +87,7 @@ function App() {
                 <Route path="/settings/godown" element={<GodownList />} />
                 <Route path="/hr/designation" element={<DesignationList />} />
                 <Route path="/hr/employee" element={<EmployeeList />} />
-                <Route path="/hr/attendance" element={<AttendanceList />} />
+                <Route path="/hr/attendance" element={<DailyAttendance />} />
                 <Route
                   path="/hr/attendance/new"
                   element={<AttendanceSheet />}
@@ -98,7 +97,6 @@ function App() {
                   path="/hr/attendance/monthly"
                   element={<MonthlyAttendance />}
                 />
-                <Route path="/hr/salary" element={<MonthlySalarySheet />} />
                 <Route path="/accounts/head-income" element={<HeadIncome />} />
                 <Route
                   path="/accounts/head-expense"
