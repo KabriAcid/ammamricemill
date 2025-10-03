@@ -135,15 +135,22 @@ const HeadIncome = () => {
     {
       key: "receives",
       label: "Receives",
-      render: (value: number) =>
-        value.toLocaleString("en-IN", {
+      render: (value: number | string) => {
+        const numValue = typeof value === "string" ? parseFloat(value) : value;
+        return numValue.toLocaleString("en-IN", {
           minimumFractionDigits: 2,
           maximumFractionDigits: 2,
-        }),
+        });
+      },
     },
   ];
 
-  const totalReceives = data.reduce((sum, d) => sum + (d.receives || 0), 0);
+  // Convert all receives values to numbers and calculate total
+  const totalReceives = data.reduce((sum, d) => {
+    const receiveAmount =
+      typeof d.receives === "string" ? parseFloat(d.receives) : d.receives || 0;
+    return sum + receiveAmount;
+  }, 0);
 
   return (
     <div className="animate-fade-in">
@@ -231,10 +238,7 @@ const HeadIncome = () => {
         }}
         summaryRow={{
           name: "Total",
-          receives: totalReceives.toLocaleString("en-IN", {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2,
-          }),
+          receives: totalReceives,
         }}
       />
       <Modal
