@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -14,54 +14,14 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
 import { Attendance, AttendanceRecord } from "../../types";
+import type { ApiResponse } from "../../types";
 
 const AttendanceList: React.FC = () => {
-  const [attendances, setAttendances] = useState<Attendance[]>([
-    {
-      id: "1",
-      date: "2024-01-15",
-      totalEmployee: 45,
-      totalPresent: 42,
-      totalAbsent: 2,
-      totalLeave: 1,
-      description: "Regular working day",
-      employees: [
-        {
-          employeeId: "1",
-          employeeName: "John Doe",
-          status: "present",
-          overtime: 2,
-        },
-        {
-          employeeId: "2",
-          employeeName: "Jane Smith",
-          status: "present",
-          overtime: 0,
-        },
-        {
-          employeeId: "3",
-          employeeName: "Bob Wilson",
-          status: "absent",
-          notes: "Sick leave",
-        },
-      ],
-      createdAt: "2024-01-15T10:00:00Z",
-      updatedAt: "2024-01-15T10:00:00Z",
-    },
-    {
-      id: "2",
-      date: "2024-01-14",
-      totalEmployee: 45,
-      totalPresent: 44,
-      totalAbsent: 1,
-      totalLeave: 0,
-      description: "Production peak day",
-      employees: [],
-      createdAt: "2024-01-14T10:00:00Z",
-      updatedAt: "2024-01-14T10:00:00Z",
-    },
-  ]);
+  const [attendances, setAttendances] = useState<Attendance[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [selectedAttendances, setSelectedAttendances] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -73,7 +33,7 @@ const AttendanceList: React.FC = () => {
     null
   );
   const [loading, setLoading] = useState(false);
-
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     date: "",
     totalEmployee: 0,
@@ -148,59 +108,103 @@ const AttendanceList: React.FC = () => {
     setShowModal(true);
   };
 
-  const handleDelete = async (attendanceIds: string[]) => {
-    if (
-      confirm(
-        `Are you sure you want to delete ${attendanceIds.length} attendance record(s)?`
-      )
-    ) {
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setAttendances((prev) =>
-          prev.filter((attendance) => !attendanceIds.includes(attendance.id))
-        );
-        setSelectedAttendances([]);
-      } catch (error) {
-        console.error("Error deleting attendances:", error);
-      } finally {
-        setLoading(false);
+  const fetchAttendanceData = async () => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
+        search: searchQuery,
+        date: dateFilter,
+      }).toString();
+
+      const response = await api.get<
+        ApiResponse<{ attendances: Attendance[]; pagination: any }>
+      >(`/hr/attendance?${queryParams}`);
+
+      if (response.success && response.data?.attendances) {
+        setAttendances(response.data.attendances);
+      } else {
+        throw new Error("Failed to fetch attendance data");
       }
+    } catch (error) {
+      console.error("Error fetching attendance data:", error);
+      showToast("Failed to load attendance data", "error");
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  // Initial data load
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [currentPage, pageSize, searchQuery, dateFilter]);
+
+  // Add keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="search"]');
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const handleDelete = async (attendanceIds: string[]) => {
+    setLoading(true);
+    try {
+      const response = await api.delete<ApiResponse<void>>("/hr/attendance", {
+        dates: attendanceIds,
+      });
+
+      if (response.success) {
+        showToast(
+          response.message || "Records deleted successfully",
+          "success"
+        );
+        await fetchAttendanceData();
+        setSelectedAttendances([]);
+      }
+    } catch (error) {
+      console.error("Error deleting attendances:", error);
+      showToast("Failed to delete attendance records", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!formData.date || formData.totalEmployee <= 0) {
+      showToast("Please fill in all required fields", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (editingAttendance) {
-        setAttendances((prev) =>
-          prev.map((attendance) =>
-            attendance.id === editingAttendance.id
-              ? {
-                  ...attendance,
-                  ...formData,
-                  updatedAt: new Date().toISOString(),
-                }
-              : attendance
+      const response = editingAttendance
+        ? await api.put<ApiResponse<Attendance>>(
+            `/hr/attendance/${formData.date}`,
+            formData
           )
-        );
-      } else {
-        const newAttendance: Attendance = {
-          id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setAttendances((prev) => [...prev, newAttendance]);
-      }
+        : await api.post<ApiResponse<Attendance>>("/hr/attendance", formData);
 
-      setShowModal(false);
-      setEditingAttendance(null);
-      resetForm();
+      if (response.success) {
+        showToast(response.message || "Record saved successfully", "success");
+        await fetchAttendanceData();
+        setShowModal(false);
+        setEditingAttendance(null);
+        resetForm();
+      }
     } catch (error) {
       console.error("Error saving attendance:", error);
+      showToast("Failed to save attendance record", "error");
     } finally {
       setLoading(false);
     }
@@ -238,13 +242,37 @@ const AttendanceList: React.FC = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Attendance Management
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Track daily employee attendance records.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Attendance Management
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Track daily employee attendance records.
+          </p>
+        </div>
+        <button
+          onClick={() => fetchAttendanceData()}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            loading ? "animate-spin" : ""
+          }`}
+          disabled={loading}
+          title="Refresh data"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">

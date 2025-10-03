@@ -113,7 +113,11 @@ export const api = {
       method: "PUT",
       body: JSON.stringify(data),
     }),
-  delete: <T>(url: string) => fetcher<T>(url, { method: "DELETE" }),
+  delete: <T>(url: string, data?: any) =>
+    fetcher<T>(url, {
+      method: "DELETE",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
   upload: <T>(url: string, formData: FormData) =>
     fetcher<T>(url, {
       method: "POST",

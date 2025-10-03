@@ -1,3 +1,11 @@
+// API Response type
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
 // User type for AuthState
 export interface User {
   id: number | string;
