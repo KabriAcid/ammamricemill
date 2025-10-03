@@ -5,14 +5,16 @@ import {
   Calendar,
   Users,
   TrendingUp,
+  RefreshCcw,
 } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
 import { useToast } from "../../components/ui/Toast";
+import { SkeletonCard } from "../../components/ui/Skeleton";
 
 import { ApiResponse } from "../../types";
 import { api } from "../../utils/fetcher";
@@ -46,18 +48,18 @@ interface EmployeeSalary {
 
 const years = [2025, 2024, 2023];
 const months = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
+  { value: "01", label: "January" },
+  { value: "02", label: "February" },
+  { value: "03", label: "March" },
+  { value: "04", label: "April" },
+  { value: "05", label: "May" },
+  { value: "06", label: "June" },
+  { value: "07", label: "July" },
+  { value: "08", label: "August" },
+  { value: "09", label: "September" },
+  { value: "10", label: "October" },
+  { value: "11", label: "November" },
+  { value: "12", label: "December" },
 ];
 
 const SalarySheet: React.FC = () => {
@@ -114,11 +116,14 @@ const SalarySheet: React.FC = () => {
     {
       key: "month",
       label: "Month",
-      render: (value: string) => (
-        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
-          {value}
-        </span>
-      ),
+      render: (value: string) => {
+        const monthName = months.find((m) => m.value === value)?.label || value;
+        return (
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-primary-100 text-primary-700">
+            {monthName}
+          </span>
+        );
+      },
     },
     { key: "description", label: "Description" },
     {
@@ -144,6 +149,15 @@ const SalarySheet: React.FC = () => {
 
   const handleEdit = (record: SalaryRecord) => {
     setEditingRecord(record);
+    setFormData({
+      date: record.date,
+      year: Number(record.year),
+      month: record.month,
+      description: record.description || "",
+      totalEmployees: record.totalEmployees,
+      totalSalary: record.totalSalary,
+      employeeSalaries: record.employeeSalaries || [],
+    });
     setShowModal(true);
   };
 
@@ -186,6 +200,27 @@ const SalarySheet: React.FC = () => {
   };
 
   // Initial data load
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    // Ctrl/Cmd + F for search
+    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    }
+    // Ctrl/Cmd + R for refresh
+    if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+      event.preventDefault();
+      fetchSalaryData();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
   useEffect(() => {
     fetchSalaryData();
   }, [currentPage, pageSize, searchQuery, yearFilter, monthFilter]);
@@ -213,8 +248,55 @@ const SalarySheet: React.FC = () => {
     }
   };
 
-  const handleNew = () => {
+  const handleNew = async () => {
     setEditingRecord(null);
+    // Reset form data
+    setFormData({
+      date: "",
+      year: new Date().getFullYear(),
+      month: "",
+      description: "",
+      totalEmployees: 0,
+      totalSalary: 0,
+      employeeSalaries: [],
+    });
+
+    // Fetch active employees
+    try {
+      const response = await api.get<ApiResponse<any>>(
+        "/hr/employees?status=active"
+      );
+
+      if (response.success && response.data) {
+        const employees = response.data.map((emp: any) => ({
+          employeeId: emp.id,
+          empId: emp.empId,
+          employeeName: emp.name,
+          designation: emp.designation,
+          salary: emp.salary,
+          bonusOT: 0,
+          absentFine: 0,
+          deduction: 0,
+          payment: emp.salary,
+          note: "",
+          signature: "",
+        }));
+
+        setFormData((prev) => ({
+          ...prev,
+          employeeSalaries: employees,
+          totalEmployees: employees.length,
+          totalSalary: employees.reduce(
+            (sum: number, emp: any) => sum + emp.salary,
+            0
+          ),
+        }));
+      }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      showToast("Failed to fetch employees", "error");
+    }
+
     setShowModal(true);
   };
 
@@ -306,44 +388,78 @@ const SalarySheet: React.FC = () => {
           </div>
         </div>
       )}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Monthly Salary Sheet
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage and track monthly salary payments for all employees.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Monthly Salary Sheet
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage and track monthly salary payments for all employees.
+          </p>
+        </div>
+        <button
+          onClick={() => fetchSalaryData()}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${loading ? "animate-spin" : ""}`}
+          disabled={loading}
+          title="Refresh data (Ctrl+R)"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card icon={<Calendar size={32} />} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {filteredData.length}
-            </p>
-            <p className="text-sm text-gray-500">Total Records</p>
-          </div>
-        </Card>
-        <Card icon={<Users size={32} />} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">{totalEmployees}</p>
-            <p className="text-sm text-gray-500">Total Employees</p>
-          </div>
-        </Card>
-        <Card icon={<TrendingUp size={32} />} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {totalAmount.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">Total Amount</p>
-          </div>
-        </Card>
+        {loading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<Calendar size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {filteredData.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Records</p>
+              </div>
+            </Card>
+            <Card icon={<Users size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalEmployees}
+                </p>
+                <p className="text-sm text-gray-500">Total Employees</p>
+              </div>
+            </Card>
+            <Card icon={<TrendingUp size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalAmount.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Amount</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
       <Card>
         <FilterBar
           onSearch={setSearchQuery}
-          placeholder="Search by description or month..."
+          placeholder="Search by description or month... (Ctrl+F)"
         >
           <div className="flex items-center space-x-2">
             <select
@@ -365,8 +481,8 @@ const SalarySheet: React.FC = () => {
             >
               <option value="">All Months</option>
               {months.map((month) => (
-                <option key={month} value={month}>
-                  {month}
+                <option key={month.value} value={month.value}>
+                  {month.label}
                 </option>
               ))}
             </select>
@@ -433,13 +549,28 @@ const SalarySheet: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Date *
               </label>
-              <input type="date" className="input-base" required />
+              <input
+                type="date"
+                className="input-base"
+                required
+                value={formData.date}
+                onChange={(e) =>
+                  setFormData({ ...formData, date: e.target.value })
+                }
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Year *
               </label>
-              <select className="input-base" required>
+              <select
+                className="input-base"
+                required
+                value={formData.year}
+                onChange={(e) =>
+                  setFormData({ ...formData, year: parseInt(e.target.value) })
+                }
+              >
                 {years.map((year) => (
                   <option key={year} value={year}>
                     {year}
@@ -451,10 +582,18 @@ const SalarySheet: React.FC = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Month *
               </label>
-              <select className="input-base" required>
+              <select
+                className="input-base"
+                required
+                value={formData.month}
+                onChange={(e) =>
+                  setFormData({ ...formData, month: e.target.value })
+                }
+              >
+                <option value="">Select Month</option>
                 {months.map((month) => (
-                  <option key={month} value={month}>
-                    {month}
+                  <option key={month.value} value={month.value}>
+                    {month.label}
                   </option>
                 ))}
               </select>
@@ -464,7 +603,14 @@ const SalarySheet: React.FC = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
-            <textarea className="input-base" rows={2} />
+            <textarea
+              className="input-base"
+              rows={2}
+              value={formData.description}
+              onChange={(e) =>
+                setFormData({ ...formData, description: e.target.value })
+              }
+            />
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setShowModal(false)}>
