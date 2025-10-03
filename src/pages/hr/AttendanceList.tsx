@@ -123,7 +123,18 @@ const AttendanceList: React.FC = () => {
       >(`/hr/attendance?${queryParams}`);
 
       if (response.success && response.data?.attendances) {
-        setAttendances(response.data.attendances);
+        // Ensure data conforms to our types
+        const typedAttendances = response.data.attendances.map((att) => ({
+          ...att,
+          employees: att.employees.map((emp) => ({
+            ...emp,
+            // Ensure status is one of the valid values
+            status: ["present", "absent", "leave"].includes(emp.status)
+              ? emp.status
+              : "present",
+          })),
+        }));
+        setAttendances(typedAttendances);
       } else {
         throw new Error("Failed to fetch attendance data");
       }

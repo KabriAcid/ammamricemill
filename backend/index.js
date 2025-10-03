@@ -126,10 +126,12 @@ app.use("/api/dashboard", dashboardRoutes);
 // Import HR routes
 import employeeRoutes from "./routes/hr/employees.js";
 import designationRoutes from "./routes/hr/designation.js";
+import attendanceRoutes from "./routes/hr/attendance.js";
 
 // Register HR routes
 app.use("/api/hr/employee", employeeRoutes);
 app.use("/api/hr/designation", designationRoutes);
+app.use("/api/hr/attendance", attendanceRoutes);
 
 // Error handler should be after all routes
 app.use(errorHandler);
