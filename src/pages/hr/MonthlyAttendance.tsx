@@ -12,8 +12,11 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Attendance } from "../../types";
+import { api } from "../../utils/fetcher";
+import { useToast } from "../../components/ui/Toast";
 
 const MonthlyAttendance: React.FC = () => {
+  const { showToast } = useToast();
   const [attendances, setAttendances] = useState<Attendance[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -25,22 +28,62 @@ const MonthlyAttendance: React.FC = () => {
   const [monthFilter, setMonthFilter] = useState("");
   const [employeeFilter, setEmployeeFilter] = useState("");
 
-  // ✅ Fetch data from backend
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("/api/attendance/monthly");
-        const data = await res.json();
-        setAttendances(data);
-      } catch (err) {
-        console.error("Error fetching attendance:", err);
-      } finally {
-        setLoading(false);
+  const [trendData, setTrendData] = useState<any[]>([]);
+  const [trendLoading, setTrendLoading] = useState(true);
+
+  // Fetch monthly attendance data
+  const fetchMonthlyData = async () => {
+    try {
+      setLoading(true);
+      const queryParams = new URLSearchParams();
+      if (yearFilter) queryParams.append("year", yearFilter);
+      if (monthFilter) queryParams.append("month", monthFilter);
+
+      const response = await api.get<{
+        success: boolean;
+        data: Attendance[];
+      }>(`/hr/monthly-attendance?${queryParams}`);
+
+      if (response.success) {
+        setAttendances(response.data);
+      } else {
+        console.error("Failed to fetch attendance data");
       }
-    };
-    fetchData();
-  }, []);
+    } catch (err) {
+      console.error("Error fetching attendance:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch trend data
+  const fetchTrendData = async () => {
+    try {
+      setTrendLoading(true);
+      const response = await api.get<{
+        success: boolean;
+        data: any[];
+      }>(
+        `/hr/monthly-attendance/trend?year=${
+          yearFilter || new Date().getFullYear()
+        }`
+      );
+
+      if (response.success) {
+        setTrendData(response.data);
+      }
+    } catch (err) {
+      console.error("Error fetching trend data:", err);
+    } finally {
+      setTrendLoading(false);
+    }
+  };
+
+  // Fetch data when filters change
+  useEffect(() => {
+    fetchMonthlyData();
+    fetchTrendData();
+  }, [yearFilter, monthFilter]);
 
   // ✅ Filtering logic
   const filteredAttendances = attendances.filter((attendance) => {
@@ -255,13 +298,69 @@ const MonthlyAttendance: React.FC = () => {
             Monthly Attendance Trend
           </h2>
         </div>
-        <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
-          <div className="text-center">
-            <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">
-              Trend chart will be connected here once backend provides data
-            </p>
-          </div>
+        <div className="p-6">
+          {trendLoading ? (
+            <div className="h-64 flex items-center justify-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+            </div>
+          ) : trendData.length === 0 ? (
+            <div className="h-64 bg-gray-50 rounded-lg flex items-center justify-center">
+              <div className="text-center">
+                <TrendingUp className="w-12 h-12 text-gray-400 mx-auto mb-2" />
+                <p className="text-sm text-gray-500">
+                  No trend data available for the selected year
+                </p>
+              </div>
+            </div>
+          ) : (
+            <div className="h-64">
+              <table className="min-w-full">
+                <thead>
+                  <tr className="text-sm text-gray-600">
+                    <th className="py-2">Month</th>
+                    <th className="py-2 text-right">Attendance Rate</th>
+                    <th className="py-2 text-right">Present</th>
+                    <th className="py-2 text-right">Absent</th>
+                    <th className="py-2 text-right">Leave</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {trendData.map((item) => (
+                    <tr key={item.month} className="border-t">
+                      <td className="py-2">
+                        {new Date(item.month + "-01").toLocaleDateString(
+                          "en-US",
+                          { month: "long" }
+                        )}
+                      </td>
+                      <td className="py-2 text-right">
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            item.attendanceRate >= 90
+                              ? "bg-green-100 text-green-800"
+                              : item.attendanceRate >= 75
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {item.attendanceRate}%
+                        </span>
+                      </td>
+                      <td className="py-2 text-right text-green-600">
+                        {item.totalPresent}
+                      </td>
+                      <td className="py-2 text-right text-red-600">
+                        {item.totalAbsent}
+                      </td>
+                      <td className="py-2 text-right text-yellow-600">
+                        {item.totalLeave}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </Card>
     </div>

@@ -4,6 +4,8 @@ import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
 import { Plus, Trash2, ArrowDownCircle } from "lucide-react";
+import { api } from "../../utils/fetcher";
+import { useToast } from "../../components/ui/Toast";
 
 type IncomeRow = {
   id: string;
@@ -13,64 +15,118 @@ type IncomeRow = {
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const HeadIncome = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<IncomeRow[]>([]);
   const [loading, setLoading] = useState(false);
-  // removed error state, not used
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<IncomeRow | null>(null);
   const [formData, setFormData] = useState({ name: "", receives: 0 });
 
-  // Fetch all (GET)
-  useEffect(() => {
+  const fetchIncomeHeads = async () => {
     setLoading(true);
-    // Simulate fetch
-    setTimeout(() => {
-      setData([
-        { id: "1", name: "Sales Revenue", receives: 120000 },
-        { id: "2", name: "Interest Income", receives: 8000 },
-        { id: "3", name: "Other Income", receives: 2500 },
-      ]);
+    try {
+      const response = await api.get<{ success: boolean; data: IncomeRow[] }>(
+        "/accounts/head-income"
+      );
+      if (response.success) {
+        setData(response.data);
+      } else {
+        showToast("Failed to load income heads", "error");
+      }
+    } catch (error) {
+      console.error("Error fetching income heads:", error);
+      showToast("Failed to load income heads", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
+  };
+
+  // Fetch all income heads on component mount
+  useEffect(() => {
+    fetchIncomeHeads();
   }, []);
 
-  // Create
-  const handleCreate = () => {
+  // Create new income head
+  const handleCreate = async () => {
+    if (!formData.name.trim()) {
+      showToast("Income head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => [{ id: Date.now().toString(), ...formData }, ...prev]);
-      setModalOpen(false);
-      setFormData({ name: "", receives: 0 });
+    try {
+      const response = await api.post<{
+        success: boolean;
+        data: IncomeRow;
+        message: string;
+      }>("/accounts/head-income", { name: formData.name });
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setModalOpen(false);
+        setFormData({ name: "", receives: 0 });
+        fetchIncomeHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error creating income head:", error);
+      showToast("Failed to create income head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  // Update
-  const handleUpdate = () => {
+  // Update income head
+  const handleUpdate = async () => {
     if (!editItem) return;
+    if (!formData.name.trim()) {
+      showToast("Income head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((row) =>
-          row.id === editItem.id ? { ...row, ...formData } : row
-        )
-      );
-      setModalOpen(false);
-      setEditItem(null);
-      setFormData({ name: "", receives: 0 });
+    try {
+      const response = await api.put<{
+        success: boolean;
+        data: IncomeRow;
+        message: string;
+      }>(`/accounts/head-income/${editItem.id}`, { name: formData.name });
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setModalOpen(false);
+        setEditItem(null);
+        setFormData({ name: "", receives: 0 });
+        fetchIncomeHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error updating income head:", error);
+      showToast("Failed to update income head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  // Delete (single or bulk)
-  const handleDelete = (ids: string[]) => {
+  // Delete income heads (single or bulk)
+  const handleDelete = async (ids: string[]) => {
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => prev.filter((row) => !ids.includes(row.id)));
-      setSelectedRows([]);
+    try {
+      const response = await api.delete<{ success: boolean; message: string }>(
+        "/accounts/head-income",
+        { ids }
+      );
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setSelectedRows([]);
+        fetchIncomeHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error deleting income heads:", error);
+      showToast("Failed to delete income heads", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Table columns

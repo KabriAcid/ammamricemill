@@ -10,6 +10,8 @@ import {
   ArrowUpCircle,
   Banknote,
 } from "lucide-react";
+import { api } from "../../utils/fetcher";
+import { useToast } from "../../components/ui/Toast";
 
 type OthersRow = {
   id: string;
@@ -34,72 +36,111 @@ const HeadOthers = () => {
     balance: 0,
   });
 
-  useEffect(() => {
+  const { showToast } = useToast();
+
+  const fetchOtherHeads = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          name: "Other A",
-          receive: 10000,
-          payment: 2000,
-          balance: 8000,
-        },
-        {
-          id: "2",
-          name: "Other B",
-          receive: 5000,
-          payment: 1000,
-          balance: 4000,
-        },
-        {
-          id: "3",
-          name: "Other C",
-          receive: 3000,
-          payment: 500,
-          balance: 2500,
-        },
-      ]);
+    try {
+      const response = await api.get<{ success: boolean; data: OthersRow[] }>(
+        "/accounts/head-others"
+      );
+      if (response.success) {
+        setData(response.data);
+      } else {
+        showToast("Failed to load other heads", "error");
+      }
+    } catch (error) {
+      console.error("Error fetching other heads:", error);
+      showToast("Failed to load other heads", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
+  };
+
+  useEffect(() => {
+    fetchOtherHeads();
   }, []);
 
-  // Create
-  const handleCreate = () => {
+  // Create new other head
+  const handleCreate = async () => {
+    if (!formData.name.trim()) {
+      showToast("Other head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => [{ id: Date.now().toString(), ...formData }, ...prev]);
-      setModalOpen(false);
-      setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+    try {
+      const response = await api.post<{
+        success: boolean;
+        data: OthersRow;
+        message: string;
+      }>("/accounts/head-others", { name: formData.name });
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setModalOpen(false);
+        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        fetchOtherHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error creating other head:", error);
+      showToast("Failed to create other head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  // Update
-  const handleUpdate = () => {
+  // Update other head
+  const handleUpdate = async () => {
     if (!editItem) return;
+    if (!formData.name.trim()) {
+      showToast("Other head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((row) =>
-          row.id === editItem.id ? { ...row, ...formData } : row
-        )
-      );
-      setModalOpen(false);
-      setEditItem(null);
-      setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+    try {
+      const response = await api.put<{
+        success: boolean;
+        data: OthersRow;
+        message: string;
+      }>(`/accounts/head-others/${editItem.id}`, { name: formData.name });
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setModalOpen(false);
+        setEditItem(null);
+        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        fetchOtherHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error updating other head:", error);
+      showToast("Failed to update other head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
-  // Delete (single or bulk)
-  const handleDelete = (ids: string[]) => {
+  // Delete other heads (single or bulk)
+  const handleDelete = async (ids: string[]) => {
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => prev.filter((row) => !ids.includes(row.id)));
-      setSelectedRows([]);
+    try {
+      const response = await api.delete<{ success: boolean; message: string }>(
+        "/accounts/head-others",
+        { ids }
+      );
+
+      if (response.success) {
+        showToast(response.message, "success");
+        setSelectedRows([]);
+        fetchOtherHeads(); // Refresh the list
+      }
+    } catch (error) {
+      console.error("Error deleting other heads:", error);
+      showToast("Failed to delete other heads", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Table columns

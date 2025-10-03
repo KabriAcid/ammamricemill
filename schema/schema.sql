@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 03, 2025 at 07:59 AM
+-- Generation Time: Oct 03, 2025 at 06:55 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -56,6 +56,24 @@ CREATE TABLE `attendance` (
   `working_hours` decimal(4,2) DEFAULT 0.00,
   `notes` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `attendance_records`
+--
+
+CREATE TABLE `attendance_records` (
+  `id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `employee_id` int(11) NOT NULL,
+  `status` enum('present','absent','leave','inactive') NOT NULL,
+  `in_time` time DEFAULT NULL,
+  `out_time` time DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -152,7 +170,35 @@ CREATE TABLE `employees` (
 
 INSERT INTO `employees` (`id`, `name`, `email`, `phone`, `designation_id`, `salary`, `joining_date`, `status`, `created_at`) VALUES
 (1, 'Aliyu Umar', 'aliyu@example.com', '+2347012345678', 1, 150000.00, '2024-01-10', 'active', '2025-10-02 21:49:12'),
-(2, 'Musa Bello', 'musa@example.com', '+2347023456789', 3, 50000.00, '2024-03-15', 'active', '2025-10-02 21:49:12');
+(2, 'Musa Bello', 'musa@example.com', '+2347023456789', 3, 50000.00, '2024-03-14', 'inactive', '2025-10-02 21:49:12');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `employee_salary`
+--
+
+CREATE TABLE `employee_salary` (
+  `id` int(11) NOT NULL,
+  `salary_id` int(11) NOT NULL,
+  `employee_id` int(11) NOT NULL,
+  `salary` decimal(10,2) DEFAULT 0.00,
+  `bonus_ot` decimal(10,2) DEFAULT 0.00,
+  `absent_fine` decimal(10,2) DEFAULT 0.00,
+  `deduction` decimal(10,2) DEFAULT 0.00,
+  `payment` decimal(10,2) DEFAULT 0.00,
+  `note` text DEFAULT NULL,
+  `signature` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `employee_salary`
+--
+
+INSERT INTO `employee_salary` (`id`, `salary_id`, `employee_id`, `salary`, `bonus_ot`, `absent_fine`, `deduction`, `payment`, `note`, `signature`, `created_at`) VALUES
+(2, 2, 1, 150000.00, 0.00, 0.00, 0.00, 150000.00, NULL, NULL, '2025-10-03 14:11:46'),
+(3, 2, 2, 50000.00, 0.00, 0.00, 0.00, 50000.00, NULL, NULL, '2025-10-03 14:11:46');
 
 -- --------------------------------------------------------
 
@@ -317,19 +363,51 @@ INSERT INTO `godowns` (`id`, `name`, `capacity`, `current_stock`, `unit`, `locat
 
 CREATE TABLE `income_heads` (
   `id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `description` text DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `monthly_salary`
+--
+
+CREATE TABLE `monthly_salary` (
+  `id` int(11) NOT NULL,
+  `date` date NOT NULL,
+  `year` varchar(4) NOT NULL,
+  `month` varchar(2) NOT NULL,
+  `description` text DEFAULT NULL,
+  `total_employees` int(11) DEFAULT 0,
+  `total_salary` decimal(12,2) DEFAULT 0.00,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Dumping data for table `income_heads`
+-- Dumping data for table `monthly_salary`
 --
 
-INSERT INTO `income_heads` (`id`, `name`, `description`, `status`, `created_at`) VALUES
-(1, 'Rice Sales', 'Income from selling finished rice', 'active', '2025-10-02 21:49:12'),
-(2, 'Byproduct Sales', 'Income from byproducts', 'active', '2025-10-02 21:49:12');
+INSERT INTO `monthly_salary` (`id`, `date`, `year`, `month`, `description`, `total_employees`, `total_salary`, `created_at`, `updated_at`) VALUES
+(1, '2025-10-16', '2025', '03', 'March salary', 3, 25.00, '2025-10-03 14:09:45', '2025-10-03 14:09:45'),
+(2, '2025-10-16', '2025', '03', 'March salary', 3, 25.00, '2025-10-03 14:11:45', '2025-10-03 14:11:45');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `other_heads`
+--
+
+CREATE TABLE `other_heads` (
+  `id` int(11) NOT NULL,
+  `name` varchar(255) NOT NULL,
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -723,15 +801,15 @@ CREATE TABLE `stock_movements` (
 
 CREATE TABLE `transactions` (
   `id` int(11) NOT NULL,
-  `date` date NOT NULL,
-  `type` enum('income','expense','receive','payment') NOT NULL,
-  `head_type` enum('income','expense','bank','other') NOT NULL,
   `head_id` int(11) NOT NULL,
-  `party_id` int(11) DEFAULT NULL,
-  `amount` decimal(12,2) NOT NULL,
+  `head_type` enum('income','expense','bank','others') NOT NULL,
+  `type` enum('receive','payment') NOT NULL,
+  `amount` decimal(10,2) NOT NULL,
+  `date` date NOT NULL,
   `description` text DEFAULT NULL,
-  `reference_no` varchar(50) DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `status` enum('active','inactive') DEFAULT 'active',
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -781,6 +859,14 @@ ALTER TABLE `attendance`
   ADD UNIQUE KEY `unique_employee_date` (`employee_id`,`date`);
 
 --
+-- Indexes for table `attendance_records`
+--
+ALTER TABLE `attendance_records`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_attendance_date` (`date`),
+  ADD KEY `idx_attendance_employee` (`employee_id`);
+
+--
 -- Indexes for table `bank_heads`
 --
 ALTER TABLE `bank_heads`
@@ -805,6 +891,14 @@ ALTER TABLE `employees`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `designation_id` (`designation_id`);
+
+--
+-- Indexes for table `employee_salary`
+--
+ALTER TABLE `employee_salary`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `salary_id` (`salary_id`),
+  ADD KEY `employee_id` (`employee_id`);
 
 --
 -- Indexes for table `emptybag_categories`
@@ -864,6 +958,18 @@ ALTER TABLE `godowns`
 -- Indexes for table `income_heads`
 --
 ALTER TABLE `income_heads`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `monthly_salary`
+--
+ALTER TABLE `monthly_salary`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `other_heads`
+--
+ALTER TABLE `other_heads`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -1005,10 +1111,7 @@ ALTER TABLE `stock_movements`
 -- Indexes for table `transactions`
 --
 ALTER TABLE `transactions`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `idx_date` (`date`),
-  ADD KEY `idx_type` (`type`),
-  ADD KEY `party_id` (`party_id`);
+  ADD PRIMARY KEY (`id`);
 
 --
 -- Indexes for table `users`
@@ -1034,6 +1137,12 @@ ALTER TABLE `attendance`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `attendance_records`
+--
+ALTER TABLE `attendance_records`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `bank_heads`
 --
 ALTER TABLE `bank_heads`
@@ -1055,7 +1164,13 @@ ALTER TABLE `designations`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+
+--
+-- AUTO_INCREMENT for table `employee_salary`
+--
+ALTER TABLE `employee_salary`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `emptybag_categories`
@@ -1109,7 +1224,19 @@ ALTER TABLE `godowns`
 -- AUTO_INCREMENT for table `income_heads`
 --
 ALTER TABLE `income_heads`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `monthly_salary`
+--
+ALTER TABLE `monthly_salary`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+
+--
+-- AUTO_INCREMENT for table `other_heads`
+--
+ALTER TABLE `other_heads`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `parties`
@@ -1243,10 +1370,23 @@ ALTER TABLE `attendance`
   ADD CONSTRAINT `attendance_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
+-- Constraints for table `attendance_records`
+--
+ALTER TABLE `attendance_records`
+  ADD CONSTRAINT `attendance_records_ibfk_1` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`);
+
+--
 -- Constraints for table `employees`
 --
 ALTER TABLE `employees`
   ADD CONSTRAINT `employees_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designations` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+--
+-- Constraints for table `employee_salary`
+--
+ALTER TABLE `employee_salary`
+  ADD CONSTRAINT `employee_salary_ibfk_1` FOREIGN KEY (`salary_id`) REFERENCES `monthly_salary` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  ADD CONSTRAINT `employee_salary_ibfk_2` FOREIGN KEY (`employee_id`) REFERENCES `employees` (`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
 -- Constraints for table `emptybag_payments`
@@ -1358,12 +1498,6 @@ ALTER TABLE `sms_logs`
 ALTER TABLE `stock_movements`
   ADD CONSTRAINT `stock_movements_ibfk_1` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
   ADD CONSTRAINT `stock_movements_ibfk_2` FOREIGN KEY (`godown_id`) REFERENCES `godowns` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
-
---
--- Constraints for table `transactions`
---
-ALTER TABLE `transactions`
-  ADD CONSTRAINT `transactions_ibfk_1` FOREIGN KEY (`party_id`) REFERENCES `parties` (`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
