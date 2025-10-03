@@ -42,8 +42,8 @@ router.post("/", authenticateToken, async (req, res, next) => {
     }
 
     const [result] = await pool.query(
-      `INSERT INTO income_heads (name, receives, status) VALUES (?, ?, 'active')`,
-      [name, receives]
+      `INSERT INTO income_heads (name, status) VALUES (?, 'active')`,
+      [name]
     );
 
     const [newHead] = await pool.query(
@@ -82,20 +82,29 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       });
     }
 
-    const updateFields = ["name = ?"];
-    const updateValues = [name];
+    await pool.query(
+      `UPDATE income_heads SET name = ? WHERE id = ? AND status = 'active'`,
+      [name, id]
+    );
 
-    if (receives !== undefined) {
-      updateFields.push("receives = ?");
-      updateValues.push(receives);
+    // First, check if the income head exists and is active
+    const [existingHead] = await pool.query(
+      `SELECT id FROM income_heads WHERE id = ? AND status = 'active'`,
+      [id]
+    );
+
+    if (!existingHead || existingHead.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Income head not found or inactive",
+      });
     }
 
-    updateValues.push(id);
-
-    await pool.query(
-      `UPDATE income_heads SET ${updateFields.join(", ")} WHERE id = ?`,
-      updateValues
-    );
+    // Update only the name
+    await pool.query(`UPDATE income_heads SET name = ? WHERE id = ?`, [
+      name,
+      id,
+    ]);
 
     const [updated] = await pool.query(
       `SELECT 
