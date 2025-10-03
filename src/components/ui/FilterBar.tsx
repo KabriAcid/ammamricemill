@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Filter, Calendar } from 'lucide-react';
-import { Button } from './Button';
+import React, { useState } from "react";
+import { Search, Calendar } from "lucide-react";
+import { Button } from "./Button";
 
 interface FilterBarProps {
   onSearch: (query: string) => void;
@@ -8,17 +8,19 @@ interface FilterBarProps {
   onFilterChange?: (filters: Record<string, any>) => void;
   placeholder?: string;
   children?: React.ReactNode;
+  value?: string;
 }
 
 export const FilterBar: React.FC<FilterBarProps> = ({
   onSearch,
   onDateRange,
-  placeholder = 'Search...',
-  children
+  placeholder = "Search...",
+  children,
+  value,
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [searchQuery, setSearchQuery] = useState(value || "");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +48,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             />
           </div>
         </form>
-        
+
         {onDateRange && (
           <div className="flex items-center gap-2">
             <Calendar className="w-4 h-4 text-gray-400" />
@@ -63,16 +65,12 @@ export const FilterBar: React.FC<FilterBarProps> = ({
               onChange={(e) => setEndDate(e.target.value)}
               className="input-base"
             />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleDateFilter}
-            >
+            <Button variant="outline" size="sm" onClick={handleDateFilter}>
               Filter
             </Button>
           </div>
         )}
-        
+
         {children}
       </div>
     </div>

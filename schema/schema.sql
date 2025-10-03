@@ -63,8 +63,10 @@ CREATE TABLE godowns (
     unit VARCHAR(20) NOT NULL,
     location VARCHAR(100),
     manager VARCHAR(100),
+    description TEXT,
     status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
 -- PRODUCTS

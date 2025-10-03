@@ -46,6 +46,22 @@ const GodownList: React.FC = () => {
     loadData();
   }, []);
 
+  // Add keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="search"]');
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
   const fetchGodownData = async () => {
     setLoading(true);
     try {
@@ -214,52 +230,91 @@ const GodownList: React.FC = () => {
     setShowModal(true);
   };
 
-  const loadingCards = initialLoading; // show skeleton when initially loading
+  // Loading state is handled directly with initialLoading
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Godown Management</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage your storage godowns and monitor capacity.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Godown Management
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage your storage godowns and monitor capacity.
+          </p>
+        </div>
+        <button
+          onClick={() => fetchGodownData()}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            loading ? "animate-spin" : ""
+          }`}
+          disabled={loading}
+          title="Refresh data"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        <Card icon={<Warehouse size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">{godowns.length}</p>
-            <p className="text-sm text-gray-500">Total Godowns</p>
-          </div>
-        </Card>
-        <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {stats.totalCapacity.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">
-              Total Capacity (Tons)
-              {stats.lowStock > 0 && (
-                <span className="text-red-500 ml-1">
-                  ({stats.lowStock} low)
-                </span>
-              )}
-            </p>
-          </div>
-        </Card>
-        <Card icon={<Layers size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {Math.round(stats.avgCapacity).toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">Average Capacity (Tons)</p>
-          </div>
-        </Card>
+        {initialLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<Warehouse size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {godowns.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Godowns</p>
+              </div>
+            </Card>
+            <Card icon={<BarChart3 size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {stats.totalCapacity.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">
+                  Total Capacity (Tons)
+                  {stats.lowStock > 0 && (
+                    <span className="text-red-500 ml-1">
+                      ({stats.lowStock} low)
+                    </span>
+                  )}
+                </p>
+              </div>
+            </Card>
+            <Card icon={<Layers size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {Math.round(stats.avgCapacity).toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Average Capacity (Tons)</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
       <FilterBar
         onSearch={setSearchQuery}
-        placeholder="Search by godown name or description..."
+        placeholder="Search by godown name or description... (Ctrl+K)"
+        value={searchQuery}
       >
         <div className="flex items-center space-x-2">
           <Button onClick={handleNew} icon={Plus} size="sm">
