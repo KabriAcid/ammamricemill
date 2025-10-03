@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, BarChart3, CheckCircle, XCircle, Save } from "lucide-react";
+import { Calendar, BarChart3, CheckCircle, XCircle, Save, Check } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -49,6 +49,7 @@ interface EmployeeAttendance {
   inTime: string;
   outTime: string;
   note: string;
+  saved: boolean;
 }
 
 const DailyAttendance: React.FC = () => {
@@ -91,7 +92,7 @@ const DailyAttendance: React.FC = () => {
             const attendanceRecord =
               todayAttendance &&
               todayAttendance.employees.find(
-                (a: AttendanceRecord) => a.employeeId === emp.empId
+                (a: AttendanceRecord) => a.employeeId === emp.id.toString()
               );
 
             return {
@@ -110,6 +111,7 @@ const DailyAttendance: React.FC = () => {
               inTime: attendanceRecord ? attendanceRecord.inTime || "" : "",
               outTime: attendanceRecord ? attendanceRecord.outTime || "" : "",
               note: attendanceRecord ? attendanceRecord.notes || "" : "",
+              saved: !!attendanceRecord, // true if attendance record exists
             };
           })
         );
@@ -129,7 +131,11 @@ const DailyAttendance: React.FC = () => {
     value: "Present" | "Absent" | "Leave"
   ) => {
     setEmployees((prev) =>
-      prev.map((emp, i) => (i === idx ? { ...emp, attendance: value } : emp))
+      prev.map((emp, i) => 
+        i === idx 
+          ? { ...emp, attendance: value, saved: false } // Mark as unsaved when attendance changes
+          : emp
+      )
     );
   };
 
@@ -139,7 +145,11 @@ const DailyAttendance: React.FC = () => {
     value: string
   ) => {
     setEmployees((prev) =>
-      prev.map((emp, i) => (i === idx ? { ...emp, [field]: value } : emp))
+      prev.map((emp, i) => 
+        i === idx 
+          ? { ...emp, [field]: value, saved: false } // Mark as unsaved when changed
+          : emp
+      )
     );
   };
 
@@ -168,7 +178,7 @@ const DailyAttendance: React.FC = () => {
         description: "",
         employees: [
           {
-            employeeId: employee.id,
+            employeeId: parseInt(employee.id),
             employeeName: employee.name,
             status: employee.attendance.toLowerCase() as
               | "present"
@@ -188,7 +198,14 @@ const DailyAttendance: React.FC = () => {
 
       if (response.success) {
         showToast(`Attendance saved for ${employee.name}`, "success");
-        fetchEmployees(); // Refresh data
+        // Update the saved status in the local state
+        setEmployees(prev =>
+          prev.map(emp =>
+            emp.id === employee.id
+              ? { ...emp, saved: true }
+              : emp
+          )
+        );
       } else {
         throw new Error(response.message || "Failed to save attendance");
       }
@@ -231,7 +248,7 @@ const DailyAttendance: React.FC = () => {
         totalLeave: employees.filter((e) => e.attendance === "Leave").length,
         description: "",
         employees: employees.map((emp) => ({
-          employeeId: emp.id,
+          employeeId: parseInt(emp.id),
           employeeName: emp.name,
           status: emp.attendance.toLowerCase() as
             | "present"
@@ -480,11 +497,17 @@ const DailyAttendance: React.FC = () => {
                   width: "50px",
                   render: (_, row) => (
                     <button
-                      className="p-1 hover:bg-gray-100 rounded"
-                      onClick={() => handleSaveIndividualAttendance(row)}
-                      title="Save attendance for this employee"
+                      className={`p-1 hover:bg-gray-100 rounded ${
+                        row.saved ? "cursor-default" : ""
+                      }`}
+                      onClick={() => !row.saved && handleSaveIndividualAttendance(row)}
+                      title={row.saved ? "Attendance saved" : "Save attendance for this employee"}
                     >
-                      <Save className="w-4 h-4 text-gray-500" />
+                      {row.saved ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Save className="w-4 h-4 text-gray-500" />
+                      )}
                     </button>
                   ),
                 },

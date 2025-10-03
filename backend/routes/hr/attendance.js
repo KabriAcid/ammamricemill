@@ -180,36 +180,53 @@ router.post("/", authenticateToken, async (req, res, next) => {
       });
     }
 
-    // Check if attendance already exists for this date
-    const [[existing]] = await pool.query(
-      "SELECT COUNT(*) as count FROM attendance WHERE date = ?",
-      [date]
-    );
-
-    if (existing.count > 0) {
-      return res.status(400).json({
-        success: false,
-        error: "Attendance record already exists for this date",
-      });
-    }
-
-    // Insert attendance records for each employee
+    // Handle each employee's attendance individually to support both insert and update
     if (employees && employees.length > 0) {
-      const values = employees.map((emp) => [
-        emp.employeeId,
-        date,
-        emp.status || "present",
-        emp.inTime || null,
-        emp.outTime || null,
-        emp.overtime || 0,
-        emp.notes || description || null,
-      ]);
+      for (const emp of employees) {
+        // Check if attendance exists for this employee and date
+        const [[existing]] = await pool.query(
+          "SELECT id FROM attendance WHERE employee_id = ? AND date = ?",
+          [emp.employeeId, date]
+        );
 
-      await pool.query(
-        `INSERT INTO attendance (employee_id, date, status, check_in, check_out, working_hours, notes) 
-         VALUES ?`,
-        [values]
-      );
+        if (existing) {
+          // Update existing record
+          await pool.query(
+            `UPDATE attendance 
+             SET status = ?, 
+                 check_in = ?, 
+                 check_out = ?, 
+                 working_hours = ?,
+                 notes = ?
+             WHERE employee_id = ? AND date = ?`,
+            [
+              emp.status || "present",
+              emp.inTime || null,
+              emp.outTime || null,
+              emp.overtime || 0,
+              emp.notes || description || null,
+              emp.employeeId,
+              date,
+            ]
+          );
+        } else {
+          // Insert new record
+          await pool.query(
+            `INSERT INTO attendance 
+             (employee_id, date, status, check_in, check_out, working_hours, notes)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+              emp.employeeId,
+              date,
+              emp.status || "present",
+              emp.inTime || null,
+              emp.outTime || null,
+              emp.overtime || 0,
+              emp.notes || description || null,
+            ]
+          );
+        }
+      }
     }
 
     // Fetch the newly created attendance summary
