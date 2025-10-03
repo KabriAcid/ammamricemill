@@ -1,28 +1,42 @@
-import express from "express";
+import { Router } from "express";
+import { pool } from "../../utils/db.js";
+import { authenticateToken } from "../../middlewares/auth.js";
 
-const router = express.Router();
-
-// In-memory store for demo (replace with DB in production)
-let partyTypes = [
-  { id: 1, name: "Supplier", description: "Supplies raw materials" },
-  { id: 2, name: "Customer", description: "Buys finished goods" },
-];
+const router = Router();
 
 // GET /api/party/types
-router.get("/", (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const { search = "" } = req.query;
-    const filtered = partyTypes.filter(
-      (pt) =>
-        pt.name.toLowerCase().includes(search.toLowerCase()) ||
-        pt.description.toLowerCase().includes(search.toLowerCase())
-    );
+
+    let query = `
+      SELECT 
+        id,
+        name,
+        description,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM party_types
+      WHERE 1=1
+    `;
+
+    const params = [];
+    if (search) {
+      query += ` AND (name LIKE ? OR description LIKE ?)`;
+      params.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += ` ORDER BY created_at DESC`;
+
+    const [partyTypes] = await pool.query(query, params);
+
     res.json({
       success: true,
-      data: filtered,
+      data: partyTypes,
       message: "Party types retrieved successfully",
     });
   } catch (error) {
+    console.error("Error retrieving party types:", error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -31,7 +45,7 @@ router.get("/", (req, res) => {
 });
 
 // POST /api/party/types
-router.post("/", (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   try {
     const { name, description } = req.body;
     if (!name) {
@@ -40,18 +54,30 @@ router.post("/", (req, res) => {
         error: "Name is required",
       });
     }
-    const newType = {
-      id: Date.now(),
-      name,
-      description,
-    };
-    partyTypes.unshift(newType);
+
+    const [result] = await pool.query(
+      `INSERT INTO party_types (name, description) VALUES (?, ?)`,
+      [name, description]
+    );
+
+    const [newType] = await pool.query(
+      `SELECT 
+        id,
+        name,
+        description,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM party_types WHERE id = ?`,
+      [result.insertId]
+    );
+
     res.status(201).json({
       success: true,
-      data: newType,
+      data: newType[0],
       message: "Party type created successfully",
     });
   } catch (error) {
+    console.error("Error creating party type:", error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -60,7 +86,7 @@ router.post("/", (req, res) => {
 });
 
 // PUT /api/party/types/:id
-router.put("/:id", (req, res) => {
+router.put("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description } = req.body;
@@ -70,26 +96,44 @@ router.put("/:id", (req, res) => {
         error: "Name is required",
       });
     }
-    let updated = null;
-    partyTypes = partyTypes.map((pt) => {
-      if (pt.id === Number(id)) {
-        updated = { ...pt, name, description };
-        return updated;
-      }
-      return pt;
-    });
-    if (!updated) {
+
+    const [existing] = await pool.query(
+      "SELECT id FROM party_types WHERE id = ?",
+      [id]
+    );
+
+    if (!existing.length) {
       return res.status(404).json({
         success: false,
         error: "Party type not found",
       });
     }
+
+    await pool.query(
+      `UPDATE party_types 
+       SET name = ?, description = ?, updated_at = CURRENT_TIMESTAMP 
+       WHERE id = ?`,
+      [name, description, id]
+    );
+
+    const [updated] = await pool.query(
+      `SELECT 
+        id,
+        name,
+        description,
+        created_at as createdAt,
+        updated_at as updatedAt
+      FROM party_types WHERE id = ?`,
+      [id]
+    );
+
     res.json({
       success: true,
-      data: updated,
+      data: updated[0],
       message: "Party type updated successfully",
     });
   } catch (error) {
+    console.error("Error updating party type:", error);
     res.status(500).json({
       success: false,
       error: error.message,
@@ -98,26 +142,28 @@ router.put("/:id", (req, res) => {
 });
 
 // DELETE /api/party/types (bulk delete)
-router.delete("/", (req, res) => {
+router.delete("/", authenticateToken, async (req, res) => {
   try {
     const { ids } = req.body;
-    if (!ids || !Array.isArray(ids)) {
+    if (!ids || !Array.isArray(ids) || !ids.length) {
       return res.status(400).json({
         success: false,
         error: "Please provide an array of IDs to delete",
       });
     }
-    const numericIds = ids.map((id) => Number(id));
-    const initialLength = partyTypes.length;
-    partyTypes = partyTypes.filter((pt) => !numericIds.includes(pt.id));
-    const deletedCount = initialLength - partyTypes.length;
+
+    const [result] = await pool.query(
+      "DELETE FROM party_types WHERE id IN (?)",
+      [ids]
+    );
 
     res.json({
       success: true,
-      data: { deletedCount },
-      message: `${deletedCount} party type(s) deleted successfully`,
+      data: { deletedCount: result.affectedRows },
+      message: `${result.affectedRows} party type(s) deleted successfully`,
     });
   } catch (error) {
+    console.error("Error deleting party types:", error);
     res.status(500).json({
       success: false,
       error: error.message,

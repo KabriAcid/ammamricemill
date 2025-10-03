@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Plus,
   Trash2,
@@ -8,36 +8,15 @@ import {
   PackageCheck,
   Scale,
   Activity,
-} from 'lucide-react';
-import { Card } from '../../components/ui/Card';
-import { Button } from '../../components/ui/Button';
-import { Table } from '../../components/ui/Table';
-import { FilterBar } from '../../components/ui/FilterBar';
-import { format } from 'date-fns';
-
-interface ProductionItem {
-  id: string;
-  categoryId: string;
-  productId: string;
-  godownId: string;
-  siloId: string;
-  quantity: number;
-  netWeight: number;
-}
-
-interface Production {
-  id: string;
-  invoiceNo: string;
-  date: string;
-  description?: string;
-  siloInfo?: string;
-  items: ProductionItem[];
-  totalQuantity: number;
-  totalWeight: number;
-  status?: string;
-  createdAt: string;
-  updatedAt: string;
-}
+} from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import { Table } from "../../components/ui/Table";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { format } from "date-fns";
+import { ProductionFormModal } from "./ProductionFormModal";
+import { api } from "../../utils/fetcher";
+import type { Production, ProductionItem } from "../../types/production";
 
 const ProductionList: React.FC = () => {
   // State management
@@ -45,62 +24,48 @@ const ProductionList: React.FC = () => {
   const [selectedProductions, setSelectedProductions] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [dateRange, setDateRange] = useState({ from: '', to: '' });
+  const [searchQuery, setSearchQuery] = useState("");
+  const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [loading, setLoading] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editItem, setEditItem] = useState<Production | null>(null);
   const navigate = useNavigate();
 
-  // Fetch productions
-  useEffect(() => {
-    const fetchProductions = async () => {
-      setLoading(true);
-      try {
-        // TODO: API endpoint - GET /api/production/production-order
-        // Query params: ?page={currentPage}&pageSize={pageSize}&search={searchQuery}&fromDate={dateRange.from}&toDate={dateRange.to}
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        // Mock data
-        const mockProductions: Production[] = [
-          {
-            id: '1',
-            invoiceNo: 'PROD-001',
-            date: '2024-01-15',
-            description: 'Regular production',
-            siloInfo: 'Silo A, Silo B',
-            items: [
-              {
-                id: '1',
-                categoryId: 'CAT-001',
-                productId: 'PROD-001',
-                godownId: 'GD-001',
-                siloId: 'SILO-001',
-                quantity: 100,
-                netWeight: 5000
-              }
-            ],
-            totalQuantity: 100,
-            totalWeight: 5000,
-            status: 'active',
-            createdAt: '2024-01-15T10:00:00Z',
-            updatedAt: '2024-01-15T10:00:00Z'
-          }
-        ];
-        setProductions(mockProductions);
-      } catch (error) {
-        console.error('Error fetching productions:', error);
-      } finally {
-        setLoading(false);
+  // Fetch productions function
+  const fetchProductions = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<{
+        success: boolean;
+        data: Production[];
+        message: string;
+      }>(
+        `/api/production/production-order?page=${currentPage}&pageSize=${pageSize}` +
+          `${searchQuery ? `&search=${searchQuery}` : ""}` +
+          `${dateRange.from ? `&fromDate=${dateRange.from}` : ""}` +
+          `${dateRange.to ? `&toDate=${dateRange.to}` : ""}`
+      );
+      if (response.success && response.data) {
+        setProductions(response.data);
       }
-    };
-
-    fetchProductions();
+    } catch (error) {
+      console.error("Error fetching productions:", error);
+    } finally {
+      setLoading(false);
+    }
   }, [currentPage, pageSize, searchQuery, dateRange]);
 
+  // Fetch productions on mount and when dependencies change
+  useEffect(() => {
+    fetchProductions();
+  }, [fetchProductions]);
+
   // Filtering logic
-  const filteredProductions = productions.filter(production => {
-    const matchesSearch = 
-      production.invoiceNo.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesDateRange = 
+  const filteredProductions = productions.filter((production) => {
+    const matchesSearch = production.invoiceNo
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
+    const matchesDateRange =
       (!dateRange.from || production.date >= dateRange.from) &&
       (!dateRange.to || production.date <= dateRange.to);
     return matchesSearch && matchesDateRange;
@@ -116,45 +81,49 @@ const ProductionList: React.FC = () => {
 
   // Table columns
   const columns = [
-    { key: 'id', label: '#', width: '80px' },
-    { 
-      key: 'date', 
-      label: 'Date', 
-      render: (value: string) => format(new Date(value), 'dd/MM/yyyy')
+    { key: "id", label: "#", width: "80px" },
+    {
+      key: "date",
+      label: "Date",
+      render: (value: string) => format(new Date(value), "dd/MM/yyyy"),
     },
-    { key: 'invoiceNo', label: 'Invoice No', sortable: true },
-    { key: 'siloInfo', label: 'Silo Info', sortable: true },
-    { 
-      key: 'items',
-      label: 'Items',
-      render: (items: Production['items']) => items.length
+    { key: "invoiceNo", label: "Invoice No", sortable: true },
+    { key: "siloInfo", label: "Silo Info", sortable: true },
+    {
+      key: "items",
+      label: "Items",
+      render: (items: Production["items"]) => items.length,
     },
-    { 
-      key: 'totalQuantity',
-      label: 'Quantity',
-      render: (value: number) => value.toLocaleString()
+    {
+      key: "totalQuantity",
+      label: "Quantity",
+      render: (value: number) => value.toLocaleString(),
     },
-    { 
-      key: 'totalWeight',
-      label: 'Weight (Kg)',
-      render: (value: number) => value.toLocaleString()
+    {
+      key: "totalWeight",
+      label: "Weight (Kg)",
+      render: (value: number) => value.toLocaleString(),
     },
   ];
 
   // Action handlers
   const handleDelete = async (productionIds: string[]) => {
-    if (confirm(`Are you sure you want to delete ${productionIds.length} production(s)?`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete ${productionIds.length} production(s)?`
+      )
+    ) {
       setLoading(true);
       try {
         // TODO: API endpoint - DELETE /api/production/production-order
         // Body: { ids: productionIds }
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        setProductions(prev => 
-          prev.filter(production => !productionIds.includes(production.id))
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+        setProductions((prev) =>
+          prev.filter((production) => !productionIds.includes(production.id))
         );
         setSelectedProductions([]);
       } catch (error) {
-        console.error('Error deleting productions:', error);
+        console.error("Error deleting productions:", error);
       } finally {
         setLoading(false);
       }
@@ -170,7 +139,7 @@ const ProductionList: React.FC = () => {
     totalProductions: productions.length,
     totalQuantity: productions.reduce((sum, p) => sum + p.totalQuantity, 0),
     totalWeight: productions.reduce((sum, p) => sum + p.totalWeight, 0),
-    activeProductions: productions.filter(p => p.status === 'active').length
+    activeProductions: productions.filter((p) => p.status === "active").length,
   };
 
   const loadingCards = loading && !productions.length;
@@ -179,7 +148,9 @@ const ProductionList: React.FC = () => {
     <div className="animate-fade-in">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Production Management</h1>
+        <h1 className="text-3xl font-bold text-gray-900">
+          Production Management
+        </h1>
         <p className="mt-1 text-sm text-gray-500">
           Manage production orders and track production progress.
         </p>
@@ -230,16 +201,27 @@ const ProductionList: React.FC = () => {
           <input
             type="date"
             value={dateRange.from}
-            onChange={(e) => setDateRange(prev => ({ ...prev, from: e.target.value }))}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, from: e.target.value }))
+            }
             className="input-base h-9"
           />
           <input
             type="date"
             value={dateRange.to}
-            onChange={(e) => setDateRange(prev => ({ ...prev, to: e.target.value }))}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, to: e.target.value }))
+            }
             className="input-base h-9"
           />
-          <Button onClick={() => navigate('/production/production-order/new')} icon={Plus} size="sm">
+          <Button
+            onClick={() => {
+              setEditItem(null);
+              setModalOpen(true);
+            }}
+            icon={Plus}
+            size="sm"
+          >
             New Production
           </Button>
           {selectedProductions.length > 0 && (
@@ -263,6 +245,38 @@ const ProductionList: React.FC = () => {
           </Button>
         </div>
       </FilterBar>
+
+      {/* Production Form Modal */}
+      <ProductionFormModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditItem(null);
+        }}
+        onSave={async (data) => {
+          setLoading(true);
+          try {
+            if (editItem) {
+              // TODO: API call to update production
+              await api.put(
+                `/api/production/production-order/${editItem.id}`,
+                data
+              );
+            } else {
+              // TODO: API call to create production
+              await api.post("/api/production/production-order", data);
+            }
+            await fetchProductions();
+            setModalOpen(false);
+            setEditItem(null);
+          } catch (error) {
+            console.error("Error saving production:", error);
+          } finally {
+            setLoading(false);
+          }
+        }}
+        item={editItem}
+      />
 
       {/* Table */}
       <Table

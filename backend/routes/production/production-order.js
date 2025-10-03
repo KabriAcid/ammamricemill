@@ -1,11 +1,12 @@
-import express from "express";
-import db from "../../utils/db.js";
+import { Router } from "express";
+import { pool } from "../../utils/db.js";
+import { authenticateToken } from "../../middlewares/auth.js";
 
-const router = express.Router();
+const router = Router();
 
 // GET /api/production/production-order
 // Get all production orders with pagination and filtering
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const {
       page = 1,
@@ -63,11 +64,11 @@ router.get("/", async (req, res) => {
     queryParams.push(Number(pageSize), offset);
 
     // Execute query
-    const [productions] = await db.query(query, queryParams);
+    const [productions] = await pool.query(query, queryParams);
 
     // For each production, fetch its items
     for (let production of productions) {
-      const [items] = await db.query(
+      const [items] = await pool.query(
         `SELECT 
           pi.id,
           pi.category_id as categoryId,
@@ -113,7 +114,7 @@ router.get("/", async (req, res) => {
 
 // POST /api/production/production-order
 // Create a new production order
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
@@ -185,7 +186,7 @@ router.post("/", async (req, res) => {
 
 // GET /api/production/production-order/:id
 // Get a specific production order by ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -249,7 +250,7 @@ router.get("/:id", async (req, res) => {
 
 // DELETE /api/production/production-order
 // Delete multiple production orders
-router.delete("/", async (req, res) => {
+router.delete("/", authenticateToken, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();

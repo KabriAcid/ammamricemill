@@ -12,11 +12,12 @@ export interface Production {
   id: string;
   invoiceNo: string;
   date: string;
-  description: string;
+  description?: string;
+  siloInfo?: string;
   items: ProductionItem[];
   totalQuantity: number;
   totalWeight: number;
-  siloInfo: string;
+  status?: string;
   createdAt: string;
   updatedAt: string;
 }
