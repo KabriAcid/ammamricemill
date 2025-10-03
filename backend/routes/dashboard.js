@@ -7,6 +7,8 @@ const router = Router();
 // GET /api/dashboard/stats
 router.get("/stats", authenticateToken, async (req, res, next) => {
   try {
+    console.log("Authenticated user:", req.user);
+    console.log("Fetching dashboard stats...");
     // Get total revenue from sales
     const [[{ revenue }]] = await pool.query(
       "SELECT COALESCE(SUM(total_amount),0) AS revenue FROM sales WHERE status = 'delivered'"

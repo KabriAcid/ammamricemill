@@ -13,6 +13,7 @@ import {
 import { Card } from "../../components/ui/Card";
 import { useToast } from "../../components/ui/Toast";
 import { EmptyState } from "../../components/ui/EmptyState";
+import { api } from "../../utils/fetcher";
 
 interface StatCard {
   title: string;
@@ -21,6 +22,16 @@ interface StatCard {
   changeType: "positive" | "negative";
   icon: string;
   color: string;
+}
+
+interface StatsResponse {
+  success: boolean;
+  data: StatCard[];
+}
+
+interface ActivitiesResponse {
+  success: boolean;
+  data: Activity[];
 }
 
 const iconMap: { [key: string]: React.ReactNode } = {
@@ -42,7 +53,7 @@ const defaultStats: StatCard[] = [
   {
     title: "Total Revenue",
     value: "₦0",
-    change: "-",
+    change: "",
     changeType: "positive",
     icon: "revenue",
     color: "text-primary-600",
@@ -50,7 +61,7 @@ const defaultStats: StatCard[] = [
   {
     title: "Active Employees",
     value: "0",
-    change: "Active",
+    change: "",
     changeType: "positive",
     icon: "employees",
     color: "text-primary-600",
@@ -58,7 +69,7 @@ const defaultStats: StatCard[] = [
   {
     title: "Stock Value",
     value: "₦0",
-    change: "-",
+    change: "",
     changeType: "positive",
     icon: "stock",
     color: "text-primary-600",
@@ -66,7 +77,7 @@ const defaultStats: StatCard[] = [
   {
     title: "Active Productions",
     value: "0",
-    change: "-",
+    change: "",
     changeType: "positive",
     icon: "productions",
     color: "text-primary-600",
@@ -74,7 +85,7 @@ const defaultStats: StatCard[] = [
   {
     title: "Monthly Sales",
     value: "₦0",
-    change: "-",
+    change: "",
     changeType: "positive",
     icon: "sales",
     color: "text-primary-600",
@@ -99,47 +110,24 @@ const Dashboard: React.FC = () => {
 
       console.log("Fetching dashboard data...");
 
-      const [statsRes, activitiesRes] = await Promise.all([
-        fetch("http://localhost:5000/api/dashboard/stats", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }),
-        fetch("http://localhost:5000/api/dashboard/activities", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        }),
+      const [statsData, activitiesData] = await Promise.all([
+        api.get<StatsResponse>("/dashboard/stats"),
+        api.get<ActivitiesResponse>("/dashboard/activities"),
       ]);
-
-      console.log("Stats Response:", statsRes.status);
-      console.log("Activities Response:", activitiesRes.status);
-
-      if (!statsRes.ok || !activitiesRes.ok) {
-        throw new Error("Failed to fetch dashboard data");
-      }
-
-      const statsData = await statsRes.json();
-      const activitiesData = await activitiesRes.json();
 
       console.log("Stats Data:", statsData);
       console.log("Activities Data:", activitiesData);
 
-      if (statsData.success && activitiesData.success) {
-        console.log("Setting stats:", statsData.data);
-        const updatedStats = defaultStats.map((defaultStat) => {
-          const receivedStat = statsData.data.find(
-            (s: StatCard) => s.title === defaultStat.title
-          );
-          return receivedStat || defaultStat;
-        });
-        setStats(updatedStats);
-        setRecentActivities(activitiesData.data);
-      } else {
-        setStats(defaultStats);
-        setRecentActivities([]);
-        throw new Error("Invalid data received from server");
-      }
+      // Since we're using our api utility, successful responses are already validated
+      const updatedStats = defaultStats.map((defaultStat) => {
+        const receivedStat = statsData.data.find(
+          (s: StatCard) => s.title === defaultStat.title
+        );
+        return receivedStat || defaultStat;
+      });
+
+      setStats(updatedStats);
+      setRecentActivities(activitiesData.data);
     } catch (error) {
       console.error("Dashboard fetch failed:", error);
       showToast("Failed to load dashboard data. Please try again.", "error");

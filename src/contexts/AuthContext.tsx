@@ -135,7 +135,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
 
       dispatch({ type: "SET_USER", payload: user });
 
-      // Only store minimal user info in localStorage for persistence
+      // Store user info and token in localStorage
       localStorage.setItem(
         "ammam_user",
         JSON.stringify({
@@ -143,6 +143,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           name: user.name,
           email: user.email,
           role: user.role,
+          token: response.data.accessToken,
         })
       );
     } catch (error) {

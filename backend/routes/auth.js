@@ -119,10 +119,6 @@ router.post("/login", async (req, res, next) => {
         secure: process.env.NODE_ENV === "production",
         sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         maxAge: 24 * 60 * 60 * 1000, // 24 hours
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.DOMAIN
-            : "localhost",
         path: "/",
       };
 
@@ -132,10 +128,6 @@ router.post("/login", async (req, res, next) => {
         sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
         path: "/api/auth/refresh",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        domain:
-          process.env.NODE_ENV === "production"
-            ? process.env.DOMAIN
-            : "localhost",
       };
 
       console.log(
@@ -222,8 +214,7 @@ router.post("/logout", (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : "localhost",
-    path: "/"
+    path: "/",
   });
 
   // Clear refresh token with same options used when setting
@@ -231,14 +222,13 @@ router.post("/logout", (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: process.env.NODE_ENV === "production" ? "strict" : "lax",
-    domain: process.env.NODE_ENV === "production" ? process.env.DOMAIN : "localhost",
-    path: "/api/auth/refresh"
+    path: "/api/auth/refresh",
   });
 
   // Send success response
   res.json({
     success: true,
-    message: "Logged out successfully"
+    message: "Logged out successfully",
   });
 });
 

@@ -91,7 +91,7 @@ const app = express();
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
-  console.log("Headers:", req.headers);
+  // console.log("Headers:", req.headers);
   next();
 });
 

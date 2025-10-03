@@ -15,13 +15,20 @@ export async function fetcher<T>(
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   try {
+    // Get token from localStorage
+    const user = localStorage.getItem("ammam_user");
+    const token = user ? JSON.parse(user).token : null;
+
+    const headers = {
+      ...options.headers,
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+
     const res = await fetch(fullUrl, {
       ...options,
       credentials: "include",
-      headers: {
-        "Content-Type": "application/json",
-        ...(options.headers || {}),
-      },
+      headers,
     });
 
     const data = await res.json();
