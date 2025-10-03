@@ -1,7 +1,4 @@
-DROP TABLE IF EXISTS employee_salary;
-DROP TABLE IF EXISTS monthly_salary;
-
-CREATE TABLE monthly_salary (
+CREATE TABLE IF NOT EXISTS monthly_salary (
   id INT NOT NULL AUTO_INCREMENT,
   date DATE NOT NULL,
   year VARCHAR(4) NOT NULL,
@@ -14,7 +11,7 @@ CREATE TABLE monthly_salary (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
-CREATE TABLE employee_salary (
+CREATE TABLE IF NOT EXISTS employee_salary (
   id INT NOT NULL AUTO_INCREMENT,
   salary_id INT NOT NULL,
   employee_id INT NOT NULL,
