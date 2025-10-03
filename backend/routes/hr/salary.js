@@ -24,7 +24,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
         s.month,
         s.description,
         s.total_employees as totalEmployees,
-        s.total_salary as totalSalary,
+        CAST(s.total_salary AS DECIMAL(12,2)) as totalSalary,
         s.created_at as createdAt,
         s.updated_at as updatedAt
       FROM monthly_salary s
@@ -62,17 +62,17 @@ router.get("/", authenticateToken, async (req, res, next) => {
           e.name as employeeName,
           CONCAT('EMP', LPAD(e.id, 3, '0')) as empId,
           d.name as designation,
-          es.salary,
-          es.bonus_ot as bonusOT,
-          es.absent_fine as absentFine,
-          es.deduction,
-          es.payment,
+          CAST(es.salary AS DECIMAL(10,2)) as salary,
+          CAST(es.bonus_ot AS DECIMAL(10,2)) as bonusOT,
+          CAST(es.absent_fine AS DECIMAL(10,2)) as absentFine,
+          CAST(es.deduction AS DECIMAL(10,2)) as deduction,
+          CAST(es.payment AS DECIMAL(10,2)) as payment,
           es.note,
           es.signature
         FROM employee_salary es
         LEFT JOIN employees e ON es.employee_id = e.id
         LEFT JOIN designations d ON e.designation_id = d.id
-        WHERE es.monthly_salary_id = ?
+        WHERE es.salary_id = ?
       `,
         [salary.id]
       );
@@ -119,7 +119,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
     for (const emp of employeeSalaries) {
       await pool.query(
         `INSERT INTO employee_salary (
-          monthly_salary_id, employee_id, salary, bonus_ot, 
+          salary_id, employee_id, salary, bonus_ot, 
           absent_fine, deduction, payment, note, signature
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -166,16 +166,13 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     );
 
     // Delete existing employee salaries
-    await pool.query(
-      "DELETE FROM employee_salary WHERE monthly_salary_id = ?",
-      [id]
-    );
+    await pool.query("DELETE FROM employee_salary WHERE salary_id = ?", [id]);
 
     // Insert updated employee salaries
     for (const emp of employeeSalaries) {
       await pool.query(
         `INSERT INTO employee_salary (
-          monthly_salary_id, employee_id, salary, bonus_ot, 
+          salary_id, employee_id, salary, bonus_ot, 
           absent_fine, deduction, payment, note, signature
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [
@@ -207,10 +204,9 @@ router.delete("/", authenticateToken, async (req, res, next) => {
     const { ids } = req.body;
 
     // Delete employee salaries first (foreign key constraint)
-    await pool.query(
-      "DELETE FROM employee_salary WHERE monthly_salary_id IN (?)",
-      [ids]
-    );
+    await pool.query("DELETE FROM employee_salary WHERE salary_id IN (?)", [
+      ids,
+    ]);
 
     // Delete monthly salary records
     await pool.query("DELETE FROM monthly_salary WHERE id IN (?)", [ids]);

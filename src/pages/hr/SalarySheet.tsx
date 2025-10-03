@@ -89,7 +89,10 @@ const SalarySheet: React.FC = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
-  const totalAmount = filteredData.reduce((sum, r) => sum + r.totalSalary, 0);
+  const totalAmount = filteredData.reduce(
+    (sum, r) => sum + Number(r.totalSalary),
+    0
+  );
   const totalEmployees = filteredData.reduce(
     (sum, r) => sum + r.totalEmployees,
     0
@@ -140,7 +143,7 @@ const SalarySheet: React.FC = () => {
       label: "Total Salary",
       render: (value: number) => (
         <span className="font-semibold text-gray-900">
-          {value.toLocaleString()}
+          ₦{value.toLocaleString()}
         </span>
       ),
     },
@@ -408,7 +411,7 @@ const SalarySheet: React.FC = () => {
             <Card icon={<TrendingUp size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  {totalAmount.toLocaleString()}
+                  ₦{totalAmount.toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-500">Total Amount</p>
               </div>
