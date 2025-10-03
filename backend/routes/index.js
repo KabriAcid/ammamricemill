@@ -1,10 +1,13 @@
 import express from "express";
-import partyRoutes from "./party/index.js";
 import dashboardRoutes from "./dashboard.js";
 import generalSettingsRoutes from "./settings/general.js";
 import uploadRoutes from "./settings/upload.js";
 import godownSettingsRoutes from "./settings/godown.js";
 import siloSettingsRoutes from "./settings/silo.js";
+
+// Party Routes
+import partyTypesRoutes from "./party/party-types.js";
+import partiesRoutes from "./party/parties.js";
 
 // HR Routes
 import employeeRoutes from "./hr/employees.js";

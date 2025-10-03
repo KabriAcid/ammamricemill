@@ -13,6 +13,7 @@ Removed mock data
 Handle all HTTP methods in the component.
 Remove confirmation dialogs for deletions
 Search are frontend based no POST requests
+Refer to the components/ui folder for the comps
 
 ## Accounts
 ### Income Head

@@ -1,11 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { Plus, Trash2, Badge } from "lucide-react";
+import { Plus, Trash2, Badge, RefreshCcw } from "lucide-react";
 import { PartyType as PartyTypeBase } from "../../types/entities";
+import { useToast } from "../../components/ui/Toast";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
@@ -13,84 +17,144 @@ type PartyType = Omit<PartyTypeBase, "id"> & { id: string };
 const PartyTypes = () => {
   const [data, setData] = useState<PartyType[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<PartyType | null>(null);
   const [formData, setFormData] = useState({ name: "", description: "" });
   const [search, setSearch] = useState("");
+  const { showToast } = useToast();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
-  // Fetch all (GET)
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    }
+    if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+      event.preventDefault();
+      fetchPartyTypes();
+    }
+  }, []);
+
   useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
+  }, [handleKeyPress]);
+
+  const fetchPartyTypes = async () => {
     setLoading(true);
-    fetch(`/api/party-types?search=${encodeURIComponent(search)}`)
-      .then((res) => res.json())
-      .then((res) =>
+    try {
+      const response = await api.get<ApiResponse<PartyType[]>>("/party-types");
+
+      if (response.success && response.data) {
         setData(
-          res.map((item: PartyTypeBase) => ({ ...item, id: String(item.id) }))
-        )
-      )
-      .finally(() => setLoading(false));
-  }, [search]);
+          response.data.map((item) => ({ ...item, id: String(item.id) }))
+        );
+      } else {
+        throw new Error("Failed to fetch party types");
+      }
+    } catch (error) {
+      console.error("Error fetching party types:", error);
+      if (error instanceof Error && error.message.includes("Failed to fetch")) {
+        showToast(
+          "Cannot connect to server. Please check if the server is running.",
+          "error"
+        );
+      } else {
+        showToast("Failed to load party types", "error");
+      }
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  // Initial data load
+  useEffect(() => {
+    fetchPartyTypes();
+  }, []);
 
   // Create
-  const handleCreate = () => {
+  const handleCreate = async () => {
     setLoading(true);
-    fetch("/api/party-types", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((created) =>
-        setData((prev) => [{ ...created, id: String(created.id) }, ...prev])
-      )
-      .finally(() => {
+    try {
+      const response = await api.post<ApiResponse<PartyType>>(
+        "/party/types",
+        formData
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Party type created successfully",
+          "success"
+        );
+        await fetchPartyTypes();
         setModalOpen(false);
         setFormData({ name: "", description: "" });
-        setLoading(false);
-      });
+      }
+    } catch (error) {
+      console.error("Error creating party type:", error);
+      showToast("Failed to create party type", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Update
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!editItem) return;
     setLoading(true);
-    fetch(`/api/party-types/${editItem.id}`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(formData),
-    })
-      .then((res) => res.json())
-      .then((updated) =>
-        setData((prev) =>
-          prev.map((row) =>
-            row.id === String(updated.id)
-              ? { ...updated, id: String(updated.id) }
-              : row
-          )
-        )
-      )
-      .finally(() => {
+    try {
+      const response = await api.put<ApiResponse<PartyType>>(
+        `/party/types/${editItem.id}`,
+        formData
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Party type updated successfully",
+          "success"
+        );
+        await fetchPartyTypes();
         setModalOpen(false);
         setEditItem(null);
         setFormData({ name: "", description: "" });
-        setLoading(false);
-      });
+      }
+    } catch (error) {
+      console.error("Error updating party type:", error);
+      showToast("Failed to update party type", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Delete (single or bulk)
-  const handleDelete = (ids: string[]) => {
+  const handleDelete = async (ids: string[]) => {
     setLoading(true);
-    Promise.all(
-      ids.map((id) => fetch(`/api/party-types/${id}`, { method: "DELETE" }))
-    )
-      .then(() =>
-        setData((prev) => prev.filter((row) => !ids.includes(row.id)))
-      )
-      .finally(() => {
-        setSelectedRows([]);
-        setLoading(false);
+    try {
+      const response = await api.delete<ApiResponse<void>>("/party/types", {
+        ids,
       });
+
+      if (response.success) {
+        showToast(
+          response.message || "Party types deleted successfully",
+          "success"
+        );
+        await fetchPartyTypes();
+        setSelectedRows([]);
+      }
+    } catch (error) {
+      console.error("Error deleting party types:", error);
+      showToast("Failed to delete party types", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Table columns
@@ -105,81 +169,107 @@ const PartyTypes = () => {
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Party Types</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage all party types for classification and reporting.
-        </p>
-      </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        <Card icon={<Badge className="w-8 h-8 text-primary-800" />}>
-          <div>
-            <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Types
-            </div>
-            <div className="text-2xl font-bold text-gray-900">{totalTypes}</div>
-          </div>
-        </Card>
-      </div>
-      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              setEditItem(null);
-              setFormData({ name: "", description: "" });
-              setModalOpen(true);
-            }}
-            icon={Plus}
-            size="sm"
-          >
-            New Party Type
-          </Button>
-          {selectedRows.length > 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedRows)}
-              loading={loading}
-            >
-              Delete ({selectedRows.length})
-            </Button>
-          )}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Party Types</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage all party types for classification and reporting.
+          </p>
         </div>
+        <button
+          onClick={() => fetchPartyTypes()}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            loading ? "animate-spin" : ""
+          }`}
+          disabled={loading}
+          title="Refresh data (Ctrl+R)"
+        >
+          <RefreshCcw className="w-5 h-5" />
+        </button>
       </div>
-      <FilterBar
-        onSearch={(val) => setSearch(val)}
-        placeholder="Search by name or description"
-      />
-      <Table
-        data={data}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          currentPage: 1,
-          totalPages: 1,
-          pageSize: PAGE_SIZE_OPTIONS[1],
-          totalItems: data.length,
-          onPageChange: () => {},
-          onPageSizeChange: () => {},
-        }}
-        selection={{
-          selectedItems: selectedRows,
-          onSelectionChange: setSelectedRows,
-        }}
-        actions={{
-          onEdit: (row) => {
-            setEditItem(row);
-            setFormData({ name: row.name, description: row.description });
-            setModalOpen(true);
-          },
-        }}
-        summaryRow={{
-          name: <span className="font-semibold">Total</span>,
-          description: "",
-          id: <span className="font-bold">{totalTypes}</span>,
-        }}
-      />
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        {initialLoading ? (
+          <SkeletonCard />
+        ) : (
+          <Card icon={<Badge size={32} className="text-primary-800" />} hover>
+            <div>
+              <p className="text-3xl font-bold text-gray-700">{totalTypes}</p>
+              <p className="text-sm text-gray-500">Total Types</p>
+            </div>
+          </Card>
+        )}
+      </div>
+      <Card>
+        <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+          <FilterBar
+            onSearch={(val) => setSearch(val)}
+            placeholder="Search by name or description... (Ctrl+F)"
+          >
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => {
+                  setEditItem(null);
+                  setFormData({ name: "", description: "" });
+                  setModalOpen(true);
+                }}
+                icon={Plus}
+                size="sm"
+              >
+                New Party Type
+              </Button>
+              {selectedRows.length > 0 && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={Trash2}
+                  onClick={() => handleDelete(selectedRows)}
+                  loading={loading}
+                >
+                  Delete ({selectedRows.length})
+                </Button>
+              )}
+            </div>
+          </FilterBar>
+        </div>
+
+        <Table
+          data={data.filter(
+            (item) =>
+              item.name.toLowerCase().includes(search.toLowerCase()) ||
+              item.description?.toLowerCase().includes(search.toLowerCase())
+          )}
+          columns={columns}
+          loading={loading}
+          pagination={{
+            currentPage,
+            totalPages: Math.ceil(data.length / pageSize),
+            pageSize,
+            totalItems: data.length,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+          }}
+          selection={{
+            selectedItems: selectedRows,
+            onSelectionChange: setSelectedRows,
+          }}
+          actions={{
+            onEdit: (row) => {
+              setEditItem(row);
+              setFormData({ name: row.name, description: row.description });
+              setModalOpen(true);
+            },
+          }}
+          summaryRow={{
+            name: <span className="font-semibold">Total</span>,
+            description: "",
+            id: <span className="font-bold">{totalTypes}</span>,
+          }}
+        ></Table>
+      </Card>
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
