@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -7,6 +7,8 @@ import {
   BarChart3,
   Layers,
 } from "lucide-react";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -15,24 +17,41 @@ import { Modal } from "../../components/ui/Modal";
 import { Silo } from "../../types";
 
 const SiloList: React.FC = () => {
-  const [silos, setSilos] = useState<Silo[]>([
-    {
-      id: "1",
-      name: "Main Storage Silo",
-      capacity: 5000,
-      description: "Primary storage facility for paddy rice",
-      createdAt: "2024-01-15T10:00:00Z",
-      updatedAt: "2024-01-15T10:00:00Z",
-    },
-    {
-      id: "2",
-      name: "Secondary Silo A",
-      capacity: 3000,
-      description: "Additional storage for processed rice",
-      createdAt: "2024-01-10T10:00:00Z",
-      updatedAt: "2024-01-10T10:00:00Z",
-    },
-  ]);
+  const [silos, setSilos] = useState<Silo[]>([]);
+  const [stats, setStats] = useState({
+    totalSilos: 0,
+    totalCapacity: 0,
+    avgCapacity: 0,
+    lowCapacity: 0,
+  });
+
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    fetchSiloData();
+  }, []);
+
+  const fetchSiloData = async () => {
+    setLoading(true);
+    try {
+      const [silosData, statsData] = await Promise.all([
+        api.get<{ success: boolean; data: Silo[] }>("/settings/silo"),
+        api.get<{ success: boolean; data: typeof stats }>(
+          "/settings/silo/stats"
+        ),
+      ]);
+
+      if (silosData.success && statsData.success) {
+        setSilos(silosData.data);
+        setStats(statsData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching silo data:", error);
+      showToast("Failed to load silo data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [selectedSilos, setSelectedSilos] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,7 +87,7 @@ const SiloList: React.FC = () => {
       sortable: true,
       render: (value: number) => value.toLocaleString(),
     },
-    { key: "description", label: "Description" }, 
+    { key: "description", label: "Description" },
   ];
 
   const handleEdit = (silo: Silo) => {
@@ -85,12 +104,19 @@ const SiloList: React.FC = () => {
     if (confirm(`Are you sure you want to delete ${siloIds.length} silo(s)?`)) {
       setLoading(true);
       try {
-        // Simulate API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setSilos((prev) => prev.filter((silo) => !siloIds.includes(silo.id)));
-        setSelectedSilos([]);
+        const response = await api.delete<{
+          success: boolean;
+          message: string;
+        }>(`/settings/silo?ids=${siloIds.join(",")}`);
+
+        if (response.success) {
+          showToast(response.message, "success");
+          await fetchSiloData();
+          setSelectedSilos([]);
+        }
       } catch (error) {
         console.error("Error deleting silos:", error);
+        showToast("Failed to delete silos", "error");
       } finally {
         setLoading(false);
       }
@@ -98,36 +124,33 @@ const SiloList: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!formData.name || !formData.capacity) {
+      showToast("Name and capacity are required", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (editingSilo) {
-        // Update existing silo
-        setSilos((prev) =>
-          prev.map((silo) =>
-            silo.id === editingSilo.id
-              ? { ...silo, ...formData, updatedAt: new Date().toISOString() }
-              : silo
+      const response = editingSilo
+        ? await api.put<{ success: boolean; data: Silo; message: string }>(
+            `/settings/silo/${editingSilo.id}`,
+            formData
           )
-        );
-      } else {
-        // Create new silo
-        const newSilo: Silo = {
-          id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setSilos((prev) => [...prev, newSilo]);
-      }
+        : await api.post<{ success: boolean; data: Silo; message: string }>(
+            "/settings/silo",
+            formData
+          );
 
-      setShowModal(false);
-      setEditingSilo(null);
-      setFormData({ name: "", capacity: 0, description: "" });
+      if (response.success) {
+        showToast(response.message, "success");
+        await fetchSiloData();
+        setShowModal(false);
+        setEditingSilo(null);
+        setFormData({ name: "", capacity: 0, description: "" });
+      }
     } catch (error) {
       console.error("Error saving silo:", error);
+      showToast("Failed to save silo", "error");
     } finally {
       setLoading(false);
     }
@@ -143,9 +166,6 @@ const SiloList: React.FC = () => {
     window.print();
   };
 
-  // Calculate summary stats
-  const totalCapacity = silos.reduce((sum, silo) => sum + silo.capacity, 0);
-  const avgCapacity = silos.length > 0 ? totalCapacity / silos.length : 0;
   const loadingCards = false; // set to true to show skeleton
 
   return (
@@ -161,22 +181,29 @@ const SiloList: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <Card icon={<Warehouse size={32} />} loading={loadingCards} hover>
           <div>
-            <p className="text-3xl font-bold text-gray-700">{silos.length}</p>
+            <p className="text-3xl font-bold text-gray-700">
+              {stats.totalSilos}
+            </p>
             <p className="text-sm text-gray-500">Total Silos</p>
           </div>
         </Card>
         <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {totalCapacity.toLocaleString()}
+              {stats.totalCapacity.toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Total Capacity (Tons)</p>
+            {stats.lowCapacity > 0 && (
+              <p className="text-xs text-red-500 mt-1">
+                {stats.lowCapacity} silos below 10% capacity
+              </p>
+            )}
           </div>
         </Card>
         <Card icon={<Layers size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {Math.round(avgCapacity).toLocaleString()}
+              {Math.round(stats.avgCapacity).toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Average Capacity (Tons)</p>
           </div>
