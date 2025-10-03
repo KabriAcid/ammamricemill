@@ -29,6 +29,7 @@ import routes from "./routes/index.js";
 
 dotenv.config();
 
+
 const app = express();
 
 // Request logging middleware

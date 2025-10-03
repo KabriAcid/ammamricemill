@@ -7,7 +7,6 @@ import siloSettingsRoutes from "./settings/silo.js";
 
 // Party Routes
 import partyTypesRoutes from "./party/party-types.js";
-import partiesRoutes from "./party/parties.js";
 
 // HR Routes
 import employeeRoutes from "./hr/employees.js";
@@ -26,8 +25,6 @@ import transactionsRoutes from "./accounts/transactions.js";
 const router = express.Router();
 
 // General routes
-router.use("/party/types", partyTypesRoutes);
-router.use("/party", partiesRoutes);
 router.use("/dashboard", dashboardRoutes);
 
 // Settings routes
@@ -49,5 +46,7 @@ router.use("/accounts/head-expense", headExpenseRoutes);
 router.use("/accounts/head-bank", headBankRoutes);
 router.use("/accounts/head-others", headOthersRoutes);
 router.use("/accounts/transactions", transactionsRoutes);
+
+router.use("/party/types", partyTypesRoutes);
 
 export default router;
