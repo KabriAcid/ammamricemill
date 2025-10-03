@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { api } from "../../utils/fetcher";
 import {
   Plus,
   CreditCard as Edit,
   Trash2,
   Printer,
-  Upload,
   User,
   Users,
   Wallet,
@@ -15,41 +15,14 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
+import { useToast } from "../../components/ui/Toast";
 import { Employee } from "../../types";
+import { SkeletonCard } from "../../components/ui/Skeleton";
 
 const EmployeeList: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>([
-    {
-      id: "1",
-      name: "John Doe",
-      empId: "EMP001",
-      designation: "Mill Manager",
-      mobile: "+1234567890",
-      email: "john@ricemill.com",
-      salary: 50000,
-      salaryType: "monthly",
-      joiningDate: "2024-01-01",
-      grossAmount: 50000,
-      bonus: 5000,
-      loan: 0,
-      tax: 2500,
-      netSalary: 52500,
-      absence: 0,
-      bankName: "ABC Bank",
-      accountName: "John Doe",
-      accountNo: "1234567890",
-      address: "123 Main St, City",
-      nationalId: "ID123456789",
-      fatherName: "Robert Doe",
-      motherName: "Jane Doe",
-      bloodGroup: "O+",
-      others: "",
-      photoUrl: undefined,
-      isActive: true,
-      createdAt: "2024-01-01T10:00:00Z",
-      updatedAt: "2024-01-01T10:00:00Z",
-    },
-  ]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const { showToast } = useToast();
+  const [initialLoading, setInitialLoading] = useState(true);
 
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -60,6 +33,49 @@ const EmployeeList: React.FC = () => {
   const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [loading, setLoading] = useState(false);
 
+  useEffect(() => {
+    const loadData = async () => {
+      setInitialLoading(true);
+      await fetchEmployeeData();
+      setInitialLoading(false);
+    };
+    loadData();
+  }, []);
+
+  // Add keyboard shortcut for search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector('input[type="search"]');
+        if (searchInput instanceof HTMLInputElement) {
+          searchInput.focus();
+        }
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const fetchEmployeeData = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<{ success: boolean; data: Employee[] }>(
+        "/hr/employee"
+      );
+
+      if (response.success) {
+        setEmployees(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching employee data:", error);
+      showToast("Failed to load employee data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const [formData, setFormData] = useState({
     name: "",
     empId: "",
@@ -67,24 +83,7 @@ const EmployeeList: React.FC = () => {
     mobile: "",
     email: "",
     salary: 0,
-    salaryType: "monthly" as "monthly" | "daily",
     joiningDate: "",
-    grossAmount: 0,
-    bonus: 0,
-    loan: 0,
-    tax: 0,
-    netSalary: 0,
-    absence: 0,
-    bankName: "",
-    accountName: "",
-    accountNo: "",
-    address: "",
-    nationalId: "",
-    fatherName: "",
-    motherName: "",
-    bloodGroup: "",
-    others: "",
-    photoUrl: "",
     isActive: true,
   });
 
@@ -107,24 +106,6 @@ const EmployeeList: React.FC = () => {
 
   const columns = [
     { key: "id", label: "#", width: "80px" },
-    {
-      key: "photoUrl",
-      label: "Photo",
-      width: "80px",
-      render: (value: string) => (
-        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-          {value ? (
-            <img
-              src={value}
-              alt="Employee"
-              className="w-full h-full object-cover"
-            />
-          ) : (
-            <User className="w-5 h-5 text-gray-400" />
-          )}
-        </div>
-      ),
-    },
     { key: "name", label: "Employee Name", sortable: true },
     { key: "empId", label: "Employee ID", sortable: true },
     { key: "designation", label: "Designation" },
@@ -132,12 +113,7 @@ const EmployeeList: React.FC = () => {
     {
       key: "salary",
       label: "Salary",
-      render: (value: number, item: Employee) => (
-        <span>
-          ₦{value.toLocaleString()}{" "}
-          <small className="text-gray-500">/{item.salaryType}</small>
-        </span>
-      ),
+      render: (value: number) => <span>₦{value.toLocaleString()}</span>,
     },
     {
       key: "isActive",
@@ -167,82 +143,66 @@ const EmployeeList: React.FC = () => {
       mobile: employee.mobile,
       email: employee.email || "",
       salary: employee.salary,
-      salaryType: employee.salaryType,
       joiningDate: employee.joiningDate,
-      grossAmount: employee.grossAmount,
-      bonus: employee.bonus,
-      loan: employee.loan,
-      tax: employee.tax,
-      netSalary: employee.netSalary,
-      absence: employee.absence,
-      bankName: employee.bankName || "",
-      accountName: employee.accountName || "",
-      accountNo: employee.accountNo || "",
-      address: employee.address || "",
-      nationalId: employee.nationalId || "",
-      fatherName: employee.fatherName || "",
-      motherName: employee.motherName || "",
-      bloodGroup: employee.bloodGroup || "",
-      others: employee.others || "",
-      photoUrl: employee.photoUrl || "",
       isActive: employee.isActive,
     });
     setShowModal(true);
   };
 
   const handleDelete = async (employeeIds: string[]) => {
-    if (
-      confirm(
-        `Are you sure you want to delete ${employeeIds.length} employee(s)?`
-      )
-    ) {
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setEmployees((prev) =>
-          prev.filter((employee) => !employeeIds.includes(employee.id))
-        );
+    setLoading(true);
+    try {
+      const response = await api.delete<{
+        success: boolean;
+        message: string;
+      }>(`/hr/employee?ids=${employeeIds.join(",")}`);
+
+      if (response.success) {
+        showToast(response.message, "success");
+        await fetchEmployeeData();
         setSelectedEmployees([]);
-      } catch (error) {
-        console.error("Error deleting employees:", error);
-      } finally {
-        setLoading(false);
       }
+    } catch (error) {
+      console.error("Error deleting employees:", error);
+      showToast("Failed to delete employees", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    if (
+      !formData.name ||
+      !formData.mobile ||
+      !formData.salary ||
+      !formData.joiningDate
+    ) {
+      showToast("Please fill in all required fields", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (editingEmployee) {
-        setEmployees((prev) =>
-          prev.map((employee) =>
-            employee.id === editingEmployee.id
-              ? {
-                  ...employee,
-                  ...formData,
-                  updatedAt: new Date().toISOString(),
-                }
-              : employee
+      const response = editingEmployee
+        ? await api.put<{ success: boolean; data: Employee; message: string }>(
+            `/hr/employee/${editingEmployee.id}`,
+            formData
           )
-        );
-      } else {
-        const newEmployee: Employee = {
-          id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setEmployees((prev) => [...prev, newEmployee]);
-      }
+        : await api.post<{ success: boolean; data: Employee; message: string }>(
+            "/hr/employee",
+            formData
+          );
 
-      setShowModal(false);
-      setEditingEmployee(null);
-      resetForm();
+      if (response.success) {
+        showToast(response.message, "success");
+        await fetchEmployeeData();
+        setShowModal(false);
+        setEditingEmployee(null);
+        resetForm();
+      }
     } catch (error) {
       console.error("Error saving employee:", error);
+      showToast("Failed to save employee", "error");
     } finally {
       setLoading(false);
     }
@@ -256,24 +216,7 @@ const EmployeeList: React.FC = () => {
       mobile: "",
       email: "",
       salary: 0,
-      salaryType: "monthly",
       joiningDate: "",
-      grossAmount: 0,
-      bonus: 0,
-      loan: 0,
-      tax: 0,
-      netSalary: 0,
-      absence: 0,
-      bankName: "",
-      accountName: "",
-      accountNo: "",
-      address: "",
-      nationalId: "",
-      fatherName: "",
-      motherName: "",
-      bloodGroup: "",
-      others: "",
-      photoUrl: "",
       isActive: true,
     });
   };
@@ -284,79 +227,101 @@ const EmployeeList: React.FC = () => {
     setShowModal(true);
   };
 
-  const handlePhotoUpload = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setFormData((prev) => ({
-            ...prev,
-            photoUrl: e.target?.result as string,
-          }));
-        };
-        reader.readAsDataURL(file);
-      }
-    };
-    input.click();
-  };
-
   const activeEmployees = employees.filter((emp) => emp.isActive).length;
   const totalSalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
   const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Employee Management
-        </h1>
-        <p className="mt-1 text-sm text-gray-500">
-          Manage employee information and records.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Employee Management
+          </h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage employee information and records.
+          </p>
+        </div>
+        <button
+          onClick={() => fetchEmployeeData()}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            loading ? "animate-spin" : ""
+          }`}
+          disabled={loading}
+          title="Refresh data"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+        </button>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card icon={<Users size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {employees.length}
-            </p>
-            <p className="text-sm text-gray-500">Total Employees</p>
-          </div>
-        </Card>
-        <Card icon={<User size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {activeEmployees}
-            </p>
-            <p className="text-sm text-gray-500">Active Employees</p>
-          </div>
-        </Card>
-        <Card icon={<Wallet size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              ₦{totalSalary.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">Total Monthly Salary</p>
-          </div>
-        </Card>
-        <Card icon={<BadgeCheck size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {designations.length}
-            </p>
-            <p className="text-sm text-gray-500">Designations</p>
-          </div>
-        </Card>
+        {initialLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<Users size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Employees</p>
+              </div>
+            </Card>
+            <Card icon={<User size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.filter((emp) => emp.isActive).length}
+                </p>
+                <p className="text-sm text-gray-500">Active Employees</p>
+              </div>
+            </Card>
+            <Card icon={<Wallet size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦
+                  {employees
+                    .reduce((sum, emp) => sum + emp.salary, 0)
+                    .toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Monthly Salary</p>
+              </div>
+            </Card>
+            <Card icon={<BadgeCheck size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {
+                    Array.from(new Set(employees.map((emp) => emp.designation)))
+                      .length
+                  }
+                </p>
+                <p className="text-sm text-gray-500">Designations</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
       <FilterBar
         onSearch={setSearchQuery}
-        placeholder="Search by name, ID, or mobile..."
+        placeholder="Search by name, ID, or mobile... (Ctrl+K)"
+        value={searchQuery}
       >
         <div className="flex items-center space-x-2">
           <select
@@ -426,35 +391,8 @@ const EmployeeList: React.FC = () => {
         title={editingEmployee ? "Edit Employee" : "New Employee"}
         size="xl"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Basic Information */}
+        <div className="grid grid-cols-1 gap-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Basic Information
-            </h3>
-
-            <div className="text-center">
-              <div className="w-24 h-24 mx-auto rounded-full bg-gray-200 flex items-center justify-center overflow-hidden mb-4">
-                {formData.photoUrl ? (
-                  <img
-                    src={formData.photoUrl}
-                    alt="Employee"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <User className="w-12 h-12 text-gray-400" />
-                )}
-              </div>
-              <Button
-                variant="outline"
-                size="sm"
-                icon={Upload}
-                onClick={handlePhotoUpload}
-              >
-                Upload Photo
-              </Button>
-            </div>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Name *
@@ -557,334 +495,45 @@ const EmployeeList: React.FC = () => {
               Salary Information
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Salary *
-                </label>
-                <input
-                  type="number"
-                  value={formData.salary}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      salary: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Salary Type *
-                </label>
-                <select
-                  value={formData.salaryType}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      salaryType: e.target.value as "monthly" | "daily",
-                    }))
-                  }
-                  className="input-base"
-                >
-                  <option value="monthly">Monthly</option>
-                  <option value="daily">Daily</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Gross Amount
-                </label>
-                <input
-                  type="number"
-                  value={formData.grossAmount}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      grossAmount: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Bonus
-                </label>
-                <input
-                  type="number"
-                  value={formData.bonus}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      bonus: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Loan
-                </label>
-                <input
-                  type="number"
-                  value={formData.loan}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      loan: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tax
-                </label>
-                <input
-                  type="number"
-                  value={formData.tax}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      tax: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Net Salary
-                </label>
-                <input
-                  type="number"
-                  value={formData.netSalary}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      netSalary: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Absence Days
-                </label>
-                <input
-                  type="number"
-                  value={formData.absence}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      absence: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-            </div>
-
-            <h3 className="text-lg font-medium text-gray-900 pt-4">
-              Bank Information
-            </h3>
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Bank Name
+                Salary *
               </label>
               <input
-                type="text"
-                value={formData.bankName}
+                type="number"
+                value={formData.salary}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, bankName: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    salary: Number(e.target.value),
+                  }))
                 }
                 className="input-base"
+                required
               />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Account Name
-                </label>
-                <input
-                  type="text"
-                  value={formData.accountName}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      accountName: e.target.value,
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Account No
-                </label>
-                <input
-                  type="text"
-                  value={formData.accountNo}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      accountNo: e.target.value,
-                    }))
-                  }
-                  className="input-base"
-                />
-              </div>
             </div>
           </div>
         </div>
 
         {/* Additional Information */}
         <div className="mt-6 space-y-4">
-          <h3 className="text-lg font-medium text-gray-900">
-            Additional Information
-          </h3>
-
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Address
+              Status
             </label>
-            <textarea
-              value={formData.address}
+            <select
+              value={formData.isActive ? "active" : "inactive"}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, address: e.target.value }))
+                setFormData((prev) => ({
+                  ...prev,
+                  isActive: e.target.value === "active",
+                }))
               }
               className="input-base"
-              rows={2}
-            />
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                National ID
-              </label>
-              <input
-                type="text"
-                value={formData.nationalId}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    nationalId: e.target.value,
-                  }))
-                }
-                className="input-base"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Father's Name
-              </label>
-              <input
-                type="text"
-                value={formData.fatherName}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    fatherName: e.target.value,
-                  }))
-                }
-                className="input-base"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Mother's Name
-              </label>
-              <input
-                type="text"
-                value={formData.motherName}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    motherName: e.target.value,
-                  }))
-                }
-                className="input-base"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Blood Group
-              </label>
-              <select
-                value={formData.bloodGroup}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    bloodGroup: e.target.value,
-                  }))
-                }
-                className="input-base"
-              >
-                <option value="">Select Blood Group</option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status
-              </label>
-              <select
-                value={formData.isActive ? "active" : "inactive"}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    isActive: e.target.value === "active",
-                  }))
-                }
-                className="input-base"
-              >
-                <option value="active">Active</option>
-                <option value="inactive">Inactive</option>
-              </select>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Others
-            </label>
-            <textarea
-              value={formData.others}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, others: e.target.value }))
-              }
-              className="input-base"
-              rows={2}
-              placeholder="Additional notes or information"
-            />
+            >
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
           </div>
         </div>
 
