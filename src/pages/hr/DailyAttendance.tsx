@@ -1,574 +1,411 @@
 import React, { useState, useEffect } from "react";
-import {
-  Plus,
-  Trash2,
-  Printer,
-  Calendar,
-  BarChart3,
-  CheckCircle,
-  XCircle,
-  Percent,
-} from "lucide-react";
+import { Calendar, BarChart3, CheckCircle, XCircle } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
-import { FilterBar } from "../../components/ui/FilterBar";
-import { Modal } from "../../components/ui/Modal";
-// Navigation
+import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
-import { Attendance, AttendanceRecord } from "../../types";
-import type { ApiResponse } from "../../types";
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+interface Employee {
+  id: string;
+  name: string;
+  email: string | null;
+  phone: string;
+  designation: string;
+  designation_id: number;
+  salary: number;
+  joining_date: string;
+  status: string;
+  empId: string;
+}
+
+interface AttendanceRecord {
+  employeeId: string;
+  status: "present" | "absent" | "leave";
+  inTime?: string;
+  outTime?: string;
+  notes?: string;
+}
+
+interface Attendance {
+  date: string;
+  employees: AttendanceRecord[];
+}
+
+interface EmployeeAttendance {
+  id: string;
+  designation: string;
+  empId: string;
+  name: string;
+  attendance: "Present" | "Absent" | "Leave";
+  inTime: string;
+  outTime: string;
+  note: string;
+}
 
 const DailyAttendance: React.FC = () => {
-  const [attendances, setAttendances] = useState<Attendance[]>([]);
-  const [initialLoading, setInitialLoading] = useState(true);
-  const [connectionError, setConnectionError] = useState(false);
-
   const navigate = useNavigate();
-
-  const [selectedAttendances, setSelectedAttendances] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [dateFilter, setDateFilter] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editingAttendance, setEditingAttendance] = useState<Attendance | null>(
-    null
-  );
-  const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
-  const [formData, setFormData] = useState({
-    date: "",
-    totalEmployee: 0,
-    totalPresent: 0,
-    totalAbsent: 0,
-    totalLeave: 0,
-    description: "",
-    employees: [] as AttendanceRecord[],
-  });
 
-  const filteredAttendances = attendances.filter((attendance) => {
-    const matchesSearch =
-      attendance.description
-        ?.toLowerCase()
-        .includes(searchQuery.toLowerCase()) ||
-      attendance.date.includes(searchQuery);
-    const matchesDate = !dateFilter || attendance.date === dateFilter;
-    return matchesSearch && matchesDate;
-  });
-
-  const totalPages = Math.ceil(filteredAttendances.length / pageSize);
-  const startIndex = (currentPage - 1) * pageSize;
-  const paginatedAttendances = filteredAttendances.slice(
-    startIndex,
-    startIndex + pageSize
+  const [employees, setEmployees] = useState<EmployeeAttendance[]>([]);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [dateFilter, setDateFilter] = useState(
+    new Date().toISOString().split("T")[0]
   );
 
-  const columns = [
-    { key: "id", label: "#", width: "80px" },
-    {
-      key: "date",
-      label: "Date",
-      sortable: true,
-      render: (value: string) => new Date(value).toLocaleDateString(),
-    },
-    { key: "totalEmployee", label: "Total Employee", sortable: true },
-    {
-      key: "totalPresent",
-      label: "Total Present",
-      render: (value: number) => (
-        <span className="text-green-600 font-medium">{value}</span>
-      ),
-    },
-    {
-      key: "totalAbsent",
-      label: "Total Absent",
-      render: (value: number) => (
-        <span className="text-red-600 font-medium">{value}</span>
-      ),
-    },
-    {
-      key: "totalLeave",
-      label: "Total Leave",
-      render: (value: number) => (
-        <span className="text-yellow-600 font-medium">{value}</span>
-      ),
-    },
-    { key: "description", label: "Description" },
-  ];
+  useEffect(() => {
+    fetchEmployees();
+  }, [dateFilter]);
 
-  const handleEdit = (attendance: Attendance) => {
-    setEditingAttendance(attendance);
-    setFormData({
-      date: attendance.date,
-      totalEmployee: attendance.totalEmployee,
-      totalPresent: attendance.totalPresent,
-      totalAbsent: attendance.totalAbsent,
-      totalLeave: attendance.totalLeave,
-      description: attendance.description || "",
-      employees: attendance.employees,
-    });
-    setShowModal(true);
-  };
-
-  const fetchAttendanceData = async () => {
-    setLoading(true);
-    setConnectionError(false);
+  const fetchEmployees = async () => {
+    setInitialLoading(true);
     try {
-      const queryParams = new URLSearchParams({
-        page: currentPage.toString(),
-        pageSize: pageSize.toString(),
-        search: searchQuery,
-        date: dateFilter,
-      }).toString();
+      // First get employees list
+      const response = await api.get<ApiResponse<Employee[]>>("/hr/employee");
 
-      const response = await api.get<
-        ApiResponse<{ attendances: Attendance[]; pagination: any }>
-      >(`/hr/attendance?${queryParams}`);
+      if (response.success && response.data) {
+        // Then get today's attendance if exists
+        const today = dateFilter;
+        const attendanceResponse = await api.get<
+          ApiResponse<{ attendances: Attendance[] }>
+        >(`/hr/attendance?date=${today}`);
 
-      if (response.success && response.data?.attendances) {
-        // Ensure data conforms to our types
-        const typedAttendances = response.data.attendances.map((att) => ({
-          ...att,
-          employees: att.employees.map((emp) => ({
-            ...emp,
-            // Ensure status is one of the valid values
-            status: ["present", "absent", "leave"].includes(emp.status)
-              ? emp.status
-              : "present",
-          })),
-        }));
-        setAttendances(typedAttendances);
-      } else {
-        throw new Error("Failed to fetch attendance data");
-      }
-    } catch (error) {
-      console.error("Error fetching attendance data:", error);
-      if (error instanceof Error && error.message.includes("Failed to fetch")) {
-        setConnectionError(true);
-        showToast(
-          "Cannot connect to server. Please check if the server is running.",
-          "error"
+        const todayAttendance =
+          attendanceResponse.success &&
+          attendanceResponse.data?.attendances?.find(
+            (a: Attendance) => a.date === today
+          );
+
+        // Map employees with their attendance status
+        setEmployees(
+          response.data.map((emp: Employee) => {
+            const attendanceRecord =
+              todayAttendance &&
+              todayAttendance.employees.find(
+                (a: AttendanceRecord) => a.employeeId === emp.empId
+              );
+
+            return {
+              id: emp.id,
+              empId: emp.empId,
+              name: emp.name,
+              designation: emp.designation,
+              attendance: (attendanceRecord &&
+              attendanceRecord.status === "present"
+                ? "Present"
+                : attendanceRecord && attendanceRecord.status === "absent"
+                ? "Absent"
+                : attendanceRecord && attendanceRecord.status === "leave"
+                ? "Leave"
+                : "Present") as "Present" | "Absent" | "Leave",
+              inTime: attendanceRecord ? attendanceRecord.inTime || "" : "",
+              outTime: attendanceRecord ? attendanceRecord.outTime || "" : "",
+              note: attendanceRecord ? attendanceRecord.notes || "" : "",
+            };
+          })
         );
       } else {
-        showToast("Failed to load attendance data", "error");
+        showToast("Failed to load employees data", "error");
       }
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      showToast("Failed to load employees", "error");
     } finally {
-      setLoading(false);
       setInitialLoading(false);
     }
   };
 
-  // Initial data load
-  useEffect(() => {
-    fetchAttendanceData();
-  }, [currentPage, pageSize, searchQuery, dateFilter]);
-
-  // Add keyboard shortcut for search
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === "k") {
-        e.preventDefault();
-        const searchInput = document.querySelector('input[type="search"]');
-        if (searchInput instanceof HTMLInputElement) {
-          searchInput.focus();
-        }
-      }
-    };
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
-
-  const handleDelete = async (attendanceIds: string[]) => {
-    setLoading(true);
-    try {
-      const response = await api.delete<ApiResponse<void>>("/hr/attendance", {
-        dates: attendanceIds,
-      });
-
-      if (response.success) {
-        showToast(
-          response.message || "Records deleted successfully",
-          "success"
-        );
-        await fetchAttendanceData();
-        setSelectedAttendances([]);
-      }
-    } catch (error) {
-      console.error("Error deleting attendances:", error);
-      showToast("Failed to delete attendance records", "error");
-    } finally {
-      setLoading(false);
-    }
+  const handleAttendanceChange = (
+    idx: number,
+    value: "Present" | "Absent" | "Leave"
+  ) => {
+    setEmployees((prev) =>
+      prev.map((emp, i) => (i === idx ? { ...emp, attendance: value } : emp))
+    );
   };
 
-  const handleSave = async () => {
-    if (!formData.date || formData.totalEmployee <= 0) {
-      showToast("Please fill in all required fields", "error");
+  const handleInputChange = (
+    idx: number,
+    field: "inTime" | "outTime" | "note",
+    value: string
+  ) => {
+    setEmployees((prev) =>
+      prev.map((emp, i) => (i === idx ? { ...emp, [field]: value } : emp))
+    );
+  };
+
+  const handleSaveAttendance = async () => {
+    if (employees.length === 0) {
+      showToast("No employees to record attendance for", "error");
       return;
     }
 
     setLoading(true);
     try {
-      const response = editingAttendance
-        ? await api.put<ApiResponse<Attendance>>(
-            `/hr/attendance/${formData.date}`,
-            formData
-          )
-        : await api.post<ApiResponse<Attendance>>("/hr/attendance", formData);
+      const attendanceData = {
+        date: dateFilter,
+        totalEmployee: employees.length,
+        totalPresent: employees.filter((e) => e.attendance === "Present")
+          .length,
+        totalAbsent: employees.filter((e) => e.attendance === "Absent").length,
+        totalLeave: employees.filter((e) => e.attendance === "Leave").length,
+        description: "",
+        employees: employees.map((emp) => ({
+          employeeId: emp.empId,
+          employeeName: emp.name,
+          status: emp.attendance.toLowerCase() as
+            | "present"
+            | "absent"
+            | "leave",
+          inTime: emp.inTime || null,
+          outTime: emp.outTime || null,
+          notes: emp.note || null,
+        })),
+      };
+
+      const response = await api.post<ApiResponse<void>>(
+        "/hr/attendance",
+        attendanceData
+      );
 
       if (response.success) {
-        showToast(response.message || "Record saved successfully", "success");
-        await fetchAttendanceData();
-        setShowModal(false);
-        setEditingAttendance(null);
-        resetForm();
+        showToast("Attendance recorded successfully", "success");
+        fetchEmployees(); // Refresh data
+      } else {
+        throw new Error(response.message || "Failed to save attendance");
       }
     } catch (error) {
       console.error("Error saving attendance:", error);
-      showToast("Failed to save attendance record", "error");
+      showToast(
+        error instanceof Error ? error.message : "Failed to save attendance",
+        "error"
+      );
     } finally {
       setLoading(false);
     }
   };
 
-  const resetForm = () => {
-    setFormData({
-      date: "",
-      totalEmployee: 0,
-      totalPresent: 0,
-      totalAbsent: 0,
-      totalLeave: 0,
-      description: "",
-      employees: [],
-    });
-  };
-
-  const handleNew = () => {
-    setEditingAttendance(null);
-    resetForm();
-    setShowModal(true);
-  };
-
-  // Calculate summary stats
-  const totalDays = attendances.length;
-  const avgPresent =
-    totalDays > 0
-      ? attendances.reduce((sum, att) => sum + att.totalPresent, 0) / totalDays
-      : 0;
-  const avgAbsent =
-    totalDays > 0
-      ? attendances.reduce((sum, att) => sum + att.totalAbsent, 0) / totalDays
-      : 0;
-  const loadingCards = false; // set to true to show skeleton
-
   return (
     <div className="animate-fade-in">
-      {connectionError && (
-        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg
-                className="h-5 w-5 text-red-400"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-red-800">
-                Connection Error
-              </h3>
-              <p className="mt-1 text-sm text-red-700">
-                Cannot connect to server. Please ensure that:
-                <ul className="list-disc list-inside ml-4 mt-1">
-                  <li>The backend server is running</li>
-                  <li>You can access http://localhost:5000</li>
-                  <li>Your network connection is stable</li>
-                </ul>
-              </p>
-              <button
-                onClick={() => fetchAttendanceData()}
-                className="mt-2 text-sm font-medium text-red-800 hover:text-red-600"
-              >
-                Try Again
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Attendance Management
-          </h1>
+          <h1 className="text-3xl font-bold text-gray-900">Daily Attendance</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Track daily employee attendance records.
+            Record today's attendance
           </p>
         </div>
-        <button
-          onClick={() => fetchAttendanceData()}
-          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
-            loading ? "animate-spin" : ""
-          }`}
-          disabled={loading}
-          title="Refresh data"
-        >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-        </button>
       </div>
 
+      {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">{totalDays}</p>
-            <p className="text-sm text-gray-500">Total Records</p>
-          </div>
-        </Card>
-        <Card icon={<CheckCircle size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {Math.round(avgPresent)}
-            </p>
-            <p className="text-sm text-gray-500">Avg Present</p>
-          </div>
-        </Card>
-        <Card icon={<XCircle size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {Math.round(avgAbsent)}
-            </p>
-            <p className="text-sm text-gray-500">Avg Absent</p>
-          </div>
-        </Card>
-        <Card icon={<Percent size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {totalDays > 0
-                ? Math.round((avgPresent / (avgPresent + avgAbsent)) * 100)
-                : 0}
-              %
-            </p>
-            <p className="text-sm text-gray-500">Attendance Rate</p>
-          </div>
-        </Card>
+        {initialLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<Calendar size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Employees</p>
+              </div>
+            </Card>
+
+            <Card icon={<CheckCircle size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.filter((e) => e.attendance === "Present").length}
+                </p>
+                <p className="text-sm text-gray-500">Present Today</p>
+              </div>
+            </Card>
+
+            <Card icon={<XCircle size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.filter((e) => e.attendance === "Absent").length}
+                </p>
+                <p className="text-sm text-gray-500">Absent Today</p>
+              </div>
+            </Card>
+
+            <Card icon={<BarChart3 size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {employees.filter((e) => e.attendance === "Leave").length}
+                </p>
+                <p className="text-sm text-gray-500">On Leave</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
-      <FilterBar
-        onSearch={setSearchQuery}
-        placeholder="Search by date or description..."
-      >
-        <div className="flex items-center space-x-2">
-          <Calendar className="w-4 h-4 text-gray-400" />
-          <input
-            type="date"
-            value={dateFilter}
-            onChange={(e) => setDateFilter(e.target.value)}
-            className="input-base"
-          />
-          <Button
-            onClick={() => navigate("/hr/attendance/new")}
-            variant="primary"
-            size="sm"
-          >
-            Record Attendance
-          </Button>
-          <Button onClick={handleNew} icon={Plus} size="sm">
-            New
-          </Button>
-          {selectedAttendances.length > 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedAttendances)}
-              loading={loading}
-            >
-              Delete ({selectedAttendances.length})
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
+            <Calendar className="w-4 h-4 text-gray-400" />
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="input-base"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Today's Attendance Recording */}
+      <div className="bg-white border rounded-lg shadow-sm mb-6">
+        <div className="border-b px-6 py-3 flex justify-between items-center">
+          <h3 className="text-lg font-semibold text-gray-900">
+            Today's Attendance
+          </h3>
+          {!initialLoading && employees.length > 0 && (
+            <Button onClick={handleSaveAttendance} loading={loading} size="sm">
+              Save Attendance
             </Button>
           )}
-          <Button
-            variant="outline"
-            size="sm"
-            icon={Printer}
-            onClick={() => window.print()}
-          >
-            Print
-          </Button>
         </div>
-      </FilterBar>
-
-      <Table
-        data={paginatedAttendances}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          currentPage,
-          totalPages,
-          pageSize,
-          totalItems: filteredAttendances.length,
-          onPageChange: setCurrentPage,
-          onPageSizeChange: (size) => {
-            setPageSize(size);
-            setCurrentPage(1);
-          },
-        }}
-        selection={{
-          selectedItems: selectedAttendances,
-          onSelectionChange: setSelectedAttendances,
-        }}
-        actions={{
-          onEdit: handleEdit,
-        }}
-      />
-
-      <Modal
-        isOpen={showModal}
-        onClose={() => setShowModal(false)}
-        title={editingAttendance ? "Edit Attendance" : "New Attendance"}
-        size="lg"
-      >
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Date *
-              </label>
-              <input
-                type="date"
-                value={formData.date}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, date: e.target.value }))
-                }
-                className="input-base"
-                required
-              />
+        <div className="p-4">
+          {initialLoading ? (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Employee *
-              </label>
-              <input
-                type="number"
-                value={formData.totalEmployee}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    totalEmployee: Number(e.target.value),
-                  }))
-                }
-                className="input-base"
-                min="0"
-                required
-              />
+          ) : employees.length === 0 ? (
+            <div className="text-center py-12">
+              <p className="text-sm text-gray-500">No employees found</p>
             </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Present *
-              </label>
-              <input
-                type="number"
-                value={formData.totalPresent}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    totalPresent: Number(e.target.value),
-                  }))
-                }
-                className="input-base"
-                min="0"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Absent *
-              </label>
-              <input
-                type="number"
-                value={formData.totalAbsent}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    totalAbsent: Number(e.target.value),
-                  }))
-                }
-                className="input-base"
-                min="0"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Total Leave *
-              </label>
-              <input
-                type="number"
-                value={formData.totalLeave}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    totalLeave: Number(e.target.value),
-                  }))
-                }
-                className="input-base"
-                min="0"
-                required
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <textarea
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
-              }
-              className="input-base"
-              rows={3}
-              placeholder="Enter description (optional)"
+          ) : (
+            <Table
+              data={employees}
+              columns={[
+                {
+                  key: "id",
+                  label: "#",
+                  width: "60px",
+                  render: (_, row) =>
+                    employees.findIndex((e) => e.id === row.id) + 1,
+                },
+                { key: "designation", label: "Designation" },
+                { key: "empId", label: "ID", width: "100px" },
+                { key: "name", label: "Name" },
+                {
+                  key: "attendance",
+                  label: "Attendance Type",
+                  render: (value, row) => {
+                    const index = employees.findIndex((e) => e.id === row.id);
+                    return (
+                      <div className="flex gap-4">
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="radio"
+                            name={`attend-${row.id}`}
+                            checked={value === "Present"}
+                            onChange={() =>
+                              handleAttendanceChange(index, "Present")
+                            }
+                          />
+                          <span>Present</span>
+                        </label>
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="radio"
+                            name={`attend-${row.id}`}
+                            checked={value === "Absent"}
+                            onChange={() =>
+                              handleAttendanceChange(index, "Absent")
+                            }
+                          />
+                          <span>Absent</span>
+                        </label>
+                        <label className="flex items-center gap-1">
+                          <input
+                            type="radio"
+                            name={`attend-${row.id}`}
+                            checked={value === "Leave"}
+                            onChange={() =>
+                              handleAttendanceChange(index, "Leave")
+                            }
+                          />
+                          <span>Leave</span>
+                        </label>
+                      </div>
+                    );
+                  },
+                },
+                {
+                  key: "inTime",
+                  label: "In Time",
+                  width: "120px",
+                  render: (value, row) => {
+                    const index = employees.findIndex((e) => e.id === row.id);
+                    return (
+                      <input
+                        type="time"
+                        className="input-base w-full"
+                        value={value}
+                        onChange={(e) =>
+                          handleInputChange(index, "inTime", e.target.value)
+                        }
+                      />
+                    );
+                  },
+                },
+                {
+                  key: "outTime",
+                  label: "Out Time",
+                  width: "120px",
+                  render: (value, row) => {
+                    const index = employees.findIndex((e) => e.id === row.id);
+                    return (
+                      <input
+                        type="time"
+                        className="input-base w-full"
+                        value={value}
+                        onChange={(e) =>
+                          handleInputChange(index, "outTime", e.target.value)
+                        }
+                      />
+                    );
+                  },
+                },
+                {
+                  key: "note",
+                  label: "Note",
+                  render: (value, row) => {
+                    const index = employees.findIndex((e) => e.id === row.id);
+                    return (
+                      <input
+                        type="text"
+                        className="input-base w-full"
+                        value={value}
+                        onChange={(e) =>
+                          handleInputChange(index, "note", e.target.value)
+                        }
+                      />
+                    );
+                  },
+                },
+              ]}
             />
-          </div>
-
-          <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => setShowModal(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} loading={loading}>
-              {editingAttendance ? "Update" : "Save"}
-            </Button>
-          </div>
+          )}
         </div>
-      </Modal>
+      </div>
     </div>
   );
 };
