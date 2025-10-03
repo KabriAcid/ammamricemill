@@ -46,4 +46,18 @@ export interface Transaction {
   status: string;
 }
 
+export interface Godown {
+  id: string;
+  name: string;
+  capacity: number;
+  currentStock: number;
+  unit: string;
+  location: string;
+  manager: string;
+  status: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 // Add more as needed for other modules

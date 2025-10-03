@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Plus,
   Trash2,
@@ -7,32 +7,26 @@ import {
   BarChart3,
   Layers,
 } from "lucide-react";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
-import { Godown } from "../../types";
+import { Godown } from "../../types/entities";
 
 const GodownList: React.FC = () => {
-  const [godowns, setGodowns] = useState<Godown[]>([
-    {
-      id: "1",
-      name: "Main Godown A",
-      capacity: 2000,
-      description: "Primary storage for finished rice products",
-      createdAt: "2024-01-15T10:00:00Z",
-      updatedAt: "2024-01-15T10:00:00Z",
-    },
-    {
-      id: "2",
-      name: "Secondary Godown B",
-      capacity: 1500,
-      description: "Additional storage for packaging materials",
-      createdAt: "2024-01-10T10:00:00Z",
-      updatedAt: "2024-01-10T10:00:00Z",
-    },
-  ]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
+  const [stats, setStats] = useState({
+    totalGodowns: 0,
+    totalCapacity: 0,
+    avgCapacity: 0,
+    lowStock: 0,
+  });
+
+  const { showToast } = useToast();
 
   const [selectedGodowns, setSelectedGodowns] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -41,10 +35,45 @@ const GodownList: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingGodown, setEditingGodown] = useState<Godown | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+
+  useEffect(() => {
+    const loadData = async () => {
+      setInitialLoading(true);
+      await fetchGodownData();
+      setInitialLoading(false);
+    };
+    loadData();
+  }, []);
+
+  const fetchGodownData = async () => {
+    setLoading(true);
+    try {
+      const [godownsData, statsData] = await Promise.all([
+        api.get<{ success: boolean; data: Godown[] }>("/settings/godown"),
+        api.get<{ success: boolean; data: typeof stats }>(
+          "/settings/godown/stats"
+        ),
+      ]);
+
+      if (godownsData.success && statsData.success) {
+        setGodowns(godownsData.data);
+        setStats(statsData.data);
+      }
+    } catch (error) {
+      console.error("Error fetching godown data:", error);
+      showToast("Failed to load godown data", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const [formData, setFormData] = useState({
     name: "",
     capacity: 0,
+    unit: "tons",
+    location: "",
+    manager: "",
     description: "",
   });
 
@@ -66,9 +95,34 @@ const GodownList: React.FC = () => {
     { key: "name", label: "Godown Name", sortable: true },
     {
       key: "capacity",
-      label: "Godown Capacity (Tons)",
+      label: "Capacity",
       sortable: true,
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number, row: Godown) =>
+        `${value.toLocaleString()} ${row.unit || "tons"}`,
+    },
+    {
+      key: "currentStock",
+      label: "Current Stock",
+      sortable: true,
+      render: (value: number, row: Godown) =>
+        `${value?.toLocaleString() || 0} ${row.unit || "tons"}`,
+    },
+    { key: "location", label: "Location" },
+    { key: "manager", label: "Manager" },
+    {
+      key: "status",
+      label: "Status",
+      render: (value: string) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs ${
+            value === "active"
+              ? "bg-green-100 text-green-800"
+              : "bg-red-100 text-red-800"
+          }`}
+        >
+          {value}
+        </span>
+      ),
     },
     { key: "description", label: "Description" },
   ];
@@ -78,58 +132,70 @@ const GodownList: React.FC = () => {
     setFormData({
       name: godown.name,
       capacity: godown.capacity,
+      unit: godown.unit,
+      location: godown.location || "",
+      manager: godown.manager || "",
       description: godown.description || "",
     });
     setShowModal(true);
   };
 
   const handleDelete = async (godownIds: string[]) => {
-    if (
-      confirm(`Are you sure you want to delete ${godownIds.length} godown(s)?`)
-    ) {
-      setLoading(true);
-      try {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setGodowns((prev) =>
-          prev.filter((godown) => !godownIds.includes(godown.id))
-        );
+    setLoading(true);
+    try {
+      const response = await api.delete<{
+        success: boolean;
+        message: string;
+      }>(`/settings/godown?ids=${godownIds.join(",")}`);
+
+      if (response.success) {
+        showToast(response.message, "success");
+        await fetchGodownData();
         setSelectedGodowns([]);
-      } catch (error) {
-        console.error("Error deleting godowns:", error);
-      } finally {
-        setLoading(false);
       }
+    } catch (error) {
+      console.error("Error deleting godowns:", error);
+      showToast("Failed to delete godowns", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
+    if (!formData.name || !formData.capacity) {
+      showToast("Name and capacity are required", "error");
+      return;
+    }
+
     setLoading(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (editingGodown) {
-        setGodowns((prev) =>
-          prev.map((godown) =>
-            godown.id === editingGodown.id
-              ? { ...godown, ...formData, updatedAt: new Date().toISOString() }
-              : godown
+      const response = editingGodown
+        ? await api.put<{ success: boolean; data: Godown; message: string }>(
+            `/settings/godown/${editingGodown.id}`,
+            formData
           )
-        );
-      } else {
-        const newGodown: Godown = {
-          id: Date.now().toString(),
-          ...formData,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setGodowns((prev) => [...prev, newGodown]);
-      }
+        : await api.post<{ success: boolean; data: Godown; message: string }>(
+            "/settings/godown",
+            formData
+          );
 
-      setShowModal(false);
-      setEditingGodown(null);
-      setFormData({ name: "", capacity: 0, description: "" });
+      if (response.success) {
+        showToast(response.message, "success");
+        await fetchGodownData();
+        setShowModal(false);
+        setEditingGodown(null);
+        setFormData({
+          name: "",
+          capacity: 0,
+          unit: "tons",
+          location: "",
+          manager: "",
+          description: "",
+        });
+      }
     } catch (error) {
       console.error("Error saving godown:", error);
+      showToast("Failed to save godown", "error");
     } finally {
       setLoading(false);
     }
@@ -137,16 +203,18 @@ const GodownList: React.FC = () => {
 
   const handleNew = () => {
     setEditingGodown(null);
-    setFormData({ name: "", capacity: 0, description: "" });
+    setFormData({
+      name: "",
+      capacity: 0,
+      unit: "tons",
+      location: "",
+      manager: "",
+      description: "",
+    });
     setShowModal(true);
   };
 
-  const totalCapacity = godowns.reduce(
-    (sum, godown) => sum + godown.capacity,
-    0
-  );
-  const avgCapacity = godowns.length > 0 ? totalCapacity / godowns.length : 0;
-  const loadingCards = false; // set to true to show skeleton
+  const loadingCards = initialLoading; // show skeleton when initially loading
 
   return (
     <div className="animate-fade-in">
@@ -167,15 +235,22 @@ const GodownList: React.FC = () => {
         <Card icon={<BarChart3 size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {totalCapacity.toLocaleString()}
+              {stats.totalCapacity.toLocaleString()}
             </p>
-            <p className="text-sm text-gray-500">Total Capacity (Tons)</p>
+            <p className="text-sm text-gray-500">
+              Total Capacity (Tons)
+              {stats.lowStock > 0 && (
+                <span className="text-red-500 ml-1">
+                  ({stats.lowStock} low)
+                </span>
+              )}
+            </p>
           </div>
         </Card>
         <Card icon={<Layers size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {Math.round(avgCapacity).toLocaleString()}
+              {Math.round(stats.avgCapacity).toLocaleString()}
             </p>
             <p className="text-sm text-gray-500">Average Capacity (Tons)</p>
           </div>
@@ -276,6 +351,52 @@ const GodownList: React.FC = () => {
               placeholder="Enter capacity in tons"
               min="0"
               required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Unit *
+            </label>
+            <input
+              type="text"
+              value={formData.unit}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, unit: e.target.value }))
+              }
+              className="input-base"
+              placeholder="Enter unit (e.g., tons, kg)"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Location
+            </label>
+            <input
+              type="text"
+              value={formData.location}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, location: e.target.value }))
+              }
+              className="input-base"
+              placeholder="Enter godown location"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Manager
+            </label>
+            <input
+              type="text"
+              value={formData.manager}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, manager: e.target.value }))
+              }
+              className="input-base"
+              placeholder="Enter manager name"
             />
           </div>
 

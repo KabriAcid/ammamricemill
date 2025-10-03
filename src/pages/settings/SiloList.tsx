@@ -230,12 +230,14 @@ const SiloList: React.FC = () => {
                 <p className="text-3xl font-bold text-gray-700">
                   {stats.totalCapacity.toLocaleString()}
                 </p>
-                <p className="text-sm text-gray-500">Total Capacity (Tons)</p>
-                {stats.lowCapacity > 0 && (
-                  <p className="text-xs text-red-500 mt-1">
-                    {stats.lowCapacity} silos below 10% capacity
-                  </p>
-                )}
+                <p className="text-sm text-gray-500">
+                  Total Capacity (Tons)
+                  {stats.lowCapacity > 0 && (
+                    <span className="text-red-500 ml-1">
+                      ({stats.lowCapacity} low)
+                    </span>
+                  )}
+                </p>
               </div>
             </Card>
             <Card icon={<Layers size={32} />} hover>
