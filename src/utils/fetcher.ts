@@ -19,11 +19,29 @@ export async function fetcher<T>(
     const user = localStorage.getItem("ammam_user");
     const token = user ? JSON.parse(user).token : null;
 
-    const headers = {
-      ...options.headers,
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    };
+    // Ensure headers is a plain object
+    let headers: Record<string, string> = {};
+
+    if (options.headers instanceof Headers) {
+      options.headers.forEach((value, key) => {
+        headers[key] = value;
+      });
+    } else if (options.headers && typeof options.headers === "object") {
+      Object.entries(options.headers).forEach(([key, value]) => {
+        if (typeof value === "string") {
+          headers[key] = value;
+        }
+      });
+    }
+
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // Only add Content-Type for non-FormData requests
+    if (!(options.body instanceof FormData)) {
+      headers["Content-Type"] = "application/json";
+    }
 
     const res = await fetch(fullUrl, {
       ...options,
@@ -39,9 +57,9 @@ export async function fetcher<T>(
       if (!url.includes("/auth/login") && !url.includes("/auth/logout")) {
         console.warn(
           `Auth token invalid/expired - Auto logout triggered
-Status: ${res.status}
-URL: ${url}
-Response:`,
+            Status: ${res.status}
+            URL: ${url}
+            Response:`,
           data
         );
         unauthorizedHandler?.();
@@ -86,7 +104,9 @@ export const api = {
   post: <T>(url: string, data: any) =>
     fetcher<T>(url, {
       method: "POST",
-      body: JSON.stringify(data),
+      body: data instanceof FormData ? data : JSON.stringify(data),
+      headers:
+        data instanceof FormData ? {} : { "Content-Type": "application/json" },
     }),
   put: <T>(url: string, data: any) =>
     fetcher<T>(url, {
@@ -94,4 +114,10 @@ export const api = {
       body: JSON.stringify(data),
     }),
   delete: <T>(url: string) => fetcher<T>(url, { method: "DELETE" }),
+  upload: <T>(url: string, formData: FormData) =>
+    fetcher<T>(url, {
+      method: "POST",
+      body: formData,
+      headers: {}, // Let the browser set the Content-Type with boundary for FormData
+    }),
 };

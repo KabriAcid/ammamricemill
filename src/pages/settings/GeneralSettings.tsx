@@ -7,20 +7,7 @@ import { useToast } from "../../components/ui/Toast";
 import { Skeleton } from "../../components/ui/Skeleton";
 import { api } from "../../utils/fetcher";
 
-interface GeneralSettingsData {
-  id?: number;
-  company_name: string;
-  address: string;
-  phone: string;
-  email: string;
-  tax_rate: number;
-  currency: string;
-  timezone: string;
-  date_format: string;
-  updated_at?: string;
-  logo_url?: string;
-  favicon_url?: string;
-}
+import { GeneralSettingsData } from "../../types/settings";
 
 const GeneralSettings: React.FC = () => {
   const [activeTab, setActiveTab] = useState("general");
@@ -35,8 +22,8 @@ const GeneralSettings: React.FC = () => {
     currency: "NGN",
     timezone: "Africa/Lagos",
     date_format: "DD/MM/YYYY",
-    logo_url: undefined,
-    favicon_url: undefined,
+    logo_url: "",
+    favicon_url: "",
   });
 
   useEffect(() => {
@@ -184,9 +171,13 @@ const GeneralSettings: React.FC = () => {
 
         try {
           const formData = new FormData();
-          formData.append("image", file);
-
-          const response = await api.post<{
+          formData.append(field === "logo_url" ? "logo" : "favicon", file);
+          Object.entries(settings).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              formData.append(key, value.toString());
+            }
+          });
+          const response = await api.upload<{
             success: boolean;
             url: string;
             message?: string;
@@ -249,6 +240,7 @@ const GeneralSettings: React.FC = () => {
                 value={settings.phone}
                 onChange={(e) => handleInputChange("phone", e.target.value)}
                 className="input-base"
+                maxLength={11}
                 required
               />
             </div>
