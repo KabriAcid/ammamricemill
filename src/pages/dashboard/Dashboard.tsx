@@ -234,9 +234,6 @@ const Dashboard: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900">
                     {stat.value}
                   </p>
-                  <span className="ml-2 text-sm font-medium text-primary-600">
-                    {stat.change}
-                  </span>
                 </div>
               </div>
             </div>
