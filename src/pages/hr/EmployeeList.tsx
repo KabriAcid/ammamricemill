@@ -295,13 +295,15 @@ const EmployeeList: React.FC = () => {
             <Card icon={<Wallet size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{employees
-                    .filter(emp => emp.isActive)
-                    .reduce((sum, emp) => sum + (emp.salary || 0), 0)
-                    .toLocaleString('en-NG', {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2
-                    })}
+                  ₦
+                  {employees
+                    .filter((emp) => emp.isActive)
+                    .reduce(
+                      (sum, emp) =>
+                        sum + (parseInt(emp.salary?.toString() || "0") || 0),
+                      0
+                    )
+                    .toLocaleString()}
                 </p>
                 <p className="text-sm text-gray-500">Total Monthly Salary</p>
               </div>
