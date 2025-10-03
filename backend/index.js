@@ -123,6 +123,14 @@ app.use("/api", routes);
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
+// Import settings routes
+import siloRoutes from "./routes/settings/silo.js";
+import generalRoutes from "./routes/settings/general.js";
+
+// Register settings routes
+app.use("/api/settings/silo", siloRoutes);
+app.use("/api/settings/general", generalRoutes);
+
 // Error handler should be after all routes
 app.use(errorHandler);
 /*
