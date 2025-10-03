@@ -6,12 +6,16 @@ import {
   Users,
   TrendingUp,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
+import { useToast } from "../../components/ui/Toast";
+
+import { ApiResponse } from "../../types";
+import { api } from "../../utils/fetcher";
 
 interface SalaryRecord {
   id: string;
@@ -21,28 +25,24 @@ interface SalaryRecord {
   description: string;
   totalEmployees: number;
   totalSalary: number;
+  employeeSalaries: EmployeeSalary[];
+  createdAt: string;
+  updatedAt: string;
 }
 
-const mockSalaryData: SalaryRecord[] = [
-  {
-    id: "1",
-    date: "2025-09-29",
-    year: 2025,
-    month: "September",
-    description: "Salary Payment for the Month of September",
-    totalEmployees: 56,
-    totalSalary: 5466900,
-  },
-  {
-    id: "2",
-    date: "2025-08-29",
-    year: 2025,
-    month: "August",
-    description: "Salary Payment for the Month of August",
-    totalEmployees: 57,
-    totalSalary: 5255329,
-  },
-];
+interface EmployeeSalary {
+  employeeId: string;
+  empId: string;
+  employeeName: string;
+  designation: string;
+  salary: number;
+  bonusOT: number;
+  absentFine: number;
+  deduction: number;
+  payment: number;
+  note?: string;
+  signature?: string;
+}
 
 const years = [2025, 2024, 2023];
 const months = [
@@ -61,9 +61,10 @@ const months = [
 ];
 
 const SalarySheet: React.FC = () => {
-  const [salaryData, setSalaryData] = useState<SalaryRecord[]>(mockSalaryData);
+  const [salaryData, setSalaryData] = useState<SalaryRecord[]>([]);
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const { showToast } = useToast();
   const [pageSize, setPageSize] = useState(25);
   const [searchQuery, setSearchQuery] = useState("");
   const [yearFilter, setYearFilter] = useState<string>("");
@@ -71,6 +72,8 @@ const SalarySheet: React.FC = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingRecord, setEditingRecord] = useState<SalaryRecord | null>(null);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [connectionError, setConnectionError] = useState(false);
 
   const filteredData = salaryData.filter((record) => {
     const matchesSearch =
@@ -144,14 +147,69 @@ const SalarySheet: React.FC = () => {
     setShowModal(true);
   };
 
+  const fetchSalaryData = async () => {
+    setLoading(true);
+    setConnectionError(false);
+    try {
+      const queryParams = new URLSearchParams({
+        page: currentPage.toString(),
+        pageSize: pageSize.toString(),
+        search: searchQuery,
+        year: yearFilter,
+        month: monthFilter,
+      }).toString();
+
+      const response = await api.get<
+        ApiResponse<{ salaries: SalaryRecord[]; pagination: any }>
+      >(`/hr/salary?${queryParams}`);
+
+      if (response.success && response.data?.salaries) {
+        setSalaryData(response.data.salaries);
+      } else {
+        throw new Error("Failed to fetch salary data");
+      }
+    } catch (error) {
+      console.error("Error fetching salary data:", error);
+      if (error instanceof Error && error.message.includes("Failed to fetch")) {
+        setConnectionError(true);
+        showToast(
+          "Cannot connect to server. Please check if the server is running.",
+          "error"
+        );
+      } else {
+        showToast("Failed to load salary data", "error");
+      }
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  // Initial data load
+  useEffect(() => {
+    fetchSalaryData();
+  }, [currentPage, pageSize, searchQuery, yearFilter, monthFilter]);
+
   const handleDelete = async (ids: string[]) => {
-    if (window.confirm(`Delete ${ids.length} record(s)?`)) {
-      setLoading(true);
-      setTimeout(() => {
-        setSalaryData((prev) => prev.filter((r) => !ids.includes(r.id)));
+    setLoading(true);
+    try {
+      const response = await api.delete<ApiResponse<void>>("/hr/salary", {
+        ids: ids,
+      });
+
+      if (response.success) {
+        showToast(
+          response.message || "Records deleted successfully",
+          "success"
+        );
+        await fetchSalaryData();
         setSelectedRecords([]);
-        setLoading(false);
-      }, 500);
+      }
+    } catch (error) {
+      console.error("Error deleting salary records:", error);
+      showToast("Failed to delete salary records", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -160,8 +218,94 @@ const SalarySheet: React.FC = () => {
     setShowModal(true);
   };
 
+  const [formData, setFormData] = useState({
+    date: "",
+    year: new Date().getFullYear(),
+    month: "",
+    description: "",
+    totalEmployees: 0,
+    totalSalary: 0,
+    employeeSalaries: [] as EmployeeSalary[],
+  });
+
+  const handleSave = async () => {
+    if (!formData.date || !formData.month) {
+      showToast("Please fill in all required fields", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = editingRecord
+        ? await api.put<ApiResponse<SalaryRecord>>(
+            `/hr/salary/${editingRecord.id}`,
+            formData
+          )
+        : await api.post<ApiResponse<SalaryRecord>>("/hr/salary", formData);
+
+      if (response.success) {
+        showToast(response.message || "Record saved successfully", "success");
+        await fetchSalaryData();
+        setShowModal(false);
+        setEditingRecord(null);
+        setFormData({
+          date: "",
+          year: new Date().getFullYear(),
+          month: "",
+          description: "",
+          totalEmployees: 0,
+          totalSalary: 0,
+          employeeSalaries: [],
+        });
+      }
+    } catch (error) {
+      console.error("Error saving salary record:", error);
+      showToast("Failed to save salary record", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="animate-fade-in">
+      {connectionError && (
+        <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+          <div className="flex">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-400"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-medium text-red-800">
+                Connection Error
+              </h3>
+              <p className="mt-1 text-sm text-red-700">
+                Cannot connect to server. Please ensure that:
+                <ul className="list-disc list-inside ml-4 mt-1">
+                  <li>The backend server is running</li>
+                  <li>You can access http://localhost:5000</li>
+                  <li>Your network connection is stable</li>
+                </ul>
+              </p>
+              <button
+                onClick={() => fetchSalaryData()}
+                className="mt-2 text-sm font-medium text-red-800 hover:text-red-600"
+              >
+                Try Again
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900">
           Monthly Salary Sheet
@@ -326,7 +470,7 @@ const SalarySheet: React.FC = () => {
             <Button variant="outline" onClick={() => setShowModal(false)}>
               Cancel
             </Button>
-            <Button onClick={() => setShowModal(false)} loading={loading}>
+            <Button onClick={handleSave} loading={loading}>
               {editingRecord ? "Update" : "Save"}
             </Button>
           </div>
