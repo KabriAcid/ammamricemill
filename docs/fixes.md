@@ -44,3 +44,5 @@ Search are frontend based no POST requests
 - Calculation of cards and tables not working.
 - proper data type handling not working.
 - No refresh buttons.
+- TRANSACTIONS NEED V1 FEATURES
+
