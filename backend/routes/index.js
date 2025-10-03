@@ -26,7 +26,8 @@ import transactionsRoutes from "./accounts/transactions.js";
 const router = express.Router();
 
 // General routes
-router.use("/party", partyRoutes);
+router.use("/party/types", partyTypesRoutes);
+router.use("/party", partiesRoutes);
 router.use("/dashboard", dashboardRoutes);
 
 // Settings routes
