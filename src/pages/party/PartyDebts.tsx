@@ -5,7 +5,7 @@ import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
 import { FilterBar } from "../../components/ui/FilterBar";
 import {
-  AlertTriangle,
+  AlertCircle,
   Trash2,
   Printer,
   BookOpen,
@@ -15,38 +15,39 @@ import {
   UserX,
 } from "lucide-react";
 
-// Party Debts entity type for this page
-export interface PartyDebts {
+// Party Due entity type for this page
+export interface PartyDue {
   id: string;
   name: string;
   company: string;
   mobile: string;
   address: string;
-  debts: number;
+  due: number;
 }
 
-const PartyDebts = () => {
-  const [data, setData] = useState<PartyDebts[]>([]);
+const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
+
+const PartyDue = () => {
+  const [data, setData] = useState<PartyDue[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState<PartyDebts | null>(null);
+  const [editItem, setEditItem] = useState<PartyDue | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     company: "",
     mobile: "",
     address: "",
-    debts: 0,
+    due: 0,
   });
   const [search, setSearch] = useState("");
-  const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
   // Fetch all (GET)
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.append("search", search);
-    fetch(`/api/party-debts?${params.toString()}`)
+    fetch(`/api/party-due?${params.toString()}`)
       .then((res) => res.json())
       .then((res) =>
         setData(res.map((item: any) => ({ ...item, id: String(item.id) })))
@@ -57,7 +58,7 @@ const PartyDebts = () => {
   // Create
   const handleCreate = () => {
     setLoading(true);
-    fetch("/api/party-debts", {
+    fetch("/api/party-due", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -73,7 +74,7 @@ const PartyDebts = () => {
           company: "",
           mobile: "",
           address: "",
-          debts: 0,
+          due: 0,
         });
         setLoading(false);
       });
@@ -83,7 +84,7 @@ const PartyDebts = () => {
   const handleUpdate = () => {
     if (!editItem) return;
     setLoading(true);
-    fetch(`/api/party-debts/${editItem.id}`, {
+    fetch(`/api/party-due/${editItem.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -106,7 +107,7 @@ const PartyDebts = () => {
           company: "",
           mobile: "",
           address: "",
-          debts: 0,
+          due: 0,
         });
         setLoading(false);
       });
@@ -116,7 +117,7 @@ const PartyDebts = () => {
   const handleDelete = (ids: string[]) => {
     setLoading(true);
     Promise.all(
-      ids.map((id) => fetch(`/api/party-debts/${id}`, { method: "DELETE" }))
+      ids.map((id) => fetch(`/api/party-due/${id}`, { method: "DELETE" }))
     )
       .then(() =>
         setData((prev) => prev.filter((row) => !ids.includes(row.id)))
@@ -135,32 +136,30 @@ const PartyDebts = () => {
     { key: "mobile", label: "Mobile" },
     { key: "address", label: "Address" },
     {
-      key: "debts",
-      label: "Debts",
+      key: "due",
+      label: "Due",
       render: (value: number) => value.toLocaleString(),
     },
   ];
 
   // Stat card
-  const totalDebts = data.reduce((sum, d) => sum + (d.debts || 0), 0);
+  const totalDue = data.reduce((sum, d) => sum + (d.due || 0), 0);
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Party Debts</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Party Due</h1>
         <p className="mt-1 text-sm text-gray-500">
-          View and manage all party debts. Print and filter as needed.
+          View and manage all party dues. Print and filter as needed.
         </p>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <Card icon={<BadgeDollarSign className="w-8 h-8 text-primary-800" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Debts
+              Total Due
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              ₦{totalDebts}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">₦{totalDue}</div>
           </div>
         </Card>
         <Card icon={<UserCheck className="w-8 h-8 text-green-700" />}>
@@ -190,14 +189,14 @@ const PartyDebts = () => {
                 company: "",
                 mobile: "",
                 address: "",
-                debts: 0,
+                due: 0,
               });
               setModalOpen(true);
             }}
             icon={Plus}
             size="sm"
           >
-            New Debts
+            New Due
           </Button>
           {selectedRows.length > 0 && (
             <Button
@@ -243,7 +242,7 @@ const PartyDebts = () => {
               company: row.company,
               mobile: row.mobile,
               address: row.address,
-              debts: row.debts,
+              due: row.due,
             });
             setModalOpen(true);
           },
@@ -254,15 +253,13 @@ const PartyDebts = () => {
           company: "",
           mobile: "",
           address: "",
-          debts: (
-            <span className="font-bold">{totalDebts.toLocaleString()}</span>
-          ),
+          due: <span className="font-bold">{totalDue.toLocaleString()}</span>,
         }}
       />
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editItem ? "Edit Debts" : "New Debts"}
+        title={editItem ? "Edit Due" : "New Due"}
         size="md"
       >
         <form
@@ -327,15 +324,15 @@ const PartyDebts = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Debts *
+              Due *
             </label>
             <input
               type="number"
-              value={formData.debts}
+              value={formData.due}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  debts: Number(e.target.value),
+                  due: Number(e.target.value),
                 }))
               }
               className="input-base"
@@ -357,4 +354,4 @@ const PartyDebts = () => {
   );
 };
 
-export default PartyDebts;
+export default PartyDue;

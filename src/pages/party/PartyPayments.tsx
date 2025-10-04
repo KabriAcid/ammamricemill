@@ -4,59 +4,61 @@ import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { Plus, Trash2, CreditCard, Printer, BookOpen } from "lucide-react";
+import {
+  AlertCircle,
+  Trash2,
+  Printer,
+  BookOpen,
+  Plus,
+  BadgeDollarSign,
+  UserCheck,
+  UserX,
+} from "lucide-react";
 
-// Party Payment entity type for this page
-export interface PartyPayment {
+// Party Due entity type for this page
+export interface PartyDue {
   id: string;
-  date: string;
-  type: string;
-  head: string;
-  party: string;
-  description: string;
-  createdBy: string;
-  amount: number;
+  name: string;
+  company: string;
+  mobile: string;
+  address: string;
+  due: number;
 }
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
-const PartyPayments = () => {
-  const [data, setData] = useState<PartyPayment[]>([]);
+const PartyDue = () => {
+  const [data, setData] = useState<PartyDue[]>([]);
   const [loading, setLoading] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editItem, setEditItem] = useState<PartyPayment | null>(null);
+  const [editItem, setEditItem] = useState<PartyDue | null>(null);
   const [formData, setFormData] = useState({
-    date: "",
-    type: "",
-    head: "",
-    party: "",
-    description: "",
-    amount: 0,
+    name: "",
+    company: "",
+    mobile: "",
+    address: "",
+    due: 0,
   });
   const [search, setSearch] = useState("");
-  const [partyFilter, setPartyFilter] = useState("");
-  const [voucherTypeFilter, setVoucherTypeFilter] = useState("");
 
   // Fetch all (GET)
   useEffect(() => {
     setLoading(true);
     const params = new URLSearchParams();
     if (search) params.append("search", search);
-    if (partyFilter) params.append("party", partyFilter);
-    if (voucherTypeFilter) params.append("type", voucherTypeFilter);
-    fetch(`/api/party-payments?${params.toString()}`)
+    fetch(`/api/party-due?${params.toString()}`)
       .then((res) => res.json())
       .then((res) =>
         setData(res.map((item: any) => ({ ...item, id: String(item.id) })))
       )
       .finally(() => setLoading(false));
-  }, [search, partyFilter, voucherTypeFilter]);
+  }, [search]);
 
   // Create
   const handleCreate = () => {
     setLoading(true);
-    fetch("/api/party-payments", {
+    fetch("/api/party-due", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -68,12 +70,11 @@ const PartyPayments = () => {
       .finally(() => {
         setModalOpen(false);
         setFormData({
-          date: "",
-          type: "",
-          head: "",
-          party: "",
-          description: "",
-          amount: 0,
+          name: "",
+          company: "",
+          mobile: "",
+          address: "",
+          due: 0,
         });
         setLoading(false);
       });
@@ -83,7 +84,7 @@ const PartyPayments = () => {
   const handleUpdate = () => {
     if (!editItem) return;
     setLoading(true);
-    fetch(`/api/party-payments/${editItem.id}`, {
+    fetch(`/api/party-due/${editItem.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -102,12 +103,11 @@ const PartyPayments = () => {
         setModalOpen(false);
         setEditItem(null);
         setFormData({
-          date: "",
-          type: "",
-          head: "",
-          party: "",
-          description: "",
-          amount: 0,
+          name: "",
+          company: "",
+          mobile: "",
+          address: "",
+          due: 0,
         });
         setLoading(false);
       });
@@ -117,7 +117,7 @@ const PartyPayments = () => {
   const handleDelete = (ids: string[]) => {
     setLoading(true);
     Promise.all(
-      ids.map((id) => fetch(`/api/party-payments/${id}`, { method: "DELETE" }))
+      ids.map((id) => fetch(`/api/party-due/${id}`, { method: "DELETE" }))
     )
       .then(() =>
         setData((prev) => prev.filter((row) => !ids.includes(row.id)))
@@ -131,57 +131,49 @@ const PartyPayments = () => {
   // Table columns
   const columns = [
     { key: "id", label: "#" },
-    { key: "date", label: "Date" },
-    { key: "type", label: "Type" },
-    { key: "head", label: "Head" },
-    { key: "party", label: "Party" },
-    { key: "description", label: "Description" },
-    { key: "createdBy", label: "Created By" },
+    { key: "name", label: "Name" },
+    { key: "company", label: "Company Name" },
+    { key: "mobile", label: "Mobile" },
+    { key: "address", label: "Address" },
     {
-      key: "amount",
-      label: "Amount",
+      key: "due",
+      label: "Due",
       render: (value: number) => value.toLocaleString(),
     },
   ];
 
   // Stat card
-  const totalPayments = data.length;
-  const totalAmount = data.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const totalDue = data.reduce((sum, d) => sum + (d.due || 0), 0);
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Party Payments</h1>
+        <h1 className="text-3xl font-bold text-gray-900">Party Due</h1>
         <p className="mt-1 text-sm text-gray-500">
-          Manage all party payments, filter by party or voucher type, and print
-          vouchers.
+          View and manage all party dues. Print and filter as needed.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-        <Card icon={<CreditCard className="w-8 h-8 text-primary-800" />}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <Card icon={<BadgeDollarSign className="w-8 h-8 text-primary-800" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Payments
+              Total Due
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {totalPayments}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">₦{totalDue}</div>
           </div>
         </Card>
-        <Card icon={<BookOpen className="w-8 h-8 text-primary-800" />}>
+        <Card icon={<UserCheck className="w-8 h-8 text-green-700" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Amount
+              Cleared
             </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {totalAmount.toLocaleString()}
-            </div>
+            <div className="text-2xl font-bold text-gray-900">0</div>
           </div>
         </Card>
-        <Card icon={<Plus className="w-8 h-8 text-blue-700" />}>
+        <Card icon={<UserX className="w-8 h-8 text-red-700" />}>
           <div>
             <div className="text-xs uppercase text-gray-500 font-semibold">
-              New Payments
+              Pending
             </div>
             <div className="text-2xl font-bold text-gray-900">0</div>
           </div>
@@ -193,19 +185,18 @@ const PartyPayments = () => {
             onClick={() => {
               setEditItem(null);
               setFormData({
-                date: "",
-                type: "",
-                head: "",
-                party: "",
-                description: "",
-                amount: 0,
+                name: "",
+                company: "",
+                mobile: "",
+                address: "",
+                due: 0,
               });
               setModalOpen(true);
             }}
             icon={Plus}
             size="sm"
           >
-            New Payment
+            New Due
           </Button>
           {selectedRows.length > 0 && (
             <Button
@@ -225,30 +216,8 @@ const PartyPayments = () => {
       </div>
       <FilterBar
         onSearch={(val) => setSearch(val)}
-        placeholder="Search by party, head, or description"
-      >
-        {/* Party filter dropdown (optional, can be replaced with shared Select) */}
-        <select
-          className="input-base ml-2"
-          value={partyFilter}
-          onChange={(e) => setPartyFilter(e.target.value)}
-        >
-          <option value="">All Parties</option>
-          {/* TODO: Dynamically load parties from API if needed */}
-          <option value="Supplier">Supplier</option>
-          <option value="Customer">Customer</option>
-        </select>
-        {/* Voucher type filter dropdown */}
-        <select
-          className="input-base ml-2"
-          value={voucherTypeFilter}
-          onChange={(e) => setVoucherTypeFilter(e.target.value)}
-        >
-          <option value="">All Types</option>
-          <option value="Receive">Receive</option>
-          <option value="Payment">Payment</option>
-        </select>
-      </FilterBar>
+        placeholder="Search by name, company, mobile, or address"
+      />
       <Table
         data={data}
         columns={columns}
@@ -269,33 +238,28 @@ const PartyPayments = () => {
           onEdit: (row) => {
             setEditItem(row);
             setFormData({
-              date: row.date,
-              type: row.type,
-              head: row.head,
-              party: row.party,
-              description: row.description,
-              amount: row.amount,
+              name: row.name,
+              company: row.company,
+              mobile: row.mobile,
+              address: row.address,
+              due: row.due,
             });
             setModalOpen(true);
           },
         }}
         summaryRow={{
           id: <span className="font-semibold">Total</span>,
-          date: "",
-          type: "",
-          head: "",
-          party: "",
-          description: "",
-          createdBy: "",
-          amount: (
-            <span className="font-bold">{totalAmount.toLocaleString()}</span>
-          ),
+          name: "",
+          company: "",
+          mobile: "",
+          address: "",
+          due: <span className="font-bold">{totalDue.toLocaleString()}</span>,
         }}
       />
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editItem ? "Edit Payment" : "New Payment"}
+        title={editItem ? "Edit Due" : "New Due"}
         size="md"
       >
         <form
@@ -307,13 +271,13 @@ const PartyPayments = () => {
         >
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Date *
+              Name *
             </label>
             <input
-              type="date"
-              value={formData.date}
+              type="text"
+              value={formData.name}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, date: e.target.value }))
+                setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               className="input-base"
               required
@@ -321,73 +285,54 @@ const PartyPayments = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Type *
+              Company Name
             </label>
             <input
               type="text"
-              value={formData.type}
+              value={formData.company}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, type: e.target.value }))
-              }
-              className="input-base"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Head *
-            </label>
-            <input
-              type="text"
-              value={formData.head}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, head: e.target.value }))
-              }
-              className="input-base"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Party *
-            </label>
-            <input
-              type="text"
-              value={formData.party}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, party: e.target.value }))
-              }
-              className="input-base"
-              required
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Description
-            </label>
-            <input
-              type="text"
-              value={formData.description}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  description: e.target.value,
-                }))
+                setFormData((prev) => ({ ...prev, company: e.target.value }))
               }
               className="input-base"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Amount *
+              Mobile
+            </label>
+            <input
+              type="text"
+              value={formData.mobile}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, mobile: e.target.value }))
+              }
+              className="input-base"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Address
+            </label>
+            <input
+              type="text"
+              value={formData.address}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, address: e.target.value }))
+              }
+              className="input-base"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Due *
             </label>
             <input
               type="number"
-              value={formData.amount}
+              value={formData.due}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
-                  amount: Number(e.target.value),
+                  due: Number(e.target.value),
                 }))
               }
               className="input-base"
@@ -409,4 +354,4 @@ const PartyPayments = () => {
   );
 };
 
-export default PartyPayments;
+export default PartyDue;

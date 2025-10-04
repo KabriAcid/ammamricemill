@@ -6,6 +6,7 @@ import {
   Warehouse,
   BarChart3,
   Layers,
+  RefreshCw,
 } from "lucide-react";
 import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
@@ -17,17 +18,55 @@ import { FilterBar } from "../../components/ui/FilterBar";
 import { Modal } from "../../components/ui/Modal";
 import { Silo } from "../../types";
 
+// TypeScript Interfaces
+interface SiloStats {
+  totalSilos: number;
+  totalCapacity: number;
+  avgCapacity: number;
+  lowCapacity: number;
+}
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+interface SiloFormData {
+  name: string;
+  capacity: number;
+  description: string;
+}
+
 const SiloList: React.FC = () => {
+  // State Management
   const [silos, setSilos] = useState<Silo[]>([]);
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<SiloStats>({
     totalSilos: 0,
     totalCapacity: 0,
     avgCapacity: 0,
     lowCapacity: 0,
   });
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSilos, setSelectedSilos] = useState<string[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [showModal, setShowModal] = useState(false);
+  const [editingSilo, setEditingSilo] = useState<Silo | null>(null);
+
+  // Modal form state
+  const [formData, setFormData] = useState<SiloFormData>({
+    name: "",
+    capacity: 0,
+    description: "",
+  });
 
   const { showToast } = useToast();
 
+  // Initial data load
   useEffect(() => {
     const loadData = async () => {
       setInitialLoading(true);
@@ -37,14 +76,30 @@ const SiloList: React.FC = () => {
     loadData();
   }, []);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (e: KeyboardEvent) => {
+      // Ctrl+K for search focus
+      if (e.ctrlKey && e.key === "k") {
+        e.preventDefault();
+        const searchInput = document.querySelector(
+          'input[type="search"]'
+        ) as HTMLInputElement;
+        searchInput?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyPress);
+    return () => window.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
+  // Fetch silo data
   const fetchSiloData = async () => {
     setLoading(true);
     try {
       const [silosData, statsData] = await Promise.all([
-        api.get<{ success: boolean; data: Silo[] }>("/settings/silo"),
-        api.get<{ success: boolean; data: typeof stats }>(
-          "/settings/silo/stats"
-        ),
+        api.get<ApiResponse<Silo[]>>("/settings/silo"),
+        api.get<ApiResponse<SiloStats>>("/settings/silo/stats"),
       ]);
 
       if (silosData.success && statsData.success) {
@@ -59,21 +114,14 @@ const SiloList: React.FC = () => {
     }
   };
 
-  const [selectedSilos, setSelectedSilos] = useState<string[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editingSilo, setEditingSilo] = useState<Silo | null>(null);
-  const [loading, setLoading] = useState(false);
+  // Refresh with animation
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchSiloData();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
 
-  // Modal form state
-  const [formData, setFormData] = useState({
-    name: "",
-    capacity: 0,
-    description: "",
-  });
-
+  // Filter silos
   const filteredSilos = silos.filter((silo) => {
     const query = searchQuery.toLowerCase();
     const nameMatch = silo.name.toLowerCase().includes(query);
@@ -83,10 +131,12 @@ const SiloList: React.FC = () => {
     return nameMatch || descriptionMatch;
   });
 
+  // Pagination
   const totalPages = Math.ceil(filteredSilos.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedSilos = filteredSilos.slice(startIndex, startIndex + pageSize);
 
+  // Table columns
   const columns = [
     { key: "id", label: "#", width: "80px" },
     { key: "name", label: "Silo Name", sortable: true },
@@ -99,6 +149,7 @@ const SiloList: React.FC = () => {
     { key: "description", label: "Description" },
   ];
 
+  // Handlers
   const handleEdit = (silo: Silo) => {
     setEditingSilo(silo);
     setFormData({
@@ -113,13 +164,12 @@ const SiloList: React.FC = () => {
     if (confirm(`Are you sure you want to delete ${siloIds.length} silo(s)?`)) {
       setLoading(true);
       try {
-        const response = await api.delete<{
-          success: boolean;
-          message: string;
-        }>(`/settings/silo?ids=${siloIds.join(",")}`);
+        const response = await api.delete<ApiResponse<void>>(
+          `/settings/silo?ids=${siloIds.join(",")}`
+        );
 
         if (response.success) {
-          showToast(response.message, "success");
+          showToast(response.message || "Silos deleted successfully", "success");
           await fetchSiloData();
           setSelectedSilos([]);
         }
@@ -133,25 +183,32 @@ const SiloList: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (!formData.name || !formData.capacity) {
-      showToast("Name and capacity are required", "error");
+    // Validation
+    if (!formData.name.trim()) {
+      showToast("Silo name is required", "error");
+      return;
+    }
+
+    if (!formData.capacity || formData.capacity <= 0) {
+      showToast("Capacity must be greater than 0", "error");
       return;
     }
 
     setLoading(true);
     try {
       const response = editingSilo
-        ? await api.put<{ success: boolean; data: Silo; message: string }>(
+        ? await api.put<ApiResponse<Silo>>(
             `/settings/silo/${editingSilo.id}`,
             formData
           )
-        : await api.post<{ success: boolean; data: Silo; message: string }>(
-            "/settings/silo",
-            formData
-          );
+        : await api.post<ApiResponse<Silo>>("/settings/silo", formData);
 
       if (response.success) {
-        showToast(response.message, "success");
+        showToast(
+          response.message || 
+          `Silo ${editingSilo ? "updated" : "created"} successfully`,
+          "success"
+        );
         await fetchSiloData();
         setShowModal(false);
         setEditingSilo(null);
@@ -175,10 +232,15 @@ const SiloList: React.FC = () => {
     window.print();
   };
 
-  const [initialLoading, setInitialLoading] = useState(true);
+  const handleModalClose = () => {
+    setShowModal(false);
+    setEditingSilo(null);
+    setFormData({ name: "", capacity: 0, description: "" });
+  };
 
   return (
     <div className="animate-fade-in">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Silo Management</h1>
@@ -187,23 +249,14 @@ const SiloList: React.FC = () => {
           </p>
         </div>
         <button
-          onClick={() => fetchSiloData()}
-          className="p-2 text-gray-500 hover:text-gray-700 transition-colors"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            isRefreshing ? "animate-spin" : ""
+          }`}
           title="Refresh data"
         >
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
         </button>
       </div>
 
@@ -255,7 +308,7 @@ const SiloList: React.FC = () => {
       {/* Filter Bar */}
       <FilterBar
         onSearch={setSearchQuery}
-        placeholder="Search by silo name or description..."
+        placeholder="Search by silo name or description... (Ctrl+K)"
       >
         <div className="flex items-center space-x-2">
           <Button onClick={handleNew} icon={Plus} size="sm">
@@ -287,7 +340,7 @@ const SiloList: React.FC = () => {
       <Table
         data={paginatedSilos}
         columns={columns}
-        loading={loading}
+        loading={initialLoading || loading}
         pagination={{
           currentPage,
           totalPages,
@@ -311,14 +364,14 @@ const SiloList: React.FC = () => {
       {/* Modal */}
       <Modal
         isOpen={showModal}
-        onClose={() => setShowModal(false)}
+        onClose={handleModalClose}
         title={editingSilo ? "Edit Silo" : "New Silo"}
         size="md"
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Silo Name *
+            <label className="block text-sm font-medium text-gray-700 mb-2 required">
+              Silo Name
             </label>
             <input
               type="text"
@@ -329,16 +382,17 @@ const SiloList: React.FC = () => {
               className="input-base"
               placeholder="Enter silo name"
               required
+              autoFocus
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Capacity (Tons) *
+            <label className="block text-sm font-medium text-gray-700 mb-2 required">
+              Capacity (Tons)
             </label>
             <input
               type="number"
-              value={formData.capacity}
+              value={formData.capacity || ""}
               onChange={(e) =>
                 setFormData((prev) => ({
                   ...prev,
@@ -348,6 +402,7 @@ const SiloList: React.FC = () => {
               className="input-base"
               placeholder="Enter capacity in tons"
               min="0"
+              step="0.01"
               required
             />
           </div>
@@ -371,7 +426,7 @@ const SiloList: React.FC = () => {
           </div>
 
           <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => setShowModal(false)}>
+            <Button variant="outline" onClick={handleModalClose}>
               Cancel
             </Button>
             <Button onClick={handleSave} loading={loading}>

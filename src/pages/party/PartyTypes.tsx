@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
@@ -13,40 +13,37 @@ import { ApiResponse } from "../../types";
 
 const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 
+// TypeScript Interfaces
 type PartyType = Omit<PartyTypeBase, "id"> & { id: string };
+
+interface FormData {
+  name: string;
+  description: string;
+}
+
 const PartyTypes = () => {
+  // State Management
   const [data, setData] = useState<PartyType[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<PartyType | null>(null);
-  const [formData, setFormData] = useState({ name: "", description: "" });
+  const [formData, setFormData] = useState<FormData>({
+    name: "",
+    description: "",
+  });
   const [search, setSearch] = useState("");
-  const { showToast } = useToast();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
-  // Keyboard shortcuts
-  const handleKeyPress = useCallback((event: KeyboardEvent) => {
-    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
-      event.preventDefault();
-      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
-    }
-    if ((event.ctrlKey || event.metaKey) && event.key === "r") {
-      event.preventDefault();
-      fetchPartyTypes();
-    }
-  }, []);
+  const { showToast } = useToast();
 
-  useEffect(() => {
-    document.addEventListener("keydown", handleKeyPress);
-    return () => {
-      document.removeEventListener("keydown", handleKeyPress);
-    };
-  }, [handleKeyPress]);
-
+  // Fetch party types - simpler approach without useCallback
   const fetchPartyTypes = async () => {
+    if (loading) return; // Prevent concurrent fetches
+
     setLoading(true);
     try {
       const response = await api.get<ApiResponse<PartyType[]>>("/party/types");
@@ -55,18 +52,15 @@ const PartyTypes = () => {
         setData(
           response.data.map((item) => ({ ...item, id: String(item.id) }))
         );
-      } else {
-        throw new Error("Failed to fetch party types");
       }
     } catch (error) {
       console.error("Error fetching party types:", error);
+      // Only show toast for connection errors, not every failed request
       if (error instanceof Error && error.message.includes("Failed to fetch")) {
         showToast(
           "Cannot connect to server. Please check if the server is running.",
           "error"
         );
-      } else {
-        showToast("Failed to load party types", "error");
       }
     } finally {
       setLoading(false);
@@ -74,13 +68,72 @@ const PartyTypes = () => {
     }
   };
 
+  // Refresh with animation
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchPartyTypes();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
   // Initial data load
   useEffect(() => {
     fetchPartyTypes();
+  }, [fetchPartyTypes]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Ctrl+K for search focus
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        const searchInput = document.querySelector<HTMLInputElement>(
+          'input[type="search"]'
+        );
+        searchInput?.focus();
+      }
+      // Ctrl+R for refresh
+      if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+        event.preventDefault();
+        handleRefresh();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => {
+      document.removeEventListener("keydown", handleKeyPress);
+    };
   }, []);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  // Live search filtering
+  const filteredData = data.filter((item) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+
+    return (
+      item.name.toLowerCase().includes(query) ||
+      item.description?.toLowerCase().includes(query) ||
+      false
+    );
+  });
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
   // Create
   const handleCreate = async () => {
+    // Validation
+    if (!formData.name.trim()) {
+      showToast("Name is required", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await api.post<ApiResponse<PartyType>>(
@@ -108,6 +161,13 @@ const PartyTypes = () => {
   // Update
   const handleUpdate = async () => {
     if (!editItem) return;
+
+    // Validation
+    if (!formData.name.trim()) {
+      showToast("Name is required", "error");
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await api.put<ApiResponse<PartyType>>(
@@ -135,6 +195,12 @@ const PartyTypes = () => {
 
   // Delete (single or bulk)
   const handleDelete = async (ids: string[]) => {
+    if (
+      !confirm(`Are you sure you want to delete ${ids.length} party type(s)?`)
+    ) {
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await api.delete<ApiResponse<void>>("/party/types", {
@@ -157,18 +223,43 @@ const PartyTypes = () => {
     }
   };
 
+  // Handle modal open for new party type
+  const handleNewPartyType = () => {
+    setEditItem(null);
+    setFormData({ name: "", description: "" });
+    setModalOpen(true);
+  };
+
+  // Handle modal open for edit
+  const handleEdit = (row: PartyType) => {
+    setEditItem(row);
+    setFormData({ name: row.name, description: row.description || "" });
+    setModalOpen(true);
+  };
+
+  // Handle modal close
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setEditItem(null);
+    setFormData({ name: "", description: "" });
+  };
+
+  // Handle form submit
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    editItem ? handleUpdate() : handleCreate();
+  };
+
   // Table columns
   const columns = [
-    { key: "id", label: "#" },
-    { key: "name", label: "Name" },
+    { key: "id", label: "#", width: "80px" },
+    { key: "name", label: "Name", sortable: true },
     { key: "description", label: "Description" },
   ];
 
-  // Stat card
-  const totalTypes = data.length;
-
   return (
     <div className="animate-fade-in">
+      {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Party Types</h1>
@@ -177,115 +268,95 @@ const PartyTypes = () => {
           </p>
         </div>
         <button
-          onClick={() => fetchPartyTypes()}
+          onClick={handleRefresh}
+          disabled={isRefreshing}
           className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
-            loading ? "animate-spin" : ""
+            isRefreshing ? "animate-spin" : ""
           }`}
-          disabled={loading}
           title="Refresh data (Ctrl+R)"
         >
           <RefreshCcw className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+      {/* Stats Card */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
         {initialLoading ? (
-          <SkeletonCard />
+          <SkeletonCard variant="stat" />
         ) : (
           <Card icon={<Badge size={32} className="text-primary-800" />} hover>
             <div>
-              <p className="text-3xl font-bold text-gray-700">{totalTypes}</p>
-              <p className="text-sm text-gray-500">Total Types</p>
+              <p className="text-3xl font-bold text-gray-700">{data.length}</p>
+              <p className="text-sm text-gray-500">Total Party Types</p>
             </div>
           </Card>
         )}
       </div>
-      <Card>
-        <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-          <FilterBar
-            onSearch={(val) => setSearch(val)}
-            placeholder="Search by name or description... (Ctrl+F)"
-          >
-            <div className="flex items-center space-x-2">
-              <Button
-                onClick={() => {
-                  setEditItem(null);
-                  setFormData({ name: "", description: "" });
-                  setModalOpen(true);
-                }}
-                icon={Plus}
-                size="sm"
-              >
-                New Party Type
-              </Button>
-              {selectedRows.length > 0 && (
-                <Button
-                  variant="danger"
-                  size="sm"
-                  icon={Trash2}
-                  onClick={() => handleDelete(selectedRows)}
-                  loading={loading}
-                >
-                  Delete ({selectedRows.length})
-                </Button>
-              )}
-            </div>
-          </FilterBar>
-        </div>
 
-        <Table
-          data={data.filter(
-            (item) =>
-              item.name.toLowerCase().includes(search.toLowerCase()) ||
-              item.description?.toLowerCase().includes(search.toLowerCase())
+      {/* Filter Bar & Actions */}
+      <FilterBar
+        onSearch={setSearch}
+        placeholder="Search by name or description... (Ctrl+K)"
+      >
+        <div className="flex items-center space-x-2">
+          <Button onClick={handleNewPartyType} icon={Plus} size="sm">
+            New Party Type
+          </Button>
+          {selectedRows.length > 0 && (
+            <Button
+              variant="danger"
+              size="sm"
+              icon={Trash2}
+              onClick={() => handleDelete(selectedRows)}
+              loading={loading}
+            >
+              Delete ({selectedRows.length})
+            </Button>
           )}
-          columns={columns}
-          loading={loading}
-          pagination={{
-            currentPage,
-            totalPages: Math.ceil(data.length / pageSize),
-            pageSize,
-            totalItems: data.length,
-            onPageChange: setCurrentPage,
-            onPageSizeChange: (size) => {
-              setPageSize(size);
-              setCurrentPage(1);
-            },
-          }}
-          selection={{
-            selectedItems: selectedRows,
-            onSelectionChange: setSelectedRows,
-          }}
-          actions={{
-            onEdit: (row) => {
-              setEditItem(row);
-              setFormData({ name: row.name, description: row.description });
-              setModalOpen(true);
-            },
-          }}
-          summaryRow={{
-            name: <span className="font-semibold">Total</span>,
-            description: "",
-            id: <span className="font-bold">{totalTypes}</span>,
-          }}
-        ></Table>
-      </Card>
+        </div>
+      </FilterBar>
+
+      {/* Table */}
+      <Table
+        data={paginatedData}
+        columns={columns}
+        loading={initialLoading || loading}
+        pagination={{
+          currentPage,
+          totalPages,
+          pageSize,
+          totalItems: filteredData.length,
+          onPageChange: setCurrentPage,
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          },
+        }}
+        selection={{
+          selectedItems: selectedRows,
+          onSelectionChange: setSelectedRows,
+        }}
+        actions={{
+          onEdit: handleEdit,
+        }}
+        summaryRow={{
+          id: <span className="font-bold">{filteredData.length}</span>,
+          name: <span className="font-semibold">Total</span>,
+          description: "",
+        }}
+      />
+
+      {/* Modal */}
       <Modal
         isOpen={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleModalClose}
         title={editItem ? "Edit Party Type" : "New Party Type"}
         size="md"
       >
-        <form
-          className="space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault();
-            editItem ? handleUpdate() : handleCreate();
-          }}
-        >
+        <form className="space-y-4" onSubmit={handleSubmit}>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Name *
+            <label className="block text-sm font-medium text-gray-700 mb-2 required">
+              Name
             </label>
             <input
               type="text"
@@ -294,15 +365,17 @@ const PartyTypes = () => {
                 setFormData((prev) => ({ ...prev, name: e.target.value }))
               }
               className="input-base"
+              placeholder="Enter party type name"
               required
+              autoFocus
             />
           </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Description
             </label>
-            <input
-              type="text"
+            <textarea
               value={formData.description}
               onChange={(e) =>
                 setFormData((prev) => ({
@@ -311,10 +384,13 @@ const PartyTypes = () => {
                 }))
               }
               className="input-base"
+              rows={3}
+              placeholder="Enter description (optional)"
             />
           </div>
+
           <div className="flex justify-end space-x-3 pt-4">
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button variant="outline" onClick={handleModalClose} type="button">
               Cancel
             </Button>
             <Button type="submit" loading={loading}>

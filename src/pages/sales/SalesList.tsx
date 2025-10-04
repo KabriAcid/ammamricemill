@@ -1,120 +1,235 @@
-import React, { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
-import { Sale } from "../../types/sales";
-import { Table } from "../../components/ui/Table";
 import { Button } from "../../components/ui/Button";
-import { Plus } from "lucide-react";
-import { SaleFormModal } from "./SaleFormModal";
+import { Table } from "../../components/ui/Table";
+import { Card } from "../../components/ui/Card";
+import { FilterBar } from "../../components/ui/FilterBar";
+import {
+  Plus,
+  Trash2,
+  ShoppingCart,
+  Package,
+  DollarSign,
+  CreditCard,
+  RefreshCcw,
+  Printer,
+} from "lucide-react";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
 
-const SalesList: React.FC = () => {
-  const [sales, setSales] = useState<Sale[]>([]);
-  const [selectedSales, setSelectedSales] = useState<string[]>([]);
+// TypeScript Interfaces
+export interface SaleItem {
+  id: string;
+  categoryId: string;
+  productId: string;
+  godownId: string;
+  quantity: number;
+  netWeight: number;
+  rate: number;
+  totalPrice: number;
+}
+
+export interface Sale {
+  id: string;
+  invoiceNo: string;
+  date: string;
+  challanNo: string;
+  partyId: string;
+  partyName?: string;
+  transportInfo: string;
+  notes: string;
+  items: SaleItem[];
+  totalQuantity: number;
+  totalNetWeight: number;
+  invoiceAmount: number;
+  discount: number;
+  totalAmount: number;
+  previousBalance: number;
+  netPayable: number;
+  paidAmount: number;
+  currentBalance: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface SaleFormData {
+  invoiceNo: string;
+  date: string;
+  challanNo: string;
+  partyId: string;
+  transportInfo: string;
+  notes: string;
+  items: SaleItem[];
+  discount: number;
+  paidAmount: number;
+}
+
+const SalesList = () => {
+  // State Management
+  const [data, setData] = useState<Sale[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [selectedRows, setSelectedRows] = useState<string[]>([]);
+  const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
-  const [loading, setLoading] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedSale, setSelectedSale] = useState<Sale | null>(null);
+
+  const { showToast } = useToast();
   const navigate = useNavigate();
 
-  // Fetch sales
-  useEffect(() => {
-    const fetchSales = async () => {
-      setLoading(true);
-      try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        // Mock data
-        const mockSales: Sale[] = [
-          {
-            id: "1",
-            invoiceNo: "SALE-001",
-            date: "2024-01-15",
-            challanNo: "CH-001",
-            partyId: "PARTY-001",
-            transportInfo: "Truck ABC-123",
-            notes: "Regular sale",
-            items: [
-              {
-                id: "ITEM-001",
-                categoryId: "CAT-001",
-                productId: "PROD-001",
-                godownId: "GD-001",
-                quantity: 100,
-                netWeight: 5000,
-                rate: 55,
-                totalPrice: 5500,
-              },
-            ],
-            totalQuantity: 100,
-            totalNetWeight: 5000,
-            invoiceAmount: 5500,
-            discount: 100,
-            totalAmount: 5400,
-            previousBalance: 1000,
-            netPayable: 6400,
-            paidAmount: 5000,
-            currentBalance: 1400,
-            createdAt: "2024-01-15T10:00:00Z",
-            updatedAt: "2024-01-15T10:00:00Z",
-          },
-        ];
-        setSales(mockSales);
-      } catch (error) {
-        console.error("Error fetching sales:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  // Fetch sales function
+  const fetchSales = async () => {
+    setLoading(true);
+    try {
+      const response = await api.get<ApiResponse<Sale[]>>("/sales");
 
+      if (response.success && response.data) {
+        setData(
+          response.data.map((item) => ({ ...item, id: String(item.id) }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching sales:", error);
+      showToast("Failed to load sales", "error");
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  // Refresh with animation
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchSales();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
+  // Initial data load
+  useEffect(() => {
     fetchSales();
   }, []);
 
-  // Filtering logic
-  const filteredSales = sales.filter((sale) => {
-    const matchesSearch = sale.invoiceNo
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        document
+          .querySelector<HTMLInputElement>('input[type="search"]')
+          ?.focus();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+        event.preventDefault();
+        handleRefresh();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
+
+  // Reset pagination when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, dateRange]);
+
+  // Live search filtering
+  const filteredData = data.filter((sale) => {
+    const query = search.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      sale.invoiceNo.toLowerCase().includes(query) ||
+      sale.challanNo?.toLowerCase().includes(query) ||
+      sale.partyId?.toLowerCase().includes(query) ||
+      sale.partyName?.toLowerCase().includes(query) ||
+      false;
+
     const matchesDateRange =
       (!dateRange.from || sale.date >= dateRange.from) &&
       (!dateRange.to || sale.date <= dateRange.to);
+
     return matchesSearch && matchesDateRange;
   });
 
   // Pagination
-  const totalPages = Math.ceil(filteredSales.length / pageSize);
+  const totalPages = Math.ceil(filteredData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedSales = filteredSales.slice(startIndex, startIndex + pageSize);
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
-  // Calculate summary statistics
+  // Calculate stats from filtered data
   const stats = {
-    totalSales: sales.length,
-    totalQuantity: sales.reduce((sum, s) => sum + s.totalQuantity, 0),
-    totalAmount: sales.reduce((sum, s) => sum + s.totalAmount, 0),
-    totalBalance: sales.reduce((sum, s) => sum + s.currentBalance, 0),
+    totalSales: filteredData.length,
+    totalQuantity: filteredData.reduce((sum, s) => sum + s.totalQuantity, 0),
+    totalAmount: filteredData.reduce((sum, s) => sum + s.totalAmount, 0),
+    totalBalance: filteredData.reduce((sum, s) => sum + s.currentBalance, 0),
+  };
+
+  // CRUD Operations
+  const handleDelete = async (ids: string[]) => {
+    if (!confirm(`Are you sure you want to delete ${ids.length} sale(s)?`)) {
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await api.delete<ApiResponse<void>>("/sales", { ids });
+
+      if (response.success) {
+        showToast(response.message || "Sales deleted successfully", "success");
+        await fetchSales();
+        setSelectedRows([]);
+      }
+    } catch (error) {
+      console.error("Error deleting sales:", error);
+      showToast("Failed to delete sales", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handlers
+  const handleNew = () => {
+    navigate("/sales/new");
+  };
+
+  const handleEdit = (row: Sale) => {
+    navigate(`/sales/edit/${row.id}`);
+  };
+
+  const handleView = (row: Sale) => {
+    navigate(`/sales/${row.id}`);
+  };
+
+  const handlePrint = () => {
+    window.print();
   };
 
   // Table columns
   const columns = [
-    { key: "id", label: "#", width: "80px" },
+    { key: "id", label: "#", width: "60px" },
     {
       key: "date",
       label: "Date",
+      sortable: true,
       render: (value: string) => format(new Date(value), "dd/MM/yyyy"),
     },
     { key: "invoiceNo", label: "Invoice No", sortable: true },
-    { key: "partyId", label: "Party", sortable: true },
+    { key: "challanNo", label: "Challan No" },
+    { key: "partyName", label: "Party", sortable: true },
     {
       key: "totalQuantity",
-      label: "Quantity (Bags)",
-      render: (value: number) => value.toLocaleString(),
+      label: "Quantity",
+      render: (value: number) => `${value.toLocaleString()} Bags`,
     },
     {
       key: "totalNetWeight",
-      label: "Net Weight (Kg)",
-      render: (value: number) => value.toLocaleString(),
+      label: "Net Weight",
+      render: (value: number) => `${value.toLocaleString()} Kg`,
     },
     {
       key: "totalAmount",
@@ -129,192 +244,170 @@ const SalesList: React.FC = () => {
     {
       key: "currentBalance",
       label: "Balance",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => (
+        <span
+          className={`font-medium ${
+            value > 0 ? "text-red-600" : "text-green-600"
+          }`}
+        >
+          ₦{value.toLocaleString()}
+        </span>
+      ),
     },
   ];
-
-  // Action handlers
-  const handleDelete = async (saleIds: string[]) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${saleIds.length} sale(s)?`
-      )
-    ) {
-      setLoading(true);
-      try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setSales((prev) => prev.filter((sale) => !saleIds.includes(sale.id)));
-        setSelectedSales([]);
-      } catch (error) {
-        console.error("Error deleting sales:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-  };
-
-  const handleView = (sale: Sale) => {
-    navigate(`/sales/${sale.id}`);
-  };
-
-  const handleEdit = (sale: Sale) => {
-    setSelectedSale(sale);
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async (data: Partial<Sale>) => {
-    setLoading(true);
-    try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      if (selectedSale) {
-        // Update existing sale
-        setSales((prev) =>
-          prev.map((sale) =>
-            sale.id === selectedSale.id ? { ...sale, ...data } : sale
-          )
-        );
-      } else {
-        // Add new sale
-        const newSale: Sale = {
-          ...(data as Sale),
-          id: Date.now().toString(),
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        };
-        setSales((prev) => [...prev, newSale]);
-      }
-
-      setIsModalOpen(false);
-      setSelectedSale(null);
-    } catch (error) {
-      console.error("Error saving sale:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="animate-fade-in">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Sales Management</h1>
-        <p className="mt-2 text-sm text-gray-700">
-          Manage and track all sales transactions
-        </p>
-      </div>
-
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Sales</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {stats.totalSales}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Sales Management</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            Manage and track all sales transactions
           </p>
         </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Quantity</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            {stats.totalQuantity.toLocaleString()} Bags
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Amount</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₦{stats.totalAmount.toLocaleString()}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500">Total Balance</h3>
-          <p className="mt-2 text-3xl font-bold text-gray-900">
-            ₦{stats.totalBalance.toLocaleString()}
-          </p>
-        </div>
-      </div>
-
-      {/* Actions */}
-      <div className="mb-6">
-        <Button
-          onClick={() => {
-            setSelectedSale(null);
-            setIsModalOpen(true);
-          }}
-          icon={Plus}
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            isRefreshing ? "animate-spin" : ""
+          }`}
+          title="Refresh data (Ctrl+R)"
         >
-          New Sale
-        </Button>
+          <RefreshCcw className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Filters */}
-      <div className="bg-white p-6 rounded-lg shadow mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <input
-              type="text"
-              placeholder="Search by invoice no..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input-base w-full"
-            />
-          </div>
-          <div>
-            <input
-              type="date"
-              value={dateRange.from}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, from: e.target.value }))
-              }
-              className="input-base w-full"
-            />
-          </div>
-          <div>
-            <input
-              type="date"
-              value={dateRange.to}
-              onChange={(e) =>
-                setDateRange((prev) => ({ ...prev, to: e.target.value }))
-              }
-              className="input-base w-full"
-            />
-          </div>
-        </div>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-6 mb-6">
+        {initialLoading ? (
+          <>
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+          </>
+        ) : (
+          <>
+            <Card
+              icon={<ShoppingCart className="w-8 h-8 text-primary-800" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {stats.totalSales}
+                </p>
+                <p className="text-sm text-gray-500">Total Sales</p>
+              </div>
+            </Card>
+            <Card icon={<Package className="w-8 h-8 text-blue-600" />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {stats.totalQuantity.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Quantity (Bags)</p>
+              </div>
+            </Card>
+            <Card
+              icon={<DollarSign className="w-8 h-8 text-green-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦{stats.totalAmount.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Amount</p>
+              </div>
+            </Card>
+            <Card
+              icon={<CreditCard className="w-8 h-8 text-orange-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦{stats.totalBalance.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Balance</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
+
+      {/* Filter Bar */}
+      <FilterBar
+        onSearch={setSearch}
+        placeholder="Search by invoice, challan, or party... (Ctrl+K)"
+        value={search}
+      >
+        <div className="flex items-center space-x-2">
+          <input
+            type="date"
+            value={dateRange.from}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, from: e.target.value }))
+            }
+            className="input-base"
+            placeholder="From Date"
+          />
+          <input
+            type="date"
+            value={dateRange.to}
+            onChange={(e) =>
+              setDateRange((prev) => ({ ...prev, to: e.target.value }))
+            }
+            className="input-base"
+            placeholder="To Date"
+          />
+          <Button onClick={handleNew} icon={Plus} size="sm">
+            New Sale
+          </Button>
+          {selectedRows.length > 0 && (
+            <Button
+              variant="danger"
+              size="sm"
+              icon={Trash2}
+              onClick={() => handleDelete(selectedRows)}
+              loading={loading}
+            >
+              Delete ({selectedRows.length})
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Printer}
+            onClick={handlePrint}
+          >
+            Print
+          </Button>
+        </div>
+      </FilterBar>
 
       {/* Table */}
       <Table
-        data={paginatedSales}
+        data={paginatedData}
         columns={columns}
-        loading={loading}
+        loading={initialLoading || loading}
         pagination={{
           currentPage,
           totalPages,
           pageSize,
-          totalItems: filteredSales.length,
+          totalItems: filteredData.length,
           onPageChange: setCurrentPage,
-          onPageSizeChange: setPageSize,
+          onPageSizeChange: (size) => {
+            setPageSize(size);
+            setCurrentPage(1);
+          },
         }}
         selection={{
-          selectedItems: selectedSales,
-          onSelectionChange: setSelectedSales,
+          selectedItems: selectedRows,
+          onSelectionChange: setSelectedRows,
         }}
         actions={{
-          onView: handleView,
           onEdit: handleEdit,
-          onDelete: handleDelete,
+          onView: handleView,
         }}
-      />
-
-      {/* Sale Form Modal */}
-      <SaleFormModal
-        isOpen={isModalOpen}
-        onClose={() => {
-          setIsModalOpen(false);
-          setSelectedSale(null);
-        }}
-        onSave={handleSave}
-        item={selectedSale}
       />
     </div>
   );
