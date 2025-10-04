@@ -60,7 +60,8 @@ const TransactionDetails: React.FC = () => {
     if (error) {
       showToast("Failed to load transaction details", "error");
     }
-  }, [error, showToast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [error]);
 
   const handlePrint = () => {
     window.print();

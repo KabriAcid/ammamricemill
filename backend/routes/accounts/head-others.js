@@ -13,18 +13,19 @@ router.get("/", authenticateToken, async (req, res, next) => {
         name,
         COALESCE(
           (SELECT SUM(amount) FROM transactions 
-           WHERE head_id = oh.id AND type = 'receive' AND head_type = 'others'),
+           WHERE to_head_id = oh.id AND to_head_type = 'others'),
           0
         ) as receive,
         COALESCE(
           (SELECT SUM(amount) FROM transactions 
-           WHERE head_id = oh.id AND type = 'payment' AND head_type = 'others'),
+           WHERE from_head_id = oh.id AND from_head_type = 'others'),
           0
         ) as payment,
         COALESCE(
-          (SELECT SUM(CASE WHEN type = 'receive' THEN amount ELSE -amount END) 
-           FROM transactions 
-           WHERE head_id = oh.id AND head_type = 'others'),
+          (SELECT SUM(amount) FROM transactions WHERE to_head_id = oh.id AND to_head_type = 'others'),
+          0
+        ) - COALESCE(
+          (SELECT SUM(amount) FROM transactions WHERE from_head_id = oh.id AND from_head_type = 'others'),
           0
         ) as balance,
         created_at as createdAt
@@ -106,18 +107,19 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
         name,
         COALESCE(
           (SELECT SUM(amount) FROM transactions 
-           WHERE head_id = oh.id AND type = 'receive' AND head_type = 'others'),
+           WHERE to_head_id = oh.id AND to_head_type = 'others'),
           0
         ) as receive,
         COALESCE(
           (SELECT SUM(amount) FROM transactions 
-           WHERE head_id = oh.id AND type = 'payment' AND head_type = 'others'),
+           WHERE from_head_id = oh.id AND from_head_type = 'others'),
           0
         ) as payment,
         COALESCE(
-          (SELECT SUM(CASE WHEN type = 'receive' THEN amount ELSE -amount END) 
-           FROM transactions 
-           WHERE head_id = oh.id AND head_type = 'others'),
+          (SELECT SUM(amount) FROM transactions WHERE to_head_id = oh.id AND to_head_type = 'others'),
+          0
+        ) - COALESCE(
+          (SELECT SUM(amount) FROM transactions WHERE from_head_id = oh.id AND from_head_type = 'others'),
           0
         ) as balance,
         created_at as createdAt

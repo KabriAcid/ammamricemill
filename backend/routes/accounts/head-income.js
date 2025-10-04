@@ -11,10 +11,10 @@ router.get("/", authenticateToken, async (req, res, next) => {
       `SELECT 
         ih.id, 
         ih.name,
-        CAST(COALESCE(SUM(CASE WHEN t.type = 'receive' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receives,
+        CAST(COALESCE(SUM(t.amount), 0) AS DECIMAL(12,2)) as receives,
         ih.created_at as createdAt
       FROM income_heads ih
-      LEFT JOIN transactions t ON t.head_id = ih.id AND t.head_type = 'income' AND t.status = 'active'
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.to_head_type = 'income' AND t.status = 'active'
       WHERE ih.status = 'active'
       GROUP BY ih.id, ih.name, ih.created_at
       ORDER BY ih.created_at DESC`
@@ -50,10 +50,10 @@ router.post("/", authenticateToken, async (req, res, next) => {
       `SELECT 
         ih.id, 
         ih.name,
-        COALESCE(SUM(CASE WHEN t.type = 'receive' THEN t.amount ELSE 0 END), 0) as receives,
+        COALESCE(SUM(t.amount), 0) as receives,
         ih.created_at as createdAt
       FROM income_heads ih
-      LEFT JOIN transactions t ON t.head_id = ih.id AND t.head_type = 'income' AND t.status = 'active'
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.to_head_type = 'income' AND t.status = 'active'
       WHERE ih.id = ?
       GROUP BY ih.id, ih.name, ih.created_at`,
       [result.insertId]
@@ -110,10 +110,10 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       `SELECT 
         ih.id, 
         ih.name,
-        COALESCE(SUM(CASE WHEN t.type = 'receive' THEN t.amount ELSE 0 END), 0) as receives,
+        COALESCE(SUM(t.amount), 0) as receives,
         ih.created_at as createdAt
       FROM income_heads ih
-      LEFT JOIN transactions t ON t.head_id = ih.id AND t.head_type = 'income' AND t.status = 'active'
+      LEFT JOIN transactions t ON t.to_head_id = ih.id AND t.to_head_type = 'income' AND t.status = 'active'
       WHERE ih.id = ?
       GROUP BY ih.id, ih.name, ih.created_at`,
       [id]
