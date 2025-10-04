@@ -32,19 +32,21 @@ const HeadIncome = () => {
   const fetchIncomeHeads = async () => {
     setLoading(true);
     try {
-      const response = await api.get<{ success: boolean; data: IncomeRow[] }>(
+      const response = await api.get<ApiResponse<IncomeRow[]>>(
         "/accounts/head-income"
       );
-      if (response.success) {
+      if (response.success && response.data) {
         setData(response.data);
       } else {
-        showToast("Failed to load income heads", "error");
+        throw new Error("Failed to load income heads");
       }
     } catch (error) {
       console.error("Error fetching income heads:", error);
       showToast("Failed to load income heads", "error");
+      setData([]);
     } finally {
       setLoading(false);
+      setInitialLoading(false);
     }
   };
 
@@ -52,6 +54,29 @@ const HeadIncome = () => {
   useEffect(() => {
     fetchIncomeHeads();
   }, []);
+
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
+
+  // Filter data
+  const filteredData = data.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
   // Create new income head
   const handleCreate = async () => {
@@ -62,17 +87,21 @@ const HeadIncome = () => {
 
     setLoading(true);
     try {
-      const response = await api.post<{
-        success: boolean;
-        data: IncomeRow;
-        message: string;
-      }>("/accounts/head-income", { name: formData.name });
+      const response = await api.post<ApiResponse<IncomeRow>>(
+        "/accounts/head-income",
+        formData
+      );
 
       if (response.success) {
-        showToast(response.message, "success");
+        showToast(
+          response.message || "Income head created successfully",
+          "success"
+        );
         setModalOpen(false);
         setFormData({ name: "", receives: 0 });
-        fetchIncomeHeads(); // Refresh the list
+        await fetchIncomeHeads();
+      } else {
+        throw new Error("Failed to create income head");
       }
     } catch (error) {
       console.error("Error creating income head:", error);
@@ -92,18 +121,22 @@ const HeadIncome = () => {
 
     setLoading(true);
     try {
-      const response = await api.put<{
-        success: boolean;
-        data: IncomeRow;
-        message: string;
-      }>(`/accounts/head-income/${editItem.id}`, { name: formData.name });
+      const response = await api.put<ApiResponse<IncomeRow>>(
+        `/accounts/head-income/${editItem.id}`,
+        formData
+      );
 
       if (response.success) {
-        showToast(response.message, "success");
+        showToast(
+          response.message || "Income head updated successfully",
+          "success"
+        );
         setModalOpen(false);
         setEditItem(null);
         setFormData({ name: "", receives: 0 });
-        fetchIncomeHeads(); // Refresh the list
+        await fetchIncomeHeads();
+      } else {
+        throw new Error("Failed to update income head");
       }
     } catch (error) {
       console.error("Error updating income head:", error);
@@ -117,15 +150,20 @@ const HeadIncome = () => {
   const handleDelete = async (ids: string[]) => {
     setLoading(true);
     try {
-      const response = await api.delete<{ success: boolean; message: string }>(
+      const response = await api.delete<ApiResponse<void>>(
         "/accounts/head-income",
         { ids }
       );
 
       if (response.success) {
-        showToast(response.message, "success");
+        showToast(
+          response.message || "Income head(s) deleted successfully",
+          "success"
+        );
         setSelectedRows([]);
-        fetchIncomeHeads(); // Refresh the list
+        await fetchIncomeHeads();
+      } else {
+        throw new Error("Failed to delete income head(s)");
       }
     } catch (error) {
       console.error("Error deleting income heads:", error);
@@ -137,16 +175,13 @@ const HeadIncome = () => {
 
   // Table columns
   const columns = [
-    { key: "name", label: "Head Name" },
+    { key: "name", label: "Head Name", sortable: true },
     {
       key: "receives",
       label: "Receives",
       render: (value: number | string) => {
         const numValue = typeof value === "string" ? parseFloat(value) : value;
-        return numValue.toLocaleString("en-IN", {
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        });
+        return `₦${numValue.toLocaleString()}`;
       },
     },
   ];
@@ -168,85 +203,96 @@ const HeadIncome = () => {
           Manage your income heads and monitor total receives.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card icon={<ArrowDownCircle className="w-8 h-8 text-primary-800" />}>
-          <div>
-            <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Receives
-            </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {totalReceives.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })}
-            </div>
-          </div>
-        </Card>
-        <Card icon={<ArrowDownCircle className="w-8 h-8 text-primary-800" />}>
-          <div>
-            <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Heads
-            </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {data.length}
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        {initialLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<ArrowDownCircle size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦{totalReceives.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Receives</p>
+              </div>
+            </Card>
+            <Card icon={<TrendingUp size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {data.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Heads</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
-      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              setEditItem(null);
-              setFormData({ name: "", receives: 0 });
-              setModalOpen(true);
-            }}
-            icon={Plus}
-            size="sm"
-          >
-            New Income Head
-          </Button>
-          {selectedRows.length > 0 && (
+      <Card>
+        <FilterBar
+          onSearch={setSearchQuery}
+          placeholder="Search by income head name... (Ctrl+F)"
+        >
+          <div className="flex items-center space-x-2">
             <Button
-              variant="danger"
+              onClick={() => {
+                setEditItem(null);
+                setFormData({ name: "", receives: 0 });
+                setModalOpen(true);
+              }}
+              icon={Plus}
               size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedRows)}
-              loading={loading}
             >
-              Delete ({selectedRows.length})
+              New
             </Button>
-          )}
-        </div>
-      </div>
-      <Table
-        data={data}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          currentPage: 1,
-          totalPages: 1,
-          pageSize: PAGE_SIZE_OPTIONS[1],
-          totalItems: data.length,
-          onPageChange: () => {},
-          onPageSizeChange: () => {},
-        }}
-        selection={{
-          selectedItems: selectedRows,
-          onSelectionChange: setSelectedRows,
-        }}
-        actions={{
-          onEdit: (row) => {
-            setEditItem(row);
-            setFormData({ name: row.name, receives: row.receives });
-            setModalOpen(true);
-          },
-        }}
-        summaryRow={{
-          name: "Total",
-          receives: totalReceives,
-        }}
-      />
+            {selectedRows.length > 0 && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={() => handleDelete(selectedRows)}
+                loading={loading}
+              >
+                Delete ({selectedRows.length})
+              </Button>
+            )}
+          </div>
+        </FilterBar>
+
+        <Table
+          data={paginatedData}
+          columns={columns}
+          loading={loading}
+          pagination={{
+            currentPage,
+            totalPages,
+            pageSize,
+            totalItems: filteredData.length,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+          }}
+          selection={{
+            selectedItems: selectedRows,
+            onSelectionChange: setSelectedRows,
+          }}
+          actions={{
+            onEdit: (row) => {
+              setEditItem(row);
+              setFormData({ name: row.name, receives: row.receives });
+              setModalOpen(true);
+            },
+          }}
+          summaryRow={{
+            name: "Total",
+            receives: `₦${totalReceives.toLocaleString()}`,
+          }}
+        />
+      </Card>
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -271,22 +317,28 @@ const HeadIncome = () => {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Receives
+              Receives (₦) *
             </label>
-            <input
-              type="number"
-              value={formData.receives}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  receives: Number(e.target.value),
-                }))
-              }
-              className="input-base"
-              placeholder="Enter receives amount"
-              min="0"
-              required
-            />
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                ₦
+              </span>
+              <input
+                type="number"
+                value={formData.receives}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    receives: Number(e.target.value),
+                  }))
+                }
+                className="input-base pl-8"
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+                required
+              />
+            </div>
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>

@@ -1,9 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
-import { Plus, Trash2, ArrowUpCircle } from "lucide-react";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Plus, Trash2, ArrowUpCircle, TrendingUp } from "lucide-react";
+import { useToast } from "../../components/ui/Toast";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
 
 type ExpenseRow = {
   id: string;
