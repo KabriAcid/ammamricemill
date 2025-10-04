@@ -9,15 +9,23 @@ router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [bankHeads] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        0 as receive,
-        0 as payment,
-        0 as balance,
-        created_at as createdAt
-      FROM bank_heads 
-      WHERE status = 'active'
-      ORDER BY created_at DESC`
+        bh.id, 
+        bh.name,
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        bh.created_at as createdAt
+      FROM bank_heads bh
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = bh.id AND t.to_head_type = 'bank') OR 
+        (t.from_head_id = bh.id AND t.from_head_type = 'bank')
+      ) AND t.status = 'active'
+      WHERE bh.status = 'active'
+      GROUP BY bh.id, bh.name, bh.created_at
+      ORDER BY bh.created_at DESC`
     );
 
     res.json({
@@ -47,9 +55,24 @@ router.post("/", authenticateToken, async (req, res, next) => {
     );
 
     const [newHead] = await pool.query(
-      `SELECT id, name, ? as receive, ? as payment, ? as balance, created_at as createdAt 
-       FROM bank_heads WHERE id = ?`,
-      [receive, payment, balance, result.insertId]
+      `SELECT 
+        bh.id, 
+        bh.name, 
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        bh.created_at as createdAt 
+      FROM bank_heads bh
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = bh.id AND t.to_head_type = 'bank') OR 
+        (t.from_head_id = bh.id AND t.from_head_type = 'bank')
+      ) AND t.status = 'active'
+      WHERE bh.id = ?
+      GROUP BY bh.id, bh.name, bh.created_at`,
+      [result.insertId]
     );
 
     res.status(201).json({
@@ -78,9 +101,24 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     await pool.query(`UPDATE bank_heads SET name = ? WHERE id = ?`, [name, id]);
 
     const [updated] = await pool.query(
-      `SELECT id, name, ? as receive, ? as payment, ? as balance, created_at as createdAt 
-       FROM bank_heads WHERE id = ?`,
-      [receive, payment, balance, id]
+      `SELECT 
+        bh.id, 
+        bh.name, 
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        bh.created_at as createdAt 
+      FROM bank_heads bh
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = bh.id AND t.to_head_type = 'bank') OR 
+        (t.from_head_id = bh.id AND t.from_head_type = 'bank')
+      ) AND t.status = 'active'
+      WHERE bh.id = ?
+      GROUP BY bh.id, bh.name, bh.created_at`,
+      [id]
     );
 
     res.json({
