@@ -179,8 +179,8 @@ const SalesList: React.FC = () => {
       } else {
         // Add new sale
         const newSale: Sale = {
-          id: Date.now().toString(),
           ...(data as Sale),
+          id: Date.now().toString(),
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
         };

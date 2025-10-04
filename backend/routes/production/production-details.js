@@ -1,8 +1,8 @@
-import express from "express";
-import db from "../../utils/db.js";
-import authenticateToken from "../../middlewares/auth.js";
+import { Router } from "express";
+import { pool } from "../../utils/db.js";
+import { authenticateToken } from "../../middlewares/auth.js";
 
-const router = express.Router();
+const router = Router();
 
 // Get production details with pagination and filtering
 router.get("/", authenticateToken, async (req, res) => {
@@ -58,10 +58,10 @@ router.get("/", authenticateToken, async (req, res) => {
     }
     queryParams.push(Number(pageSize), offset);
 
-    const [details] = await db.query(query, queryParams);
+    const [details] = await pool.query(query, queryParams);
 
     // Get total count
-    const [countResult] = await db.query(
+    const [countResult] = await pool.query(
       `SELECT COUNT(*) as total FROM production_details pd
        LEFT JOIN production_orders po ON pd.production_id = po.id
        WHERE 1=1` +
@@ -93,7 +93,7 @@ router.get("/", authenticateToken, async (req, res) => {
 // POST /api/production/production-details
 // Add new production details
 router.post("/", authenticateToken, async (req, res) => {
-  const connection = await db.getConnection();
+  const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
@@ -169,7 +169,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [details] = await db.query(
+    const [details] = await pool.query(
       `SELECT 
         pd.id,
         pd.production_id as productionId,
@@ -211,7 +211,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
 // DELETE /api/production/production-details
 // Delete multiple production details
 router.delete("/", authenticateToken, async (req, res) => {
-  const connection = await db.getConnection();
+  const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
