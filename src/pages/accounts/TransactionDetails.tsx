@@ -15,7 +15,7 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { useToast } from "../../components/ui/Toast";
 import { format } from "date-fns";
-import { useFetch } from "../../hooks/useFetch";
+import { api } from "../../utils/fetcher";
 
 interface TransactionDetail {
   id: number;
@@ -42,32 +42,49 @@ const TransactionDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
+
   const [transaction, setTransaction] = useState<TransactionDetail | null>(
     null
   );
+  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
 
-  const { data, loading, error } = useFetch<TransactionDetail>(
-    `/api/accounts/transactions/${id}`
-  );
+  // Fetch transaction details
+  const fetchTransactionDetails = async () => {
+    if (!id) return;
 
-  useEffect(() => {
-    if (data) {
-      setTransaction(data);
-    }
-  }, [data]);
+    setLoading(true);
+    try {
+      const response = await api.get<{
+        success: boolean;
+        data: TransactionDetail;
+      }>(`/accounts/transactions/${id}`);
 
-  useEffect(() => {
-    if (error) {
+      if (response.success && response.data) {
+        setTransaction(response.data);
+      } else {
+        showToast("Transaction not found", "error");
+      }
+    } catch (error) {
+      console.error("Error fetching transaction details:", error);
       showToast("Failed to load transaction details", "error");
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [error]);
+  };
+
+  // Initial load
+  useEffect(() => {
+    fetchTransactionDetails();
+  }, [id]);
 
   const handlePrint = () => {
     window.print();
   };
 
-  if (loading) {
+  // Loading State
+  if (initialLoading) {
     return (
       <div className="animate-fade-in">
         <div className="mb-6 flex items-center justify-between">

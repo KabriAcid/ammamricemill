@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { api } from "../../utils/fetcher";
 import {
   Plus,
-  CreditCard as Edit,
   Trash2,
   Printer,
   User,
@@ -20,9 +20,11 @@ import { Employee } from "../../types";
 import { SkeletonCard } from "../../components/ui/Skeleton";
 
 const EmployeeList: React.FC = () => {
+  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const { showToast } = useToast();
   const [initialLoading, setInitialLoading] = useState(true);
+  const [designations, setDesignations] = useState<string[]>([]);
 
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -37,6 +39,7 @@ const EmployeeList: React.FC = () => {
     const loadData = async () => {
       setInitialLoading(true);
       await fetchEmployeeData();
+      await fetchDesignations();
       setInitialLoading(false);
     };
     loadData();
@@ -57,6 +60,25 @@ const EmployeeList: React.FC = () => {
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, []);
+
+  const fetchDesignations = async () => {
+    try {
+      const response = await api.get<{ success: boolean; data: any[] }>(
+        "/hr/designation"
+      );
+
+      if (response.success && response.data) {
+        setDesignations(response.data.map((d: any) => d.name));
+      }
+    } catch (error) {
+      console.error("Error fetching designations:", error);
+      // Use existing designations from employees if API fails
+      const uniqueDesignations = Array.from(
+        new Set(employees.map((emp) => emp.designation))
+      );
+      setDesignations(uniqueDesignations);
+    }
+  };
 
   const fetchEmployeeData = async () => {
     setLoading(true);
@@ -130,10 +152,6 @@ const EmployeeList: React.FC = () => {
     },
   ];
 
-  const designations = Array.from(
-    new Set(employees.map((emp) => emp.designation))
-  );
-
   const handleEdit = (employee: Employee) => {
     setEditingEmployee(employee);
     setFormData({
@@ -171,13 +189,37 @@ const EmployeeList: React.FC = () => {
   };
 
   const handleSave = async () => {
-    if (
-      !formData.name ||
-      !formData.mobile ||
-      !formData.salary ||
-      !formData.joiningDate
-    ) {
-      showToast("Please fill in all required fields", "error");
+    // Validation
+    if (!formData.name.trim()) {
+      showToast("Employee name is required", "error");
+      return;
+    }
+    if (!formData.empId.trim()) {
+      showToast("Employee ID is required", "error");
+      return;
+    }
+    if (!formData.designation.trim()) {
+      showToast("Designation is required", "error");
+      return;
+    }
+    if (!formData.mobile.trim()) {
+      showToast("Mobile number is required", "error");
+      return;
+    }
+    if (!/^\d{10,15}$/.test(formData.mobile.replace(/[\s-]/g, ""))) {
+      showToast("Please enter a valid mobile number (10-15 digits)", "error");
+      return;
+    }
+    if (formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      showToast("Please enter a valid email address", "error");
+      return;
+    }
+    if (!formData.salary || formData.salary <= 0) {
+      showToast("Salary must be greater than 0", "error");
+      return;
+    }
+    if (!formData.joiningDate) {
+      showToast("Joining date is required", "error");
       return;
     }
 
@@ -226,10 +268,6 @@ const EmployeeList: React.FC = () => {
     resetForm();
     setShowModal(true);
   };
-
-  const activeEmployees = employees.filter((emp) => emp.isActive).length;
-  const totalSalary = employees.reduce((sum, emp) => sum + emp.salary, 0);
-  const loadingCards = false; // set to true to show skeleton
 
   return (
     <div className="animate-fade-in">
@@ -387,6 +425,7 @@ const EmployeeList: React.FC = () => {
         }}
         actions={{
           onEdit: handleEdit,
+          onView: (employee) => navigate(`/hr/employee/${employee.id}`),
         }}
       />
 
@@ -396,11 +435,12 @@ const EmployeeList: React.FC = () => {
         title={editingEmployee ? "Edit Employee" : "New Employee"}
         size="xl"
       >
-        <div className="grid grid-cols-1 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {/* Left Column */}
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Employee Name *
               </label>
               <input
                 type="text"
@@ -409,12 +449,13 @@ const EmployeeList: React.FC = () => {
                   setFormData((prev) => ({ ...prev, name: e.target.value }))
                 }
                 className="input-base"
+                placeholder="Enter employee name"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Employee ID *
               </label>
               <input
@@ -424,16 +465,16 @@ const EmployeeList: React.FC = () => {
                   setFormData((prev) => ({ ...prev, empId: e.target.value }))
                 }
                 className="input-base"
+                placeholder="e.g., EMP-001"
                 required
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Designation *
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.designation}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -443,11 +484,18 @@ const EmployeeList: React.FC = () => {
                 }
                 className="input-base"
                 required
-              />
+              >
+                <option value="">Select Designation</option>
+                {designations.map((designation) => (
+                  <option key={designation} value={designation}>
+                    {designation}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Mobile *
               </label>
               <input
@@ -457,12 +505,16 @@ const EmployeeList: React.FC = () => {
                   setFormData((prev) => ({ ...prev, mobile: e.target.value }))
                 }
                 className="input-base"
+                placeholder="+234 xxx xxx xxxx"
                 required
               />
             </div>
+          </div>
 
+          {/* Right Column */}
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
               </label>
               <input
@@ -472,11 +524,12 @@ const EmployeeList: React.FC = () => {
                   setFormData((prev) => ({ ...prev, email: e.target.value }))
                 }
                 className="input-base"
+                placeholder="employee@example.com"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Joining Date *
               </label>
               <input
@@ -489,65 +542,70 @@ const EmployeeList: React.FC = () => {
                   }))
                 }
                 className="input-base"
+                max={new Date().toISOString().split("T")[0]}
                 required
               />
             </div>
-          </div>
-
-          {/* Salary & Financial Information */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium text-gray-900">
-              Salary Information
-            </h3>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Salary *
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Monthly Salary *
               </label>
-              <input
-                type="number"
-                value={formData.salary}
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  ₦
+                </span>
+                <input
+                  type="number"
+                  value={formData.salary}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      salary: Number(e.target.value),
+                    }))
+                  }
+                  className="input-base pl-8"
+                  placeholder="0.00"
+                  min="0"
+                  step="0.01"
+                  required
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Status
+              </label>
+              <select
+                value={formData.isActive ? "active" : "inactive"}
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    salary: Number(e.target.value),
+                    isActive: e.target.value === "active",
                   }))
                 }
                 className="input-base"
-                required
-              />
+              >
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
             </div>
           </div>
         </div>
 
-        {/* Additional Information */}
-        <div className="mt-6 space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Status
-            </label>
-            <select
-              value={formData.isActive ? "active" : "inactive"}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  isActive: e.target.value === "active",
-                }))
-              }
-              className="input-base"
-            >
-              <option value="active">Active</option>
-              <option value="inactive">Inactive</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="flex justify-end space-x-3 pt-6 border-t">
-          <Button variant="outline" onClick={() => setShowModal(false)}>
+        <div className="flex justify-end space-x-3 pt-4 mt-4 border-t">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setShowModal(false);
+              resetForm();
+            }}
+          >
             Cancel
           </Button>
           <Button onClick={handleSave} loading={loading}>
-            {editingEmployee ? "Update" : "Save"}
+            {editingEmployee ? "Update Employee" : "Save Employee"}
           </Button>
         </div>
       </Modal>

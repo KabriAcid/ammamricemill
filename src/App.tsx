@@ -19,6 +19,7 @@ import GodownList from "./pages/settings/GodownList";
 // hr
 import DesignationList from "./pages/hr/DesignationList";
 import EmployeeList from "./pages/hr/EmployeeList";
+import EmployeeDetails from "./pages/hr/EmployeeDetails";
 import DailyAttendance from "./pages/hr/DailyAttendance";
 import SalarySheet from "./pages/hr/SalarySheet";
 import SalarySheetDetails from "./pages/hr/SalarySheetDetails";
@@ -88,6 +89,7 @@ function App() {
                 <Route path="/settings/godown" element={<GodownList />} />
                 <Route path="/hr/designation" element={<DesignationList />} />
                 <Route path="/hr/employee" element={<EmployeeList />} />
+                <Route path="/hr/employee/:id" element={<EmployeeDetails />} />
                 <Route path="/hr/attendance" element={<DailyAttendance />} />
                 <Route path="/hr/salary" element={<SalarySheet />} />
                 <Route path="/hr/salary/:id" element={<SalarySheetDetails />} />
