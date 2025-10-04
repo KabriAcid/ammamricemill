@@ -21,6 +21,7 @@ import DesignationList from "./pages/hr/DesignationList";
 import EmployeeList from "./pages/hr/EmployeeList";
 import DailyAttendance from "./pages/hr/DailyAttendance";
 import SalarySheet from "./pages/hr/SalarySheet";
+import SalarySheetDetails from "./pages/hr/SalarySheetDetails";
 import MonthlyAttendance from "./pages/hr/MonthlyAttendance";
 import HeadIncome from "./pages/accounts/HeadIncome";
 
@@ -88,6 +89,7 @@ function App() {
                 <Route path="/hr/employee" element={<EmployeeList />} />
                 <Route path="/hr/attendance" element={<DailyAttendance />} />
                 <Route path="/hr/salary" element={<SalarySheet />} />
+                <Route path="/hr/salary/:id" element={<SalarySheetDetails />} />
                 <Route
                   path="/hr/attendance/monthly"
                   element={<MonthlyAttendance />}

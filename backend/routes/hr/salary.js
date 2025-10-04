@@ -96,6 +96,72 @@ router.get("/", authenticateToken, async (req, res, next) => {
   }
 });
 
+// GET /api/hr/salary/:id - Fetch single salary record with details
+router.get("/:id", authenticateToken, async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const [salaries] = await pool.query(
+      `
+      SELECT 
+        s.id,
+        s.date,
+        s.year,
+        s.month,
+        s.description,
+        s.total_employees as totalEmployees,
+        CAST(s.total_salary AS DECIMAL(12,2)) as totalSalary,
+        s.created_at as createdAt,
+        s.updated_at as updatedAt
+      FROM monthly_salary s
+      WHERE s.id = ?
+    `,
+      [id]
+    );
+
+    if (salaries.length === 0) {
+      return res.status(404).json({
+        success: false,
+        error: "Salary record not found",
+      });
+    }
+
+    const salary = salaries[0];
+
+    // Get employee salaries
+    const [employeeSalaries] = await pool.query(
+      `
+      SELECT 
+        es.employee_id as employeeId,
+        e.name as employeeName,
+        CONCAT('EMP', LPAD(e.id, 3, '0')) as empId,
+        d.name as designation,
+        CAST(es.salary AS DECIMAL(10,2)) as salary,
+        CAST(es.bonus_ot AS DECIMAL(10,2)) as bonus,
+        CAST(es.deduction AS DECIMAL(10,2)) as deduction,
+        CAST(es.payment AS DECIMAL(10,2)) as payment,
+        es.note,
+        es.signature
+      FROM employee_salary es
+      LEFT JOIN employees e ON es.employee_id = e.id
+      LEFT JOIN designations d ON e.designation_id = d.id
+      WHERE es.salary_id = ?
+      ORDER BY d.name, e.name
+    `,
+      [id]
+    );
+
+    salary.employeeSalaries = employeeSalaries;
+
+    res.json({
+      success: true,
+      data: salary,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // POST /api/hr/salary - Create new salary record
 router.post("/", authenticateToken, async (req, res, next) => {
   try {

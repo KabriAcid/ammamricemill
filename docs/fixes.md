@@ -1,4 +1,3 @@
-
 Moving forward always apply this:
 
 Add a refresh button where refresh functionality is needed,

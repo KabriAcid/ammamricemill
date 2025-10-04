@@ -5,9 +5,9 @@ import {
   Calendar,
   Users,
   TrendingUp,
-  RefreshCcw,
 } from "lucide-react";
 import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
@@ -63,6 +63,7 @@ const months = [
 ];
 
 const SalarySheet: React.FC = () => {
+  const navigate = useNavigate();
   const [salaryData, setSalaryData] = useState<SalaryRecord[]>([]);
   const [selectedRecords, setSelectedRecords] = useState<string[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -496,7 +497,7 @@ const SalarySheet: React.FC = () => {
           }}
           actions={{
             onEdit: handleEdit,
-            onView: (record) => alert(`View record ${record.id}`),
+            onView: (record) => navigate(`/hr/salary/${record.id}`),
           }}
         />
       </Card>
