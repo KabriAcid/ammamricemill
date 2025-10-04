@@ -305,7 +305,19 @@ const EmployeeDetails: React.FC = () => {
       render: (value: string) => {
         if (!value) return "-";
         try {
-          return format(new Date(value), "hh:mm a");
+          // Handle time-only format (HH:mm:ss)
+          if (value.match(/^\d{2}:\d{2}(:\d{2})?$/)) {
+            const [hours, minutes] = value.split(":");
+            const hour = parseInt(hours);
+            const min = minutes;
+            const ampm = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${min} ${ampm}`;
+          }
+          // Handle full datetime
+          const date = new Date(value);
+          if (isNaN(date.getTime())) return "-";
+          return format(date, "hh:mm a");
         } catch {
           return "-";
         }
@@ -317,7 +329,19 @@ const EmployeeDetails: React.FC = () => {
       render: (value: string) => {
         if (!value) return "-";
         try {
-          return format(new Date(value), "hh:mm a");
+          // Handle time-only format (HH:mm:ss)
+          if (value.match(/^\d{2}:\d{2}(:\d{2})?$/)) {
+            const [hours, minutes] = value.split(":");
+            const hour = parseInt(hours);
+            const min = minutes;
+            const ampm = hour >= 12 ? "PM" : "AM";
+            const displayHour = hour % 12 || 12;
+            return `${displayHour}:${min} ${ampm}`;
+          }
+          // Handle full datetime
+          const date = new Date(value);
+          if (isNaN(date.getTime())) return "-";
+          return format(date, "hh:mm a");
         } catch {
           return "-";
         }

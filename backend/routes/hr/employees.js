@@ -7,6 +7,13 @@ const router = Router();
 // GET /api/hr/employee - Fetch all employees
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
+    // Get query parameter to include inactive employees (optional)
+    const { includeInactive } = req.query;
+
+    // Build WHERE clause - only fetch active employees by default
+    const whereClause =
+      includeInactive === "true" ? "" : "WHERE e.status = 'active'";
+
     // Get all employees with designation name - frontend handles search/filter/pagination
     const [employees] = await pool.query(
       `SELECT 
@@ -24,7 +31,8 @@ router.get("/", authenticateToken, async (req, res, next) => {
         CONCAT('EMP', LPAD(e.id, 3, '0')) as empId
       FROM employees e
       LEFT JOIN designations d ON e.designation_id = d.id
-      ORDER BY e.created_at DESC`
+      ${whereClause}
+      ORDER BY e.salary DESC, e.created_at DESC`
     );
 
     res.json({
@@ -301,13 +309,46 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 // DELETE /api/hr/employee - Delete employee(s) - supports bulk delete
 router.delete("/", authenticateToken, async (req, res, next) => {
   try {
+    console.log("=== DELETE EMPLOYEE REQUEST ===");
+    console.log("Raw body:", req.body);
+    console.log("Body type:", typeof req.body);
+    console.log("Body keys:", Object.keys(req.body || {}));
+
     const { ids } = req.body;
+
+    console.log("Extracted ids:", ids);
+    console.log("ids type:", typeof ids);
+    console.log("ids isArray:", Array.isArray(ids));
 
     // Validation
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      console.log("VALIDATION FAILED - Returning 400");
       return res.status(400).json({
         success: false,
-        error: "Please provide an array of employee IDs to delete",
+        message: "Please provide an array of employee IDs to delete",
+      });
+    }
+
+    // Convert string IDs to numbers if needed
+    const employeeIds = ids.map((id) =>
+      typeof id === "string" ? parseInt(id, 10) : id
+    );
+
+    console.log("Converted employeeIds:", employeeIds);
+
+    // Check if employees exist
+    const [existingEmployees] = await pool.query(
+      `SELECT id FROM employees WHERE id IN (?)`,
+      [employeeIds]
+    );
+
+    console.log("Existing employees found:", existingEmployees);
+
+    if (existingEmployees.length === 0) {
+      console.log("No employees found - returning 404");
+      return res.status(404).json({
+        success: false,
+        message: "No employees found with the provided IDs",
       });
     }
 
@@ -317,46 +358,34 @@ router.delete("/", authenticateToken, async (req, res, next) => {
        FROM attendance 
        WHERE employee_id IN (?)
        LIMIT 1`,
-      [ids]
+      [employeeIds]
     );
 
-    if (attendanceRecords.length > 0) {
-      return res.status(400).json({
-        success: false,
-        error:
-          "Cannot delete employee(s) with existing attendance records. Consider marking as inactive instead.",
-      });
-    }
-
-    // Check if employees exist
-    const [existingEmployees] = await pool.query(
-      `SELECT id FROM employees WHERE id IN (?)`,
-      [ids]
-    );
-
-    if (existingEmployees.length === 0) {
-      return res.status(404).json({
-        success: false,
-        error: "No employees found with the provided IDs",
-      });
-    }
-
-    // Soft delete - mark as inactive
+    // Always soft delete (mark as inactive) - never actually delete employee data
     const [result] = await pool.query(
       `UPDATE employees 
        SET status = 'inactive' 
        WHERE id IN (?)`,
-      [ids]
+      [employeeIds]
     );
+
+    console.log("Delete result:", result);
+
+    // Inform user if employees had attendance records
+    const message =
+      attendanceRecords.length > 0
+        ? `${result.affectedRows} employee(s) with attendance records marked as inactive successfully`
+        : `${result.affectedRows} employee(s) marked as inactive successfully`;
 
     res.json({
       success: true,
       data: {
         deletedCount: result.affectedRows,
       },
-      message: `${result.affectedRows} employee(s) marked as inactive successfully`,
+      message,
     });
   } catch (err) {
+    console.error("DELETE ERROR:", err);
     next(err);
   }
 });

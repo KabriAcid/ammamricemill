@@ -1,9 +1,4 @@
-import {
-  ChevronLeft,
-  ChevronRight,
-  Pencil as Edit,
-  Eye,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Pencil as Edit, Eye } from "lucide-react";
 import { TableProps } from "../../types/index";
 import { Button } from "./Button";
 import { Spinner } from "./Spinner";
@@ -105,7 +100,7 @@ export function Table<T extends { id: string }>({
                 {columns.map((column) => (
                   <td key={column.key} className="table-cell">
                     {column.render
-                      ? column.render((item as any)[column.key], item)
+                      ? column.render((item as any)[column.key], item, index)
                       : (item as any)[column.key]}
                   </td>
                 ))}

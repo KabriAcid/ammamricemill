@@ -22,7 +22,7 @@ import godownRoutes from "./routes/settings/godown.js";
 
 // hr
 import designationRoutes from "./routes/hr/designation.js";
-import employeeRoutes from "./routes/hr/employee.js";
+import employeeRoutes from "./routes/hr/employees.js";
 import attendanceRoutes from "./routes/hr/attendance.js";
 import monthlyAttendanceRoutes from "./routes/hr/monthly-attendance.js";
 import salaryRoutes from "./routes/hr/salary.js";
@@ -37,6 +37,9 @@ const app = express();
 // Request logging middleware
 app.use((req, res, next) => {
   console.log(`${new Date().toISOString()} ${req.method} ${req.url}`);
+  if (req.method === "DELETE" && req.url.includes("/hr/employee")) {
+    console.log("DELETE /hr/employee - Body:", JSON.stringify(req.body));
+  }
   // console.log("Headers:", req.headers);
   next();
 });
@@ -83,7 +86,7 @@ app.use("/api/godowns", godownRoutes);
 
 // HR Routes
 app.use("/api/designations", designationRoutes);
-app.use("/api/employees", employeeRoutes);
+app.use("/api/hr/employee", employeeRoutes);
 app.use("/api/attendance", attendanceRoutes);
 app.use("/api/monthly-attendance", monthlyAttendanceRoutes);
 app.use("/api/salary", salaryRoutes);

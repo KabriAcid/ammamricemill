@@ -100,7 +100,6 @@ const EmployeeList: React.FC = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    empId: "",
     designation: "",
     mobile: "",
     email: "",
@@ -127,7 +126,12 @@ const EmployeeList: React.FC = () => {
   );
 
   const columns = [
-    { key: "id", label: "#", width: "80px" },
+    {
+      key: "id",
+      label: "S/N",
+      width: "80px",
+      render: (_value: any, _row: any, index: number) => startIndex + index + 1,
+    },
     { key: "name", label: "Employee Name", sortable: true },
     { key: "empId", label: "Employee ID", sortable: true },
     { key: "designation", label: "Designation" },
@@ -156,7 +160,6 @@ const EmployeeList: React.FC = () => {
     setEditingEmployee(employee);
     setFormData({
       name: employee.name,
-      empId: employee.empId,
       designation: employee.designation,
       mobile: employee.mobile,
       email: employee.email || "",
@@ -170,19 +173,27 @@ const EmployeeList: React.FC = () => {
   const handleDelete = async (employeeIds: string[]) => {
     setLoading(true);
     try {
+      console.log("Sending delete request with IDs:", employeeIds);
       const response = await api.delete<{
         success: boolean;
         message: string;
       }>("/hr/employee", { ids: employeeIds });
 
+      console.log("Delete response:", response);
       if (response.success) {
         showToast(response.message, "success");
         await fetchEmployeeData();
         setSelectedEmployees([]);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error deleting employees:", error);
-      showToast("Failed to delete employees", "error");
+      console.error("Error details:", {
+        message: error?.message,
+        status: error?.status,
+      });
+      const errorMessage =
+        error instanceof Error ? error.message : "Failed to delete employees";
+      showToast(errorMessage, "error");
     } finally {
       setLoading(false);
     }
@@ -192,10 +203,6 @@ const EmployeeList: React.FC = () => {
     // Validation
     if (!formData.name.trim()) {
       showToast("Employee name is required", "error");
-      return;
-    }
-    if (!formData.empId.trim()) {
-      showToast("Employee ID is required", "error");
       return;
     }
     if (!formData.designation.trim()) {
@@ -253,7 +260,6 @@ const EmployeeList: React.FC = () => {
   const resetForm = () => {
     setFormData({
       name: "",
-      empId: "",
       designation: "",
       mobile: "",
       email: "",
@@ -456,22 +462,6 @@ const EmployeeList: React.FC = () => {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Employee ID *
-              </label>
-              <input
-                type="text"
-                value={formData.empId}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, empId: e.target.value }))
-                }
-                className="input-base"
-                placeholder="e.g., EMP-001"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
                 Designation *
               </label>
               <select
@@ -499,13 +489,15 @@ const EmployeeList: React.FC = () => {
                 Mobile *
               </label>
               <input
-                type="tel"
+                type="text"
+                inputMode="numeric"
                 value={formData.mobile}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, mobile: e.target.value }))
                 }
                 className="input-base"
                 placeholder="+234 xxx xxx xxxx"
+                maxLength={11}
                 required
               />
             </div>
