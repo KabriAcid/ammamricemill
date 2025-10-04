@@ -225,7 +225,9 @@ const TransactionDetails: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Date</p>
                 <p className="font-medium text-gray-900">
-                  {format(new Date(transaction.date), "dd MMMM yyyy")}
+                  {transaction.date
+                    ? format(new Date(transaction.date), "dd MMMM yyyy")
+                    : "-"}
                 </p>
               </div>
             </div>
@@ -374,25 +376,28 @@ const TransactionDetails: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Created At</p>
                 <p className="font-medium text-gray-900">
-                  {format(
-                    new Date(transaction.created_at),
-                    "dd MMM yyyy, hh:mm a"
-                  )}
+                  {transaction.created_at
+                    ? format(
+                        new Date(transaction.created_at),
+                        "dd MMM yyyy, hh:mm a"
+                      )
+                    : "-"}
                 </p>
               </div>
             </div>
 
-            {transaction.updated_at !== transaction.created_at && (
-              <div className="pl-11">
-                <p className="text-sm text-gray-500">Last Updated</p>
-                <p className="font-medium text-gray-900">
-                  {format(
-                    new Date(transaction.updated_at),
-                    "dd MMM yyyy, hh:mm a"
-                  )}
-                </p>
-              </div>
-            )}
+            {transaction.updated_at &&
+              transaction.updated_at !== transaction.created_at && (
+                <div className="pl-11">
+                  <p className="text-sm text-gray-500">Last Updated</p>
+                  <p className="font-medium text-gray-900">
+                    {format(
+                      new Date(transaction.updated_at),
+                      "dd MMM yyyy, hh:mm a"
+                    )}
+                  </p>
+                </div>
+              )}
 
             <div className="pl-11">
               <p className="text-sm text-gray-500">Status</p>

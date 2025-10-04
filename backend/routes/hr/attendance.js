@@ -7,9 +7,42 @@ const router = Router();
 // GET /api/hr/attendance - Fetch all attendance records with pagination and search
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    const { page = 1, pageSize = 25, search = "", date = "" } = req.query;
+    const {
+      page = 1,
+      pageSize = 25,
+      search = "",
+      date = "",
+      employeeId = "",
+      limit = "",
+    } = req.query;
+
+    // If employeeId is provided, return employee-specific attendance
+    if (employeeId) {
+      const recordLimit = limit ? parseInt(limit) : 10;
+      const [employeeAttendance] = await pool.query(
+        `SELECT 
+          a.id,
+          a.date,
+          a.status,
+          a.check_in as checkIn,
+          a.check_out as checkOut,
+          a.working_hours as workHours,
+          a.notes
+        FROM attendance a
+        WHERE a.employee_id = ?
+        ORDER BY a.date DESC
+        LIMIT ?`,
+        [employeeId, recordLimit]
+      );
+
+      return res.json({
+        success: true,
+        data: employeeAttendance,
+      });
+    }
+
     const offset = (parseInt(page) - 1) * parseInt(pageSize);
-    const limit = parseInt(pageSize);
+    const limitValue = parseInt(pageSize);
 
     // Build search condition
     let searchCondition = "WHERE 1=1";
@@ -51,7 +84,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
       GROUP BY date
       ORDER BY date DESC
       LIMIT ? OFFSET ?`,
-      [...searchParams, limit, offset]
+      [...searchParams, limitValue, offset]
     );
 
     // Get detailed employee records for each date

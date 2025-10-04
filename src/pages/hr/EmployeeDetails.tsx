@@ -176,10 +176,9 @@ const EmployeeDetails: React.FC = () => {
     );
   }
 
-  const tenureMonths = differenceInMonths(
-    new Date(),
-    new Date(employee.joiningDate)
-  );
+  const tenureMonths = employee.joiningDate
+    ? differenceInMonths(new Date(), new Date(employee.joiningDate))
+    : 0;
   const tenureYears = Math.floor(tenureMonths / 12);
   const remainingMonths = tenureMonths % 12;
 
@@ -204,7 +203,14 @@ const EmployeeDetails: React.FC = () => {
     {
       key: "date",
       label: "Date",
-      render: (value: string) => format(new Date(value), "dd MMM yyyy"),
+      render: (value: string) => {
+        if (!value) return "-";
+        try {
+          return format(new Date(value), "dd MMM yyyy");
+        } catch {
+          return "-";
+        }
+      },
     },
     {
       key: "month",
@@ -224,33 +230,36 @@ const EmployeeDetails: React.FC = () => {
           "Nov",
           "Dec",
         ];
-        return `${months[parseInt(value) - 1]} ${row.year}`;
+        const monthIndex = parseInt(value) - 1;
+        return `${months[monthIndex] || value} ${row.year}`;
       },
     },
     {
       key: "salary",
       label: "Base Salary",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${(value || 0).toLocaleString()}`,
     },
     {
       key: "bonusOT",
       label: "Bonus/OT",
       render: (value: number) => (
-        <span className="text-green-600">+₦{value.toLocaleString()}</span>
+        <span className="text-green-600">
+          +₦{(value || 0).toLocaleString()}
+        </span>
       ),
     },
     {
       key: "deduction",
       label: "Deductions",
       render: (value: number) => (
-        <span className="text-red-600">-₦{value.toLocaleString()}</span>
+        <span className="text-red-600">-₦{(value || 0).toLocaleString()}</span>
       ),
     },
     {
       key: "payment",
       label: "Net Payment",
       render: (value: number) => (
-        <span className="font-semibold">₦{value.toLocaleString()}</span>
+        <span className="font-semibold">₦{(value || 0).toLocaleString()}</span>
       ),
     },
   ];
@@ -260,7 +269,14 @@ const EmployeeDetails: React.FC = () => {
     {
       key: "date",
       label: "Date",
-      render: (value: string) => format(new Date(value), "dd MMM yyyy"),
+      render: (value: string) => {
+        if (!value) return "-";
+        try {
+          return format(new Date(value), "dd MMM yyyy");
+        } catch {
+          return "-";
+        }
+      },
     },
     {
       key: "status",
@@ -275,10 +291,11 @@ const EmployeeDetails: React.FC = () => {
         return (
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${
-              statusColors[value as keyof typeof statusColors]
+              statusColors[value as keyof typeof statusColors] ||
+              "bg-gray-100 text-gray-800"
             }`}
           >
-            {value.toUpperCase()}
+            {value ? value.toUpperCase() : "N/A"}
           </span>
         );
       },
@@ -286,19 +303,34 @@ const EmployeeDetails: React.FC = () => {
     {
       key: "checkIn",
       label: "Check In",
-      render: (value: string) =>
-        value ? format(new Date(value), "hh:mm a") : "-",
+      render: (value: string) => {
+        if (!value) return "-";
+        try {
+          return format(new Date(value), "hh:mm a");
+        } catch {
+          return "-";
+        }
+      },
     },
     {
       key: "checkOut",
       label: "Check Out",
-      render: (value: string) =>
-        value ? format(new Date(value), "hh:mm a") : "-",
+      render: (value: string) => {
+        if (!value) return "-";
+        try {
+          return format(new Date(value), "hh:mm a");
+        } catch {
+          return "-";
+        }
+      },
     },
     {
       key: "workHours",
       label: "Work Hours",
-      render: (value: number) => (value ? `${value.toFixed(1)} hrs` : "-"),
+      render: (value: number) => {
+        if (!value || typeof value !== "number") return "-";
+        return `${value.toFixed(1)} hrs`;
+      },
     },
   ];
 
@@ -487,7 +519,9 @@ const EmployeeDetails: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Joining Date</p>
                 <p className="font-medium text-gray-900">
-                  {format(new Date(employee.joiningDate), "dd MMMM yyyy")}
+                  {employee.joiningDate
+                    ? format(new Date(employee.joiningDate), "dd MMMM yyyy")
+                    : "-"}
                 </p>
               </div>
             </div>
@@ -605,13 +639,17 @@ const EmployeeDetails: React.FC = () => {
           <div>
             <p className="text-gray-500">Created At</p>
             <p className="font-medium text-gray-900">
-              {format(new Date(employee.createdAt), "dd MMM yyyy, hh:mm a")}
+              {employee.createdAt
+                ? format(new Date(employee.createdAt), "dd MMM yyyy, hh:mm a")
+                : "-"}
             </p>
           </div>
           <div>
             <p className="text-gray-500">Last Updated</p>
             <p className="font-medium text-gray-900">
-              {format(new Date(employee.updatedAt), "dd MMM yyyy, hh:mm a")}
+              {employee.updatedAt
+                ? format(new Date(employee.updatedAt), "dd MMM yyyy, hh:mm a")
+                : "-"}
             </p>
           </div>
           <div>

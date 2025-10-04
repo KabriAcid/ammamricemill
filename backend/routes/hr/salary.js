@@ -13,9 +13,43 @@ router.get("/", authenticateToken, async (req, res, next) => {
       search = "",
       year = "",
       month = "",
+      employeeId = "",
     } = req.query;
 
-    // Build base query
+    // If employeeId is provided, return employee-specific salary history
+    if (employeeId) {
+      const [employeeSalaries] = await pool.query(
+        `
+        SELECT 
+          es.id,
+          s.date,
+          s.month,
+          s.year,
+          CAST(es.salary AS DECIMAL(10,2)) as salary,
+          CAST(es.bonus_ot AS DECIMAL(10,2)) as bonusOT,
+          CAST(es.absent_fine AS DECIMAL(10,2)) as absentFine,
+          CAST(es.deduction AS DECIMAL(10,2)) as deduction,
+          CAST(es.payment AS DECIMAL(10,2)) as payment,
+          es.note,
+          es.signature
+        FROM employee_salary es
+        INNER JOIN monthly_salary s ON es.salary_id = s.id
+        WHERE es.employee_id = ?
+        ORDER BY s.date DESC, s.year DESC, s.month DESC
+        LIMIT 10
+      `,
+        [employeeId]
+      );
+
+      return res.json({
+        success: true,
+        data: {
+          salaries: employeeSalaries,
+        },
+      });
+    }
+
+    // Build base query for general salary records
     let query = `
       SELECT 
         s.id,
