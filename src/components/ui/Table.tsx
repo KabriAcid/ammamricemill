@@ -1,7 +1,7 @@
 import {
   ChevronLeft,
   ChevronRight,
-  CreditCard as Edit,
+  Pencil as Edit,
   Eye,
 } from "lucide-react";
 import { TableProps } from "../../types/index";

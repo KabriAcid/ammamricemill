@@ -1,11 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
 import { Card } from "../../components/ui/Card";
-import { Plus, Trash2, ArrowDownCircle } from "lucide-react";
+import { FilterBar } from "../../components/ui/FilterBar";
+import { Plus, Trash2, ArrowDownCircle, TrendingUp } from "lucide-react";
 import { api } from "../../utils/fetcher";
 import { useToast } from "../../components/ui/Toast";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { ApiResponse } from "../../types";
 
 type IncomeRow = {
   id: string;
@@ -13,14 +16,17 @@ type IncomeRow = {
   receives: number;
 };
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
 const HeadIncome = () => {
   const { showToast } = useToast();
   const [data, setData] = useState<IncomeRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<IncomeRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [formData, setFormData] = useState({ name: "", receives: 0 });
 
   const fetchIncomeHeads = async () => {
