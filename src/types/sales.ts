@@ -2,6 +2,8 @@ export interface SaleItem {
   id: string;
   categoryId: string;
   productId: string;
+  size?: string;
+  stock?: number;
   godownId: string;
   quantity: number;
   netWeight: number;

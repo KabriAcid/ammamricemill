@@ -40,7 +40,7 @@ interface EmptybagPurchaseFormData {
   description: string;
 }
 
-const EmptybagPurchaseList = () => {
+const EmptybagPaddyPurchase = () => {
   // State Management
   const [data, setData] = useState<EmptybagPurchase[]>([]);
   const [loading, setLoading] = useState(false);
@@ -623,4 +623,4 @@ const EmptybagPurchaseList = () => {
   );
 };
 
-export default EmptybagPurchaseList;
+export default EmptybagPaddyPurchase;

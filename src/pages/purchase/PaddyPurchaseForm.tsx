@@ -4,14 +4,14 @@ import { Button } from "../../components/ui/Button";
 import { Modal } from "../../components/ui/Modal";
 import { Purchase, PurchaseItem } from "../../types/purchase";
 
-interface PurchaseFormModalProps {
+interface PaddyPurchaseFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSave: (data: Partial<Purchase>) => Promise<void>;
   item: Purchase | null;
 }
 
-const PurchaseFormModal: React.FC<PurchaseFormModalProps> = ({
+const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
   isOpen,
   onClose,
   onSave,
@@ -583,4 +583,4 @@ const PurchaseFormModal: React.FC<PurchaseFormModalProps> = ({
   );
 };
 
-export default PurchaseFormModal;
+export default PaddyPurchaseForm;

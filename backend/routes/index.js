@@ -19,6 +19,12 @@ import headBankRoutes from "./accounts/head-bank.js";
 import headOthersRoutes from "./accounts/head-others.js";
 import transactionsRoutes from "./accounts/transactions.js";
 
+// Sales Routes
+import salesListRoutes from "./sales/sales-list.js";
+
+// Purchase Routes
+import paddyPurchaseRoutes from "./purchase/paddy-purchase.js";
+
 const router = express.Router();
 
 // General routes
@@ -43,5 +49,11 @@ router.use("/accounts/head-expense", headExpenseRoutes);
 router.use("/accounts/head-bank", headBankRoutes);
 router.use("/accounts/head-others", headOthersRoutes);
 router.use("/accounts/transactions", transactionsRoutes);
+
+// Sales routes
+router.use("/sales", salesListRoutes);
+
+// Purchase routes
+router.use("/purchase/paddy", paddyPurchaseRoutes);
 
 export default router;

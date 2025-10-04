@@ -99,6 +99,60 @@ export class ApiError extends Error {
 }
 
 // Utility functions for common API calls
+// Function to handle file downloads
+async function downloadFile(url: string): Promise<void> {
+  try {
+    // Get token from localStorage
+    const user = localStorage.getItem("ammam_user");
+    const token = user ? JSON.parse(user).token : null;
+
+    const headers: Record<string, string> = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    const response = await fetch(`${BASE_URL}${url}`, {
+      headers,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new ApiError(
+        errorData?.message || `Download failed with status ${response.status}`,
+        response.status
+      );
+    }
+
+    // Get filename from Content-Disposition header or fallback to a default
+    const contentDisposition = response.headers.get("Content-Disposition");
+    const filenameMatch = contentDisposition?.match(
+      /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/
+    );
+    const filename = filenameMatch
+      ? filenameMatch[1].replace(/['"]/g, "")
+      : "download";
+
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(downloadUrl);
+  } catch (error) {
+    if (error instanceof ApiError) {
+      throw error;
+    }
+    throw new ApiError(
+      error instanceof Error ? error.message : "Download failed",
+      0
+    );
+  }
+}
+
 export const api = {
   get: <T>(url: string) => fetcher<T>(url),
   post: <T>(url: string, data: any) =>
@@ -124,4 +178,5 @@ export const api = {
       body: formData,
       headers: {}, // Let the browser set the Content-Type with boundary for FormData
     }),
+  download: (url: string) => downloadFile(url),
 };

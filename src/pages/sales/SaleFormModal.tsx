@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, ShoppingCart } from "lucide-react";
 import type { Sale, SaleItem } from "../../types/sales";
 
 interface SaleFormModalProps {
@@ -54,10 +54,25 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
     const fetchData = async () => {
       try {
         // TODO: Replace with actual API calls
-        setCategories([{ id: "1", name: "Category 1" }]);
-        setProducts([{ id: "1", name: "Product 1" }]);
-        setGodowns([{ id: "1", name: "Godown 1" }]);
-        setParties([{ id: "1", name: "Party 1" }]);
+        setCategories([
+          { id: "1", name: "Paddy" },
+          { id: "2", name: "Head Rice" },
+        ]);
+        setProducts([
+          { id: "1", name: "Normal Paddy" },
+          { id: "2", name: "PADDY GRADE C" },
+          { id: "3", name: "Head Rice 50 Kg" },
+          { id: "4", name: "Head Rice 25 Kg" },
+        ]);
+        setGodowns([
+          { id: "1", name: "Main Warehouse" },
+          { id: "2", name: "Storage A" },
+          { id: "3", name: "Storage B" },
+        ]);
+        setParties([
+          { id: "1", name: "ABC Traders" },
+          { id: "2", name: "XYZ Company" },
+        ]);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -129,6 +144,8 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
           id: Date.now().toString(),
           categoryId: "",
           productId: "",
+          size: "",
+          stock: 0,
           godownId: "",
           quantity: 0,
           netWeight: 0,
@@ -137,40 +154,6 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
         },
       ],
     }));
-  };
-
-  const removeItem = (index: number) => {
-    setFormData((prev) => {
-      const newItems = prev.items?.filter((_, i) => i !== index) || [];
-
-      // Recalculate totals
-      const totalQuantity = newItems.reduce(
-        (sum, item) => sum + (item.quantity || 0),
-        0
-      );
-      const totalNetWeight = newItems.reduce(
-        (sum, item) => sum + (item.netWeight || 0),
-        0
-      );
-      const invoiceAmount = newItems.reduce(
-        (sum, item) => sum + (item.totalPrice || 0),
-        0
-      );
-      const totalAmount = invoiceAmount - (prev.discount || 0);
-      const netPayable = totalAmount + (prev.previousBalance || 0);
-      const currentBalance = netPayable - (prev.paidAmount || 0);
-
-      return {
-        ...prev,
-        items: newItems,
-        totalQuantity,
-        totalNetWeight,
-        invoiceAmount,
-        totalAmount,
-        netPayable,
-        currentBalance,
-      };
-    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -302,13 +285,19 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
                     Product
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Godown
+                    Size
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Quantity (Bag)
+                    Stocks
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Net Weight (Kg)
+                    Select Godown
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Quantity
+                  </th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Net Weight
                   </th>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Rate
@@ -316,7 +305,9 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Total Price
                   </th>
-                  <th className="px-3 py-2"></th>
+                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Add To Cart
+                  </th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -355,6 +346,33 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
                           </option>
                         ))}
                       </select>
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="text"
+                        value={item.size || ""}
+                        onChange={(e) =>
+                          handleItemChange(index, "size", e.target.value)
+                        }
+                        className="input-base text-sm py-1"
+                        placeholder="Size"
+                      />
+                    </td>
+                    <td className="px-3 py-2">
+                      <input
+                        type="number"
+                        value={item.stock || 0}
+                        onChange={(e) =>
+                          handleItemChange(
+                            index,
+                            "stock",
+                            Number(e.target.value)
+                          )
+                        }
+                        className="input-base text-sm py-1 bg-gray-50"
+                        readOnly
+                        placeholder="Available Stock"
+                      />
                     </td>
                     <td className="px-3 py-2">
                       <select
@@ -432,12 +450,15 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
                     <td className="px-3 py-2">
                       <Button
                         type="button"
-                        onClick={() => removeItem(index)}
-                        icon={Trash2}
+                        onClick={() => {
+                          // Add to cart functionality can be implemented here
+                          console.log("Added to cart:", item);
+                        }}
+                        icon={ShoppingCart}
                         size="sm"
-                        variant="danger"
+                        variant="primary"
                       >
-                        ""
+                        Add To Cart
                       </Button>
                     </td>
                   </tr>

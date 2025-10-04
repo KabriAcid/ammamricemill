@@ -13,11 +13,15 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { Modal } from "../../components/ui/Modal";
+
 import { Purchase } from "../../types/purchase";
 import { format } from "date-fns";
+import { fetcher } from "../../utils/fetcher";
+import { useToast } from "../../components/ui/Toast";
 
-const PurchaseList: React.FC = () => {
+const PaddyPurchase: React.FC = () => {
+  const { showToast } = useToast();
+
   // State management
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [selectedPurchases, setSelectedPurchases] = useState<string[]>([]);
@@ -26,59 +30,67 @@ const PurchaseList: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
   const [loading, setLoading] = useState(false);
+  const [stats, setStats] = useState({
+    totalPurchases: 0,
+    totalQuantity: 0,
+    totalAmount: 0,
+    totalBalance: 0,
+  });
   const navigate = useNavigate();
 
   // Fetch purchases
-  useEffect(() => {
-    const fetchPurchases = async () => {
-      setLoading(true);
-      try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        // Mock data
-        const mockPurchases: Purchase[] = [
-          {
-            id: "1",
-            invoiceNo: "PUR-001",
-            date: "2024-01-15",
-            challanNo: "CH-001",
-            partyId: "PARTY-001",
-            transportInfo: "Truck ABC-123",
-            notes: "Regular purchase",
-            items: [
-              {
-                categoryId: "CAT-001",
-                productId: "PROD-001",
-                godownId: "GD-001",
-                quantity: 100,
-                netWeight: 5000,
-                rate: 50,
-                totalPrice: 5000,
-              },
-            ],
-            totalQuantity: 100,
-            totalNetWeight: 5000,
-            invoiceAmount: 5000,
-            discount: 100,
-            totalAmount: 4900,
-            previousBalance: 1000,
-            netPayable: 5900,
-            paidAmount: 4000,
-            currentBalance: 1900,
-            createdAt: "2024-01-15T10:00:00Z",
-            updatedAt: "2024-01-15T10:00:00Z",
-          },
-        ];
-        setPurchases(mockPurchases);
-      } catch (error) {
-        console.error("Error fetching purchases:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchPurchases = async () => {
+    setLoading(true);
+    try {
+      const queryParams = new URLSearchParams();
+      if (dateRange.from) queryParams.append("fromDate", dateRange.from);
+      if (dateRange.to) queryParams.append("toDate", dateRange.to);
 
+      const url = `/purchase/paddy${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+
+      const response = (await fetcher(url)) as any;
+
+      if (response.success && response.data) {
+        setPurchases(response.data);
+        showToast("Purchases loaded successfully", "success");
+      } else {
+        throw new Error(response.error || "Failed to fetch purchases");
+      }
+    } catch (error) {
+      console.error("Error fetching purchases:", error);
+      showToast("Failed to load purchases", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch statistics
+  const fetchStats = async () => {
+    try {
+      const queryParams = new URLSearchParams();
+      if (dateRange.from) queryParams.append("fromDate", dateRange.from);
+      if (dateRange.to) queryParams.append("toDate", dateRange.to);
+
+      const url = `/purchase/paddy/statistics/summary${
+        queryParams.toString() ? `?${queryParams.toString()}` : ""
+      }`;
+
+      const response = (await fetcher(url)) as any;
+
+      if (response.success && response.data) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error("Error fetching stats:", error);
+    }
+  };
+
+  useEffect(() => {
     fetchPurchases();
-  }, []);
+    fetchStats();
+  }, [dateRange]);
 
   // Filtering logic
   const filteredPurchases = purchases.filter((purchase) => {
@@ -108,31 +120,48 @@ const PurchaseList: React.FC = () => {
       render: (value: string) => format(new Date(value), "dd/MM/yyyy"),
     },
     { key: "invoiceNo", label: "Invoice No", sortable: true },
-    { key: "partyId", label: "Party", sortable: true },
-    {
-      key: "items",
-      label: "Items",
-      render: (items: Purchase["items"]) => items.length,
-    },
+    { key: "partyName", label: "Party", sortable: true },
     {
       key: "totalQuantity",
       label: "Quantity",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => value?.toLocaleString() || "0",
+    },
+    {
+      key: "totalNetWeight",
+      label: "Weight (kg)",
+      render: (value: number) => value?.toLocaleString() || "0",
     },
     {
       key: "totalAmount",
       label: "Total",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${value?.toLocaleString() || "0"}`,
     },
     {
-      key: "discount",
-      label: "Discount",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      key: "paidAmount",
+      label: "Paid",
+      render: (value: number) => `₦${value?.toLocaleString() || "0"}`,
     },
     {
-      key: "netPayable",
-      label: "Net Price",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      key: "currentBalance",
+      label: "Balance",
+      render: (value: number) => `₦${value?.toLocaleString() || "0"}`,
+    },
+    {
+      key: "status",
+      label: "Status",
+      render: (value: string) => (
+        <span
+          className={`px-2 py-1 rounded-full text-xs font-medium ${
+            value === "completed"
+              ? "bg-green-100 text-green-700"
+              : value === "cancelled"
+              ? "bg-red-100 text-red-700"
+              : "bg-yellow-100 text-yellow-700"
+          }`}
+        >
+          {value || "pending"}
+        </span>
+      ),
     },
   ];
 
@@ -145,14 +174,27 @@ const PurchaseList: React.FC = () => {
     ) {
       setLoading(true);
       try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setPurchases((prev) =>
-          prev.filter((purchase) => !purchaseIds.includes(purchase.id))
-        );
-        setSelectedPurchases([]);
+        const response = (await fetcher(`/purchase/paddy`, {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: purchaseIds }),
+        })) as any;
+
+        if (response.success) {
+          setPurchases((prev) =>
+            prev.filter((purchase) => !purchaseIds.includes(purchase.id))
+          );
+          setSelectedPurchases([]);
+          showToast(
+            response.message || "Purchases deleted successfully",
+            "success"
+          );
+        } else {
+          throw new Error(response.error || "Failed to delete purchases");
+        }
       } catch (error) {
         console.error("Error deleting purchases:", error);
+        showToast("Failed to delete purchases", "error");
       } finally {
         setLoading(false);
       }
@@ -161,16 +203,6 @@ const PurchaseList: React.FC = () => {
 
   const handleView = (purchase: Purchase) => {
     navigate(`/purchases/${purchase.id}`);
-  };
-
-  // Calculate summary statistics
-  const stats = {
-    totalPurchases: purchases.length,
-    totalQuantity: purchases.reduce((sum, p) => sum + p.totalQuantity, 0),
-    totalAmount: purchases.reduce((sum, p) => sum + p.totalAmount, 0),
-    averageAmount: purchases.length
-      ? purchases.reduce((sum, p) => sum + p.totalAmount, 0) / purchases.length
-      : 0,
   };
 
   const loadingCards = loading && !purchases.length;
@@ -216,9 +248,9 @@ const PurchaseList: React.FC = () => {
         <Card icon={<ArrowDownCircle size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              ₦{Math.round(stats.averageAmount).toLocaleString()}
+              ₦{stats.totalBalance.toLocaleString()}
             </p>
-            <p className="text-sm text-gray-500">Average Purchase</p>
+            <p className="text-sm text-gray-500">Total Balance</p>
           </div>
         </Card>
       </div>
@@ -302,4 +334,4 @@ const PurchaseList: React.FC = () => {
   );
 };
 
-export default PurchaseList;
+export default PaddyPurchase;

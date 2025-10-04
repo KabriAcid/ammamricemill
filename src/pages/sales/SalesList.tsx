@@ -77,7 +77,6 @@ const SalesList = () => {
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [totalPages, setTotalPages] = useState(1);
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
 
   const { showToast } = useToast();
@@ -88,46 +87,23 @@ const SalesList = () => {
     if (loading) return;
     setLoading(true);
     try {
-      // Build query params including search and date range
+      // Build query params for date range only
       const queryParams = new URLSearchParams();
       if (dateRange.from) queryParams.append("fromDate", dateRange.from);
       if (dateRange.to) queryParams.append("toDate", dateRange.to);
-      if (search) queryParams.append("search", search);
-      queryParams.append("page", currentPage.toString());
-      queryParams.append("pageSize", pageSize.toString());
 
-      const [salesResponse, statsResponse] = await Promise.all([
-        api.get<
-          ApiResponse<{
-            data: Sale[];
-            total: number;
-          }>
-        >(`/sales?${queryParams}`),
-        api.get<
-          ApiResponse<{
-            totalSales: number;
-            totalQuantity: number;
-            totalAmount: number;
-            totalBalance: number;
-          }>
-        >(`/sales/statistics/summary?${queryParams}`),
-      ]);
+      const salesResponse = await api.get<ApiResponse<Sale[]>>(
+        `/sales?${queryParams}`
+      );
 
       if (salesResponse.success && salesResponse.data) {
-        const total = salesResponse.data.total;
+        // Map the data and convert id to string
         setData(
-          salesResponse.data.data.map((item: Sale) => ({
+          salesResponse.data.map((item: Sale) => ({
             ...item,
             id: String(item.id),
           }))
         );
-        // Update total pages and items count
-        setTotalPages(Math.ceil(total / pageSize));
-        setTotalItems(total);
-      }
-
-      if (statsResponse.success && statsResponse.data) {
-        setStats(statsResponse.data);
       }
     } catch (error) {
       console.error("Error fetching sales:", error);
@@ -170,9 +146,9 @@ const SalesList = () => {
   }, []);
 
   // Handle search function
-  const handleSearch = async (term: string) => {
+  const handleSearch = (term: string) => {
     setSearch(term);
-    await fetchSales();
+    setCurrentPage(1); // Reset to first page when searching
   };
 
   // Reset pagination when search changes
@@ -180,21 +156,36 @@ const SalesList = () => {
     setCurrentPage(1);
   }, [search, dateRange]);
 
-  // Reload data when filters change
+  // Reload data when date range changes
   useEffect(() => {
     fetchSales();
-  }, [currentPage, pageSize, search, dateRange.from, dateRange.to]);
+  }, [dateRange.from, dateRange.to]);
 
-  // Stats state
-  const [stats, setStats] = useState({
-    totalSales: 0,
-    totalQuantity: 0,
-    totalAmount: 0,
-    totalBalance: 0,
+  // Client-side filtering
+  const filteredData = data.filter((sale) => {
+    const query = search.toLowerCase().trim();
+    const matchesSearch =
+      !query ||
+      sale.invoiceNo.toLowerCase().includes(query) ||
+      sale.challanNo?.toLowerCase().includes(query) ||
+      sale.partyName?.toLowerCase().includes(query) ||
+      false;
+
+    return matchesSearch;
   });
 
-  // Total items state for pagination
-  const [totalItems, setTotalItems] = useState(0);
+  // Client-side pagination
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
+  // Calculate stats from current data
+  const stats = {
+    totalSales: filteredData.length,
+    totalQuantity: filteredData.reduce((sum, s) => sum + s.totalQuantity, 0),
+    totalAmount: filteredData.reduce((sum, s) => sum + s.totalAmount, 0),
+    totalBalance: filteredData.reduce((sum, s) => sum + s.currentBalance, 0),
+  };
 
   // CRUD Operations
   const handleDelete = async (ids: string[]) => {
@@ -413,14 +404,14 @@ const SalesList = () => {
 
       {/* Table */}
       <Table
-        data={data}
+        data={paginatedData}
         columns={columns}
         loading={initialLoading || loading}
         pagination={{
           currentPage,
           totalPages,
           pageSize,
-          totalItems,
+          totalItems: filteredData.length,
           onPageChange: setCurrentPage,
           onPageSizeChange: (size) => {
             setPageSize(size);

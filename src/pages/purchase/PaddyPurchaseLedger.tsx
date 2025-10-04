@@ -12,12 +12,12 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { PurchaseLedgerEntry } from "../../types/purchase";
+import { PaddyPurchaseLedgerEntry } from "../../types/purchase";
 import { format } from "date-fns";
 
-const PurchaseLedger: React.FC = () => {
+const PaddyPurchaseLedger: React.FC = () => {
   // State management
-  const [entries, setEntries] = useState<PurchaseLedgerEntry[]>([]);
+  const [entries, setEntries] = useState<PaddyPurchaseLedgerEntry[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,7 +33,7 @@ const PurchaseLedger: React.FC = () => {
         // TODO: Replace with actual API call
         await new Promise((resolve) => setTimeout(resolve, 1000));
         // Mock data
-        const mockEntries: PurchaseLedgerEntry[] = [
+        const mockEntries: PaddyPurchaseLedgerEntry[] = [
           {
             id: "1",
             date: "2024-01-15",
@@ -231,4 +231,4 @@ const PurchaseLedger: React.FC = () => {
   );
 };
 
-export default PurchaseLedger;
+export default PaddyPurchaseLedger;

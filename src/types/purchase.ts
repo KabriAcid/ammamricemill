@@ -69,7 +69,7 @@ export interface Purchase extends BaseEntity {
   currentBalance: number;
 }
 
-export interface PurchaseLedgerEntry extends BaseEntity {
+export interface PaddyPurchaseLedgerEntry extends BaseEntity {
   date: string;
   invoiceNo: string;
   partyId: string;

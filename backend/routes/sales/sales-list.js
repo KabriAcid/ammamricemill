@@ -1,40 +1,23 @@
 import { Router } from "express";
-import { pool } from "../utils/db.js";
-import { authenticateToken } from "../middlewares/auth.js";
+import { pool } from "../../utils/db.js";
+import { authenticateToken } from "../../middlewares/auth.js";
 
 const router = Router();
 
-// GET /api/sales - Fetch all sales with pagination and search
+// GET /api/sales - Fetch all sales
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    const { fromDate, toDate, search, page = 1, pageSize = 25 } = req.query;
-    const offset = (page - 1) * pageSize;
+    const { fromDate, toDate } = req.query;
 
-    let conditions = ["s.status != 'cancelled'"];
+    let dateCondition = "s.status != 'cancelled'";
     const params = [];
 
     if (fromDate && toDate) {
-      conditions.push("s.date BETWEEN ? AND ?");
+      dateCondition += " AND s.date BETWEEN ? AND ?";
       params.push(fromDate, toDate);
     }
 
-    if (search) {
-      conditions.push(
-        "(s.invoice_no LIKE ? OR s.challan_no LIKE ? OR p.name LIKE ?)"
-      );
-      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
-    }
-
-    // Get total count
-    const [countResult] = await pool.query(
-      `SELECT COUNT(*) as total
-       FROM sales s
-       LEFT JOIN parties p ON s.party_id = p.id
-       WHERE ${conditions.join(" AND ")}`,
-      params
-    );
-
-    // Get paginated data
+    // Get all data
     const [records] = await pool.query(
       `SELECT 
         s.id,
@@ -61,18 +44,14 @@ router.get("/", authenticateToken, async (req, res, next) => {
         s.updated_at as updatedAt
       FROM sales s
       LEFT JOIN parties p ON s.party_id = p.id
-      WHERE ${conditions.join(" AND ")}
-      ORDER BY s.date DESC, s.created_at DESC
-      LIMIT ? OFFSET ?`,
-      [...params, Number(pageSize), Number(offset)]
+      WHERE ${dateCondition}
+      ORDER BY s.date DESC, s.created_at DESC`,
+      params
     );
 
     res.json({
       success: true,
-      data: {
-        data: records,
-        total: countResult[0].total,
-      },
+      data: records,
     });
   } catch (err) {
     next(err);
@@ -475,14 +454,12 @@ router.get("/statistics/summary", authenticateToken, async (req, res, next) => {
   try {
     const { fromDate, toDate } = req.query;
 
-    let dateCondition = "";
+    let dateCondition = "status != 'cancelled'";
     const params = [];
 
     if (fromDate && toDate) {
-      dateCondition = "WHERE date BETWEEN ? AND ? AND status != 'cancelled'";
+      dateCondition += " AND date BETWEEN ? AND ?";
       params.push(fromDate, toDate);
-    } else {
-      dateCondition = "WHERE status != 'cancelled'";
     }
 
     const [summary] = await pool.query(
@@ -492,7 +469,7 @@ router.get("/statistics/summary", authenticateToken, async (req, res, next) => {
         COALESCE(SUM(total_amount), 0) as totalAmount,
         COALESCE(SUM(current_balance), 0) as totalBalance
       FROM sales
-      ${dateCondition}`,
+      WHERE ${dateCondition}`,
       params
     );
 
