@@ -22,6 +22,7 @@ import { Table } from "../../components/ui/Table";
 import { useToast } from "../../components/ui/Toast";
 import { format, differenceInMonths } from "date-fns";
 import { api } from "../../utils/fetcher";
+import { formatCurrency } from "../../utils/formatters";
 import { ApiResponse } from "../../types";
 
 interface EmployeeDetail {
@@ -237,29 +238,27 @@ const EmployeeDetails: React.FC = () => {
     {
       key: "salary",
       label: "Base Salary",
-      render: (value: number) => `₦${(value || 0).toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
       key: "bonusOT",
       label: "Bonus/OT",
       render: (value: number) => (
-        <span className="text-green-600">
-          +₦{(value || 0).toLocaleString()}
-        </span>
+        <span className="text-green-600">+₦{formatCurrency(value)}</span>
       ),
     },
     {
       key: "deduction",
       label: "Deductions",
       render: (value: number) => (
-        <span className="text-red-600">-₦{(value || 0).toLocaleString()}</span>
+        <span className="text-red-600">-₦{formatCurrency(value)}</span>
       ),
     },
     {
       key: "payment",
       label: "Net Payment",
       render: (value: number) => (
-        <span className="font-semibold">₦{(value || 0).toLocaleString()}</span>
+        <span className="font-semibold">₦{formatCurrency(value)}</span>
       ),
     },
   ];
@@ -386,11 +385,11 @@ const EmployeeDetails: React.FC = () => {
             <div>
               <p className="text-sm text-gray-500">Monthly Salary</p>
               <p className="text-2xl font-bold text-gray-900">
-                ₦{employee.salary.toLocaleString()}
+                ₦{formatCurrency(employee.salary)}
               </p>
             </div>
-            <div className="p-3 bg-green-50 rounded-lg">
-              <Wallet className="text-green-600" size={24} />
+            <div className="bg-primary-50 rounded-lg">
+              <Wallet className="text-primary-600" size={24} />
             </div>
           </div>
         </Card>
@@ -400,11 +399,11 @@ const EmployeeDetails: React.FC = () => {
             <div>
               <p className="text-sm text-gray-500">Total Paid</p>
               <p className="text-2xl font-bold text-gray-900">
-                ₦{totalPaid.toLocaleString()}
+                ₦{formatCurrency(totalPaid)}
               </p>
             </div>
-            <div className="p-3 bg-blue-50 rounded-lg">
-              <DollarSign className="text-blue-600" size={24} />
+            <div className="bg-primary-50 rounded-lg">
+              <DollarSign className="text-primary-600" size={24} />
             </div>
           </div>
         </Card>
@@ -417,8 +416,8 @@ const EmployeeDetails: React.FC = () => {
                 {attendanceRate}%
               </p>
             </div>
-            <div className="p-3 bg-purple-50 rounded-lg">
-              <TrendingUp className="text-purple-600" size={24} />
+            <div className="bg-primary-50 rounded-lg">
+              <TrendingUp className="text-primary-600" size={24} />
             </div>
           </div>
         </Card>
@@ -431,8 +430,8 @@ const EmployeeDetails: React.FC = () => {
                 {tenureYears}y {remainingMonths}m
               </p>
             </div>
-            <div className="p-3 bg-orange-50 rounded-lg">
-              <Clock className="text-orange-600" size={24} />
+            <div className="bg-primary-50 rounded-lg">
+              <Clock className="text-primary-600" size={24} />
             </div>
           </div>
         </Card>
@@ -469,8 +468,8 @@ const EmployeeDetails: React.FC = () => {
 
           <div className="space-y-4">
             <div className="flex items-start space-x-3">
-              <div className="p-2 bg-blue-50 rounded-lg">
-                <User className="text-blue-600" size={20} />
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <User className="text-primary-600" size={20} />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Full Name</p>
@@ -479,8 +478,8 @@ const EmployeeDetails: React.FC = () => {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="p-2 bg-purple-50 rounded-lg">
-                <Briefcase className="text-purple-600" size={20} />
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <Briefcase className="text-primary-600" size={20} />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Designation</p>
@@ -491,8 +490,8 @@ const EmployeeDetails: React.FC = () => {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="p-2 bg-green-50 rounded-lg">
-                <Phone className="text-green-600" size={20} />
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <Phone className="text-primary-600" size={20} />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Mobile</p>
@@ -502,8 +501,8 @@ const EmployeeDetails: React.FC = () => {
 
             {employee.email && (
               <div className="flex items-start space-x-3">
-                <div className="p-2 bg-orange-50 rounded-lg">
-                  <Mail className="text-orange-600" size={20} />
+                <div className="p-2 bg-primary-50 rounded-lg">
+                  <Mail className="text-primary-600" size={20} />
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Email</p>
@@ -513,8 +512,8 @@ const EmployeeDetails: React.FC = () => {
             )}
 
             <div className="flex items-start space-x-3">
-              <div className="p-2 bg-teal-50 rounded-lg">
-                <Calendar className="text-teal-600" size={20} />
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <Calendar className="text-primary-600" size={20} />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Joining Date</p>
@@ -527,13 +526,13 @@ const EmployeeDetails: React.FC = () => {
             </div>
 
             <div className="flex items-start space-x-3">
-              <div className="p-2 bg-indigo-50 rounded-lg">
-                <Wallet className="text-indigo-600" size={20} />
+              <div className="p-2 bg-primary-50 rounded-lg">
+                <Wallet className="text-primary-600" size={20} />
               </div>
               <div>
                 <p className="text-sm text-gray-500">Monthly Salary</p>
                 <p className="font-medium text-gray-900 text-lg">
-                  ₦{employee.salary.toLocaleString()}
+                  ₦{formatCurrency(employee.salary)}
                 </p>
               </div>
             </div>
@@ -546,34 +545,36 @@ const EmployeeDetails: React.FC = () => {
             Financial Summary
           </h2>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-green-50 p-4 rounded-lg">
-              <p className="text-sm text-green-600 font-medium">
+            <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
+              <p className="text-sm text-primary-600 font-medium">
                 Total Payments
               </p>
-              <p className="text-2xl font-bold text-green-900 mt-1">
-                ₦{totalPaid.toLocaleString()}
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                ₦{formatCurrency(totalPaid)}
               </p>
-              <p className="text-xs text-green-600 mt-1">
+              <p className="text-xs text-gray-500 mt-1">
                 {salaryHistory.length} payment(s)
               </p>
             </div>
 
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <p className="text-sm text-blue-600 font-medium">Total Bonus</p>
-              <p className="text-2xl font-bold text-blue-900 mt-1">
-                ₦{totalBonus.toLocaleString()}
+            <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
+              <p className="text-sm text-primary-600 font-medium">
+                Total Bonus
               </p>
-              <p className="text-xs text-blue-600 mt-1">Bonus & Overtime</p>
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                ₦{formatCurrency(totalBonus)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">Bonus & Overtime</p>
             </div>
 
-            <div className="bg-red-50 p-4 rounded-lg">
-              <p className="text-sm text-red-600 font-medium">
+            <div className="bg-primary-50 p-4 rounded-lg border border-primary-100">
+              <p className="text-sm text-primary-600 font-medium">
                 Total Deductions
               </p>
-              <p className="text-2xl font-bold text-red-900 mt-1">
-                ₦{totalDeductions.toLocaleString()}
+              <p className="text-2xl font-bold text-gray-900 mt-1">
+                ₦{formatCurrency(totalDeductions)}
               </p>
-              <p className="text-xs text-red-600 mt-1">Fines & Deductions</p>
+              <p className="text-xs text-gray-500 mt-1">Fines & Deductions</p>
             </div>
           </div>
 
@@ -604,11 +605,11 @@ const EmployeeDetails: React.FC = () => {
           </h2>
           <div className="flex items-center space-x-4 text-sm">
             <div className="flex items-center">
-              <span className="w-3 h-3 bg-green-500 rounded-full mr-2"></span>
+              <span className="w-3 h-3 bg-primary-500 rounded-full mr-2"></span>
               <span className="text-gray-600">Present: {presentDays} days</span>
             </div>
             <div className="flex items-center">
-              <span className="w-3 h-3 bg-red-500 rounded-full mr-2"></span>
+              <span className="w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
               <span className="text-gray-600">Absent: {absentDays} days</span>
             </div>
           </div>

@@ -173,7 +173,7 @@ const EmployeeList: React.FC = () => {
       const response = await api.delete<{
         success: boolean;
         message: string;
-      }>(`/hr/employee?ids=${employeeIds.join(",")}`);
+      }>("/hr/employee", { ids: employeeIds });
 
       if (response.success) {
         showToast(response.message, "success");
