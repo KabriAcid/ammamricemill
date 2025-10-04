@@ -23,12 +23,17 @@ interface TransactionRow {
   id: string;
   date: string;
   party: string;
-  voucherType: "receive" | "payment" | "invoice";
+  voucherType: "receive" | "payment";
   fromHead: string;
   toHead: string;
   description: string;
   amount: number;
-  status: "pending" | "completed" | "cancelled";
+  status: "active" | "inactive";
+}
+
+interface HeadOption {
+  id: string;
+  name: string;
 }
 
 const Transactions = () => {
@@ -42,15 +47,20 @@ const Transactions = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
+
+  // Head options for dropdowns
+  const [incomeHeads, setIncomeHeads] = useState<HeadOption[]>([]);
+  const [expenseHeads, setExpenseHeads] = useState<HeadOption[]>([]);
+  const [bankHeads, setBankHeads] = useState<HeadOption[]>([]);
+  const [otherHeads, setOtherHeads] = useState<HeadOption[]>([]);
+
   const [formData, setFormData] = useState({
     date: "",
-    party: "",
-    voucherType: "receive" as TransactionRow["voucherType"],
-    fromHead: "",
-    toHead: "",
+    voucherType: "receive" as "receive" | "payment",
+    headType: "income" as "income" | "expense" | "bank" | "others",
+    headId: "",
     description: "",
     amount: 0,
-    status: "pending" as TransactionRow["status"],
   });
 
   // Fetch all transactions from API
@@ -75,8 +85,28 @@ const Transactions = () => {
     }
   };
 
+  // Fetch all head options
+  const fetchHeadOptions = async () => {
+    try {
+      const [income, expense, bank, others] = await Promise.all([
+        api.get<ApiResponse<HeadOption[]>>("/accounts/head-income"),
+        api.get<ApiResponse<HeadOption[]>>("/accounts/head-expense"),
+        api.get<ApiResponse<HeadOption[]>>("/accounts/head-bank"),
+        api.get<ApiResponse<HeadOption[]>>("/accounts/head-others"),
+      ]);
+
+      if (income.success && income.data) setIncomeHeads(income.data);
+      if (expense.success && expense.data) setExpenseHeads(expense.data);
+      if (bank.success && bank.data) setBankHeads(bank.data);
+      if (others.success && others.data) setOtherHeads(others.data);
+    } catch (error) {
+      console.error("Error fetching head options:", error);
+    }
+  };
+
   useEffect(() => {
     fetchTransactions();
+    fetchHeadOptions();
   }, []);
 
   // Keyboard shortcuts
@@ -95,10 +125,10 @@ const Transactions = () => {
   // Filter data
   const filteredData = data.filter(
     (item) =>
-      item.party.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.fromHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.toHead.toLowerCase().includes(searchQuery.toLowerCase())
+      (item.description?.toLowerCase() || "").includes(
+        searchQuery.toLowerCase()
+      ) ||
+      (item.fromHead?.toLowerCase() || "").includes(searchQuery.toLowerCase())
   );
 
   // Pagination
@@ -108,7 +138,13 @@ const Transactions = () => {
 
   // Create
   const handleCreate = async () => {
-    if (!formData.date || !formData.voucherType || !formData.amount) {
+    if (
+      !formData.date ||
+      !formData.voucherType ||
+      !formData.amount ||
+      !formData.headId ||
+      !formData.headType
+    ) {
       showToast("Please fill all required fields", "error");
       return;
     }
@@ -128,13 +164,11 @@ const Transactions = () => {
         setModalOpen(false);
         setFormData({
           date: "",
-          party: "",
           voucherType: "receive",
-          fromHead: "",
-          toHead: "",
+          headType: "income",
+          headId: "",
           description: "",
           amount: 0,
-          status: "pending",
         });
         await fetchTransactions();
       } else {
@@ -176,13 +210,11 @@ const Transactions = () => {
         setEditItem(null);
         setFormData({
           date: "",
-          party: "",
           voucherType: "receive",
-          fromHead: "",
-          toHead: "",
+          headType: "income",
+          headId: "",
           description: "",
           amount: 0,
-          status: "pending",
         });
         await fetchTransactions();
       } else {
@@ -226,7 +258,6 @@ const Transactions = () => {
   // Table columns
   const columns = [
     { key: "date", label: "Date", sortable: true },
-    { key: "party", label: "Party", sortable: true },
     {
       key: "voucherType",
       label: "Voucher Type",
@@ -234,13 +265,18 @@ const Transactions = () => {
         <span className="capitalize font-semibold">{value}</span>
       ),
     },
-    { key: "fromHead", label: "From Head" },
-    { key: "toHead", label: "To Head" },
+    { key: "fromHead", label: "Head", sortable: true },
     { key: "description", label: "Description" },
     {
       key: "amount",
       label: "Amount",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number | string) => {
+        const amount = typeof value === "string" ? parseFloat(value) : value;
+        return `₦${amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
     },
     {
       key: "status",
@@ -248,11 +284,9 @@ const Transactions = () => {
       render: (value: string) => (
         <span
           className={
-            value === "completed"
+            value === "active"
               ? "text-green-700 font-semibold"
-              : value === "pending"
-              ? "text-yellow-700 font-semibold"
-              : "text-red-700 font-semibold"
+              : "text-gray-700 font-semibold"
           }
         >
           {value.charAt(0).toUpperCase() + value.slice(1)}
@@ -261,13 +295,17 @@ const Transactions = () => {
     },
   ];
 
-  const totalAmount = data.reduce((sum, d) => sum + (d.amount || 0), 0);
+  const totalAmount = data.reduce((sum, d) => {
+    const amount =
+      typeof d.amount === "string" ? parseFloat(d.amount) : d.amount;
+    return sum + (amount || 0);
+  }, 0);
 
   // Stat card calculations
   const totalTransactions = data.length;
-  const completedCount = data.filter((d) => d.status === "completed").length;
-  const pendingCount = data.filter((d) => d.status === "pending").length;
-  const cancelledCount = data.filter((d) => d.status === "cancelled").length;
+  const activeCount = data.filter((d) => d.status === "active").length;
+  const receiveCount = data.filter((d) => d.voucherType === "receive").length;
+  const paymentCount = data.filter((d) => d.voucherType === "payment").length;
 
   return (
     <div className="animate-fade-in">
@@ -300,31 +338,35 @@ const Transactions = () => {
               <Card icon={<CheckCircle2 size={32} />} hover>
                 <div>
                   <p className="text-3xl font-bold text-gray-700">
-                    {completedCount}
+                    {receiveCount}
                   </p>
-                  <p className="text-sm text-gray-500">Completed</p>
-                </div>
-              </Card>
-              <Card icon={<XCircle size={32} />} hover>
-                <div>
-                  <p className="text-3xl font-bold text-gray-700">
-                    {cancelledCount}
-                  </p>
-                  <p className="text-sm text-gray-500">Cancelled</p>
+                  <p className="text-sm text-gray-500">Receive</p>
                 </div>
               </Card>
               <Card icon={<ArrowUpCircle size={32} />} hover>
                 <div>
                   <p className="text-3xl font-bold text-gray-700">
-                    {pendingCount}
+                    {paymentCount}
                   </p>
-                  <p className="text-sm text-gray-500">Pending</p>
+                  <p className="text-sm text-gray-500">Payment</p>
+                </div>
+              </Card>
+              <Card icon={<XCircle size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {activeCount}
+                  </p>
+                  <p className="text-sm text-gray-500">Active</p>
                 </div>
               </Card>
               <Card icon={<Printer size={32} />} hover>
                 <div>
                   <p className="text-3xl font-bold text-gray-700">
-                    ₦{totalAmount.toLocaleString()}
+                    ₦
+                    {totalAmount.toLocaleString("en-US", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
                   </p>
                   <p className="text-sm text-gray-500">Total Amount</p>
                 </div>
@@ -343,13 +385,11 @@ const Transactions = () => {
                   setEditItem(null);
                   setFormData({
                     date: "",
-                    party: "",
                     voucherType: "receive",
-                    fromHead: "",
-                    toHead: "",
+                    headType: "income",
+                    headId: "",
                     description: "",
                     amount: 0,
-                    status: "pending",
                   });
                   setModalOpen(true);
                 }}
@@ -402,13 +442,23 @@ const Transactions = () => {
             actions={{
               onEdit: (row) => {
                 setEditItem(row);
-                setFormData({ ...row });
+                setFormData({
+                  date: row.date,
+                  voucherType: row.voucherType,
+                  headType: "income",
+                  headId: "",
+                  description: row.description,
+                  amount: row.amount,
+                });
                 setModalOpen(true);
               },
             }}
             summaryRow={{
               date: "Total",
-              amount: `₦${totalAmount.toLocaleString()}`,
+              amount: `₦${totalAmount.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`,
             }}
           />
         </Card>
@@ -434,20 +484,6 @@ const Transactions = () => {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Party *
-            </label>
-            <input
-              type="text"
-              value={formData.party}
-              onChange={(e) =>
-                setFormData((prev) => ({ ...prev, party: e.target.value }))
-              }
-              className="input-base"
-              required
-            />
-          </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -458,8 +494,7 @@ const Transactions = () => {
                 onChange={(e) =>
                   setFormData((prev) => ({
                     ...prev,
-                    voucherType: e.target
-                      .value as TransactionRow["voucherType"],
+                    voucherType: e.target.value as "receive" | "payment",
                   }))
                 }
                 className="input-base"
@@ -467,59 +502,73 @@ const Transactions = () => {
               >
                 <option value="receive">Receive</option>
                 <option value="payment">Payment</option>
-                <option value="invoice">Invoice</option>
               </select>
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Status *
+                Head Type *
               </label>
               <select
-                value={formData.status}
-                onChange={(e) =>
+                value={formData.headType}
+                onChange={(e) => {
                   setFormData((prev) => ({
                     ...prev,
-                    status: e.target.value as TransactionRow["status"],
-                  }))
-                }
+                    headType: e.target.value as
+                      | "income"
+                      | "expense"
+                      | "bank"
+                      | "others",
+                    headId: "", // Reset headId when head type changes
+                  }));
+                }}
                 className="input-base"
                 required
               >
-                <option value="pending">Pending</option>
-                <option value="completed">Completed</option>
-                <option value="cancelled">Cancelled</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+                <option value="bank">Bank</option>
+                <option value="others">Others</option>
               </select>
             </div>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                From Head *
-              </label>
-              <input
-                type="text"
-                value={formData.fromHead}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, fromHead: e.target.value }))
-                }
-                className="input-base"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                To Head *
-              </label>
-              <input
-                type="text"
-                value={formData.toHead}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, toHead: e.target.value }))
-                }
-                className="input-base"
-                required
-              />
-            </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Select Head *
+            </label>
+            <select
+              value={formData.headId}
+              onChange={(e) =>
+                setFormData((prev) => ({ ...prev, headId: e.target.value }))
+              }
+              className="input-base"
+              required
+            >
+              <option value="">-- Select {formData.headType} head --</option>
+              {formData.headType === "income" &&
+                incomeHeads.map((head) => (
+                  <option key={head.id} value={head.id}>
+                    {head.name}
+                  </option>
+                ))}
+              {formData.headType === "expense" &&
+                expenseHeads.map((head) => (
+                  <option key={head.id} value={head.id}>
+                    {head.name}
+                  </option>
+                ))}
+              {formData.headType === "bank" &&
+                bankHeads.map((head) => (
+                  <option key={head.id} value={head.id}>
+                    {head.name}
+                  </option>
+                ))}
+              {formData.headType === "others" &&
+                otherHeads.map((head) => (
+                  <option key={head.id} value={head.id}>
+                    {head.name}
+                  </option>
+                ))}
+            </select>
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -535,6 +584,7 @@ const Transactions = () => {
                 }))
               }
               className="input-base"
+              placeholder="Enter transaction description"
             />
           </div>
           <div>

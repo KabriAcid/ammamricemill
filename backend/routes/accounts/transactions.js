@@ -14,13 +14,13 @@ router.get("/", authenticateToken, async (req, res, next) => {
     const params = [];
 
     if (fromDate && toDate) {
-      dateCondition = "WHERE date BETWEEN ? AND ?";
+      dateCondition = "WHERE t.date BETWEEN ? AND ?";
       params.push(fromDate, toDate);
     } else if (fromDate) {
-      dateCondition = "WHERE date >= ?";
+      dateCondition = "WHERE t.date >= ?";
       params.push(fromDate);
     } else if (toDate) {
-      dateCondition = "WHERE date <= ?";
+      dateCondition = "WHERE t.date <= ?";
       params.push(toDate);
     }
 
@@ -28,16 +28,22 @@ router.get("/", authenticateToken, async (req, res, next) => {
       `SELECT 
         t.id,
         t.date,
-        COALESCE(p.name, 'N/A') as party,
+        '' as party,
         t.type as voucherType,
-        t.head_type as fromHead,
+        CONCAT(t.head_type, ' - ', COALESCE(
+          CASE t.head_type
+            WHEN 'income' THEN (SELECT name FROM income_heads WHERE id = t.head_id)
+            WHEN 'expense' THEN (SELECT name FROM expense_heads WHERE id = t.head_id)
+            WHEN 'bank' THEN (SELECT name FROM bank_heads WHERE id = t.head_id)
+            WHEN 'others' THEN (SELECT name FROM other_heads WHERE id = t.head_id)
+          END, 'Unknown'
+        )) as fromHead,
         '' as toHead,
         t.description,
         t.amount,
-        'completed' as status,
+        t.status,
         t.created_at as createdAt
       FROM transactions t
-      LEFT JOIN parties p ON t.party_id = p.id
       ${dateCondition}
       ORDER BY t.date DESC, t.created_at DESC`,
       params
@@ -55,107 +61,98 @@ router.get("/", authenticateToken, async (req, res, next) => {
 // POST /api/accounts/transactions - Create new transaction
 router.post("/", authenticateToken, async (req, res, next) => {
   try {
-    const {
-      date,
-      party,
-      voucherType,
-      fromHeadId,
-      fromHeadType,
-      toHeadId,
-      toHeadType,
-      description,
-      amount,
-      status = "pending",
-    } = req.body;
+    const { date, voucherType, headId, headType, description, amount } =
+      req.body;
 
-    if (!date || !voucherType || !amount || !fromHeadId || !fromHeadType || !toHeadId || !toHeadType) {
+    if (!date || !voucherType || !amount || !headId || !headType) {
       return res.status(400).json({
         success: false,
-        error: "Date, voucher type, amount, fromHeadId, fromHeadType, toHeadId, and toHeadType are required",
+        message:
+          "Date, voucher type, amount, headId, and headType are required",
       });
     }
 
-    // Start transaction
-    let connection;
-    connection = await pool.getConnection();
-    
-    try {
-      await connection.beginTransaction();
-
-      // Get or verify party ID
-      let partyId = null;
-      if (party) {
-        const [existingParty] = await connection.query(
-          'SELECT id FROM parties WHERE name = ?',
-          [party]
-        );
-        partyId = existingParty.length > 0 ? existingParty[0].id : null;
-      }
-
-      // Validate head references
-      const [fromHeadExists] = await connection.query(
-        `SELECT id FROM ${fromHeadType}_heads WHERE id = ? AND status = 'active'`,
-        [fromHeadId]
-      );
-
-      const [toHeadExists] = await connection.query(
-        `SELECT id FROM ${toHeadType}_heads WHERE id = ? AND status = 'active'`,
-        [toHeadId]
-      );
-
-      if (!fromHeadExists.length || !toHeadExists.length) {
-        throw new Error('Invalid head references');
-      }
-
-      // Insert the transaction
-      const [result] = await connection.query(
-        `INSERT INTO transactions (
-          date, type, party_id, 
-          from_head_id, from_head_type,
-          to_head_id, to_head_type,
-          amount, description, status
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-        [
-          date, voucherType, partyId,
-          fromHeadId, fromHeadType,
-          toHeadId, toHeadType,
-          amount, description, status
-        ]
-      );
-
-      await connection.commit();
-
-      const [newTransaction] = await pool.query(
-        `SELECT 
-          t.id, t.date, 
-          COALESCE(p.name, 'N/A') as party,
-          t.type as voucherType,
-          t.from_head_type as fromHead,
-          t.to_head_type as toHead,
-          t.description, t.amount, t.status,
-          t.created_at as createdAt
-        FROM transactions t
-        LEFT JOIN parties p ON t.party_id = p.id
-        WHERE t.id = ?`,
-        [result.insertId]
-      );
-
-      res.status(201).json({
-        success: true,
-        data: newTransaction[0],
-        message: "Transaction created successfully",
+    // Validate head type
+    const validHeadTypes = ["income", "expense", "bank", "others"];
+    if (!validHeadTypes.includes(headType)) {
+      return res.status(400).json({
+        success: false,
+        message:
+          "Invalid head type. Must be one of: income, expense, bank, others",
       });
-    } catch (err) {
-      if (connection) await connection.rollback();
-      next(err);
-    } finally {
-      if (connection) connection.release();
     }
+
+    // Validate voucher type
+    const validVoucherTypes = ["receive", "payment"];
+    if (!validVoucherTypes.includes(voucherType)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid voucher type. Must be either 'receive' or 'payment'",
+      });
+    }
+
+    // Validate that the head exists
+    const headTableMap = {
+      income: "income_heads",
+      expense: "expense_heads",
+      bank: "bank_heads",
+      others: "other_heads",
+    };
+
+    const [headExists] = await pool.query(
+      `SELECT id FROM ${headTableMap[headType]} WHERE id = ? AND status = 'active'`,
+      [headId]
+    );
+
+    if (!headExists.length) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid ${headType} head ID or head is inactive`,
+      });
+    }
+
+    // Insert the transaction
+    const [result] = await pool.query(
+      `INSERT INTO transactions (
+        date, type, head_id, head_type, amount, description, status
+      ) VALUES (?, ?, ?, ?, ?, ?, 'active')`,
+      [date, voucherType, headId, headType, amount, description || null]
+    );
+
+    // Fetch the newly created transaction
+    const [newTransaction] = await pool.query(
+      `SELECT 
+        t.id,
+        t.date,
+        '' as party,
+        t.type as voucherType,
+        CONCAT(t.head_type, ' - ', COALESCE(
+          CASE t.head_type
+            WHEN 'income' THEN (SELECT name FROM income_heads WHERE id = t.head_id)
+            WHEN 'expense' THEN (SELECT name FROM expense_heads WHERE id = t.head_id)
+            WHEN 'bank' THEN (SELECT name FROM bank_heads WHERE id = t.head_id)
+            WHEN 'others' THEN (SELECT name FROM other_heads WHERE id = t.head_id)
+          END, 'Unknown'
+        )) as fromHead,
+        '' as toHead,
+        t.description,
+        t.amount,
+        t.status,
+        t.created_at as createdAt
+      FROM transactions t
+      WHERE t.id = ?`,
+      [result.insertId]
+    );
+
+    res.status(201).json({
+      success: true,
+      data: newTransaction[0],
+      message: "Transaction created successfully",
+    });
   } catch (err) {
     next(err);
   }
 });
-
 
 // PUT /api/accounts/transactions/:id - Update transaction
 router.put("/:id", authenticateToken, async (req, res, next) => {
@@ -163,13 +160,54 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     const { id } = req.params;
     const { date, description, amount } = req.body;
 
+    if (!date || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: "Date and amount are required",
+      });
+    }
+
+    // Check if transaction exists
+    const [existing] = await pool.query(
+      "SELECT id FROM transactions WHERE id = ?",
+      [id]
+    );
+
+    if (!existing.length) {
+      return res.status(404).json({
+        success: false,
+        message: "Transaction not found",
+      });
+    }
+
     await pool.query(
-      `UPDATE transactions SET date = ?, description = ?, amount = ? WHERE id = ?`,
-      [date, description, amount, id]
+      `UPDATE transactions 
+       SET date = ?, description = ?, amount = ?, updated_at = NOW() 
+       WHERE id = ?`,
+      [date, description || null, amount, id]
     );
 
     const [updated] = await pool.query(
-      `SELECT id, date, description, amount FROM transactions WHERE id = ?`,
+      `SELECT 
+        t.id,
+        t.date,
+        '' as party,
+        t.type as voucherType,
+        CONCAT(t.head_type, ' - ', COALESCE(
+          CASE t.head_type
+            WHEN 'income' THEN (SELECT name FROM income_heads WHERE id = t.head_id)
+            WHEN 'expense' THEN (SELECT name FROM expense_heads WHERE id = t.head_id)
+            WHEN 'bank' THEN (SELECT name FROM bank_heads WHERE id = t.head_id)
+            WHEN 'others' THEN (SELECT name FROM other_heads WHERE id = t.head_id)
+          END, 'Unknown'
+        )) as fromHead,
+        '' as toHead,
+        t.description,
+        t.amount,
+        t.status,
+        t.created_at as createdAt
+      FROM transactions t
+      WHERE t.id = ?`,
       [id]
     );
 

@@ -178,11 +178,21 @@ const HeadExpense = () => {
     {
       key: "payments",
       label: "Payments",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number | string) => {
+        const amount = typeof value === "string" ? parseFloat(value) : value;
+        return `₦${amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
     },
   ];
 
-  const totalPayments = data.reduce((sum, d) => sum + (d.payments || 0), 0);
+  const totalPayments = data.reduce((sum, d) => {
+    const amount =
+      typeof d.payments === "string" ? parseFloat(d.payments) : d.payments;
+    return sum + (amount || 0);
+  }, 0);
 
   return (
     <div className="animate-fade-in">
@@ -205,7 +215,11 @@ const HeadExpense = () => {
             <Card icon={<ArrowUpCircle size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalPayments.toLocaleString()}
+                  ₦
+                  {totalPayments.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">Total Payments</p>
               </div>
@@ -280,7 +294,10 @@ const HeadExpense = () => {
           }}
           summaryRow={{
             name: "Total",
-            payments: `₦${totalPayments.toLocaleString()}`,
+            payments: `₦${totalPayments.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
           }}
         />
       </Card>

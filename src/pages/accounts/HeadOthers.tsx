@@ -192,23 +192,53 @@ const HeadOthers = () => {
     {
       key: "receive",
       label: "Receive",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number | string) => {
+        const amount = typeof value === "string" ? parseFloat(value) : value;
+        return `₦${amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
     },
     {
       key: "payment",
       label: "Payment",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number | string) => {
+        const amount = typeof value === "string" ? parseFloat(value) : value;
+        return `₦${amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
     },
     {
       key: "balance",
       label: "Balance",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number | string) => {
+        const amount = typeof value === "string" ? parseFloat(value) : value;
+        return `₦${amount.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
+      },
     },
   ];
 
-  const totalReceive = data.reduce((sum, d) => sum + (d.receive || 0), 0);
-  const totalPayment = data.reduce((sum, d) => sum + (d.payment || 0), 0);
-  const totalBalance = data.reduce((sum, d) => sum + (d.balance || 0), 0);
+  const totalReceive = data.reduce((sum, d) => {
+    const amount =
+      typeof d.receive === "string" ? parseFloat(d.receive) : d.receive;
+    return sum + (amount || 0);
+  }, 0);
+  const totalPayment = data.reduce((sum, d) => {
+    const amount =
+      typeof d.payment === "string" ? parseFloat(d.payment) : d.payment;
+    return sum + (amount || 0);
+  }, 0);
+  const totalBalance = data.reduce((sum, d) => {
+    const amount =
+      typeof d.balance === "string" ? parseFloat(d.balance) : d.balance;
+    return sum + (amount || 0);
+  }, 0);
 
   return (
     <div className="animate-fade-in">
@@ -233,7 +263,11 @@ const HeadOthers = () => {
             <Card icon={<ArrowDownCircle size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalReceive.toLocaleString()}
+                  ₦
+                  {totalReceive.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">Total Receive</p>
               </div>
@@ -241,7 +275,11 @@ const HeadOthers = () => {
             <Card icon={<ArrowUpCircle size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalPayment.toLocaleString()}
+                  ₦
+                  {totalPayment.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">Total Payment</p>
               </div>
@@ -249,7 +287,11 @@ const HeadOthers = () => {
             <Card icon={<Banknote size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalBalance.toLocaleString()}
+                  ₦
+                  {totalBalance.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">Total Balance</p>
               </div>
@@ -329,9 +371,18 @@ const HeadOthers = () => {
           }}
           summaryRow={{
             name: "Total",
-            receive: `₦${totalReceive.toLocaleString()}`,
-            payment: `₦${totalPayment.toLocaleString()}`,
-            balance: `₦${totalBalance.toLocaleString()}`,
+            receive: `₦${totalReceive.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
+            payment: `₦${totalPayment.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
+            balance: `₦${totalBalance.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
           }}
         />
       </Card>

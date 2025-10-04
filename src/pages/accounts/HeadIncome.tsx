@@ -181,7 +181,10 @@ const HeadIncome = () => {
       label: "Receives",
       render: (value: number | string) => {
         const numValue = typeof value === "string" ? parseFloat(value) : value;
-        return `₦${numValue.toLocaleString()}`;
+        return `₦${numValue.toLocaleString("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })}`;
       },
     },
   ];
@@ -214,7 +217,11 @@ const HeadIncome = () => {
             <Card icon={<ArrowDownCircle size={32} />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalReceives.toLocaleString()}
+                  ₦
+                  {totalReceives.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
                 <p className="text-sm text-gray-500">Total Receives</p>
               </div>
@@ -289,7 +296,10 @@ const HeadIncome = () => {
           }}
           summaryRow={{
             name: "Total",
-            receives: `₦${totalReceives.toLocaleString()}`,
+            receives: `₦${totalReceives.toLocaleString("en-US", {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 2,
+            })}`,
           }}
         />
       </Card>
