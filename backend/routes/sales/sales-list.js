@@ -4,24 +4,43 @@ import { authenticateToken } from "../middlewares/auth.js";
 
 const router = Router();
 
-// GET /api/sales - Fetch all sales
+// GET /api/sales - Fetch all sales with pagination and search
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    const { fromDate, toDate } = req.query;
+    const { fromDate, toDate, search, page = 1, pageSize = 25 } = req.query;
+    const offset = (page - 1) * pageSize;
 
-    let dateCondition = "";
+    let conditions = ["s.status != 'cancelled'"];
     const params = [];
 
     if (fromDate && toDate) {
-      dateCondition = "AND s.date BETWEEN ? AND ?";
+      conditions.push("s.date BETWEEN ? AND ?");
       params.push(fromDate, toDate);
     }
 
+    if (search) {
+      conditions.push(
+        "(s.invoice_no LIKE ? OR s.challan_no LIKE ? OR p.name LIKE ?)"
+      );
+      params.push(`%${search}%`, `%${search}%`, `%${search}%`);
+    }
+
+    // Get total count
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total
+       FROM sales s
+       LEFT JOIN parties p ON s.party_id = p.id
+       WHERE ${conditions.join(" AND ")}`,
+      params
+    );
+
+    // Get paginated data
     const [records] = await pool.query(
       `SELECT 
         s.id,
         s.date,
         s.invoice_no as invoiceNo,
+        s.challan_no as challanNo,
         s.party_id as partyId,
         p.name as partyName,
         s.transport_info as transportInfo,
@@ -42,12 +61,19 @@ router.get("/", authenticateToken, async (req, res, next) => {
         s.updated_at as updatedAt
       FROM sales s
       LEFT JOIN parties p ON s.party_id = p.id
-      WHERE s.status != 'cancelled' ${dateCondition}
-      ORDER BY s.date DESC, s.created_at DESC`,
-      params
+      WHERE ${conditions.join(" AND ")}
+      ORDER BY s.date DESC, s.created_at DESC
+      LIMIT ? OFFSET ?`,
+      [...params, Number(pageSize), Number(offset)]
     );
 
-    res.json({ success: true, data: records });
+    res.json({
+      success: true,
+      data: {
+        data: records,
+        total: countResult[0].total,
+      },
+    });
   } catch (err) {
     next(err);
   }
