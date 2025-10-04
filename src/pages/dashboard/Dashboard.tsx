@@ -147,7 +147,7 @@ const Dashboard: React.FC = () => {
         window.location.href = "/hr/attendance";
         break;
       case "purchase":
-        window.location.href = "/purchases/purchase";
+        window.location.href = "/purchase/paddy";
         break;
       case "production":
         window.location.href = "/production/new";

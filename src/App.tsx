@@ -36,17 +36,16 @@ import PartyDebts from "./pages/party/PartyDebts";
 
 import CategoryList from "./pages/products/CategoryList";
 import ProductList from "./pages/products/ProductList";
-import EmptybagPaddyPurchase from "./pages/emptybags/EmptybagPaddyPurchase";
+import EmptybagPurchaseList from "./pages/emptybags/EmptybagPurchaseList";
 import EmptybagSalesList from "./pages/emptybags/EmptybagSalesList";
 import EmptybagPaymentList from "./pages/emptybags/EmptybagPaymentList";
 import EmptybagStocksList from "./pages/emptybags/EmptybagStocksList";
 
 import PaddyPurchase from "./pages/purchase/PaddyPurchase";
-import PaddyPurchaseForm from "./pages/purchase/PaddyPurchaseForm";
 import PurchaseDetails from "./pages/purchase/PurchaseDetails";
-import PaddyPurchaseLedger from "./pages/purchase/PaddyPaddyPurchaseLedger";
+import PaddyPurchaseLedger from "./pages/purchase/PaddyPurchaseLedger";
 import RicePurchase from "./pages/purchase/RicePurchase";
-import RicePaddyPurchaseLedger from "./pages/purchase/RicePaddyPurchaseLedger";
+import RicePurchaseLedger from "./pages/purchase/RicePurchaseLedger";
 import SalesList from "./pages/sales/SalesList";
 import SaleDetails from "./pages/sales/SaleDetails";
 import SalesLedger from "./pages/sales/SalesLedger";
@@ -113,7 +112,7 @@ function App() {
                 <Route path="/products" element={<ProductList />} />
                 <Route
                   path="/empty/emptybag-purchase"
-                  element={<EmptybagPaddyPurchase />}
+                  element={<EmptybagPurchaseList />}
                 />
                 <Route
                   path="/empty/emptybag-sales"
@@ -128,9 +127,9 @@ function App() {
                   path="/empty/emptybag-stocks"
                   element={<EmptybagStocksList />}
                 />
-                <Route path="/purchases/purchase" element={<PaddyPurchase />} />
+                <Route path="/purchase/paddy" element={<PaddyPurchase />} />
                 <Route
-                  path="/purchases/purchase/:id"
+                  path="/purchase/paddy/:id"
                   element={<PurchaseDetails />}
                 />
                 <Route
@@ -143,7 +142,7 @@ function App() {
                 />
                 <Route
                   path="/purchases/rice-purchase/ledger"
-                  element={<RicePaddyPurchaseLedger />}
+                  element={<RicePurchaseLedger />}
                 />
                 <Route path="/sales" element={<SalesList />} />
                 <Route path="/sales/:id" element={<SaleDetails />} />
@@ -182,4 +181,9 @@ function App() {
             </Routes>
           </Router>
         </UIProvider>
-   
+      </AuthProvider>
+    </ToastProvider>
+  );
+}
+
+export default App;

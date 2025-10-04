@@ -197,13 +197,13 @@ export const navigationData: NavigationItem[] = [
         id: "paddy-purchase",
         title: "Paddy Purchase",
         icon: "leaf",
-        link: "/purchases/purchase",
+        link: "/purchase/paddy",
       },
       {
         id: "paddy-ledger",
         title: "Paddy Purchase Ledger",
         icon: "book-open",
-        link: "/purchases/purchase/ledger",
+        link: "/purchase/paddy/ledger",
       },
       {
         id: "rice-purchase",

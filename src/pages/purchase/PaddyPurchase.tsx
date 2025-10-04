@@ -18,6 +18,7 @@ import { Purchase } from "../../types/purchase";
 import { format } from "date-fns";
 import { fetcher } from "../../utils/fetcher";
 import { useToast } from "../../components/ui/Toast";
+import PaddyPurchaseForm from "./PaddyPurchaseForm";
 
 const PaddyPurchase: React.FC = () => {
   const { showToast } = useToast();
@@ -36,6 +37,8 @@ const PaddyPurchase: React.FC = () => {
     totalAmount: 0,
     totalBalance: 0,
   });
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
   const navigate = useNavigate();
 
   // Fetch purchases
@@ -205,6 +208,69 @@ const PaddyPurchase: React.FC = () => {
     navigate(`/purchases/${purchase.id}`);
   };
 
+  const handleNewPurchase = () => {
+    setEditingPurchase(null);
+    setIsFormOpen(true);
+  };
+
+  const handleEditPurchase = (purchase: Purchase) => {
+    setEditingPurchase(purchase);
+    setIsFormOpen(true);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingPurchase(null);
+  };
+
+  const handleSavePurchase = async (data: Partial<Purchase>) => {
+    try {
+      if (editingPurchase) {
+        // Update existing purchase
+        const response = (await fetcher(
+          `/purchase/paddy/${editingPurchase.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          }
+        )) as any;
+
+        if (response.success) {
+          showToast(
+            response.message || "Purchase updated successfully",
+            "success"
+          );
+          fetchPurchases(); // Refresh the list
+          handleCloseForm();
+        } else {
+          throw new Error(response.error || "Failed to update purchase");
+        }
+      } else {
+        // Create new purchase
+        const response = (await fetcher(`/purchase/paddy`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        })) as any;
+
+        if (response.success) {
+          showToast(
+            response.message || "Purchase created successfully",
+            "success"
+          );
+          fetchPurchases(); // Refresh the list
+          handleCloseForm();
+        } else {
+          throw new Error(response.error || "Failed to create purchase");
+        }
+      }
+    } catch (error) {
+      console.error("Error saving purchase:", error);
+      showToast("Failed to save purchase", "error");
+    }
+  };
+
   const loadingCards = loading && !purchases.length;
 
   return (
@@ -277,11 +343,7 @@ const PaddyPurchase: React.FC = () => {
             }
             className="input-base h-9"
           />
-          <Button
-            onClick={() => navigate("/purchases/new")}
-            icon={Plus}
-            size="sm"
-          >
+          <Button onClick={handleNewPurchase} icon={Plus} size="sm">
             New Purchase
           </Button>
           {selectedPurchases.length > 0 && (
@@ -328,7 +390,16 @@ const PaddyPurchase: React.FC = () => {
         }}
         actions={{
           onView: handleView,
+          onEdit: handleEditPurchase,
         }}
+      />
+
+      {/* Purchase Form Modal */}
+      <PaddyPurchaseForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSave={handleSavePurchase}
+        item={editingPurchase}
       />
     </div>
   );
