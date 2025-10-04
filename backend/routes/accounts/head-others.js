@@ -54,6 +54,27 @@ router.post("/", authenticateToken, async (req, res, next) => {
       [name]
     );
 
+    if (!result.affectedRows || !result.insertId) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to create other head. Please try again.",
+      });
+    }
+
+    // Insert a transaction row for the new head (opening receive = 0)
+    await pool.query(
+      `INSERT INTO transactions (from_head_id, from_head_type, to_head_id, to_head_type, amount, date, description, status)
+       VALUES (?, ?, ?, ?, ?, CURDATE(), ?, 'active')`,
+      [
+        null, // from_head_id
+        null, // from_head_type
+        result.insertId, // to_head_id
+        "others", // to_head_type
+        0,
+        "Opening balance",
+      ]
+    );
+
     const [newHead] = await pool.query(
       `SELECT 
         oh.id, 

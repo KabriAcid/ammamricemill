@@ -46,6 +46,29 @@ router.post("/", authenticateToken, async (req, res, next) => {
       [name]
     );
 
+    if (!result.affectedRows || !result.insertId) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to create income head. Please try again.",
+      });
+    }
+
+    // Insert a transaction row for the new head (opening balance or initial receive)
+    const amount =
+      typeof receives === "number" ? receives : parseFloat(receives) || 0;
+    await pool.query(
+      `INSERT INTO transactions (from_head_id, from_head_type, to_head_id, to_head_type, amount, date, description, status)
+       VALUES (?, ?, ?, ?, ?, CURDATE(), ?, 'active')`,
+      [
+        null, // from_head_id
+        null, // from_head_type
+        result.insertId, // to_head_id
+        "income", // to_head_type
+        amount,
+        "Opening balance",
+      ]
+    );
+
     const [newHead] = await pool.query(
       `SELECT 
         ih.id, 
@@ -58,6 +81,13 @@ router.post("/", authenticateToken, async (req, res, next) => {
       GROUP BY ih.id, ih.name, ih.created_at`,
       [result.insertId]
     );
+
+    if (!newHead || !newHead[0]) {
+      return res.status(500).json({
+        success: false,
+        error: "Income head was created but could not be retrieved.",
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -145,6 +175,13 @@ router.delete("/", authenticateToken, async (req, res, next) => {
       `UPDATE income_heads SET status = 'inactive' WHERE id IN (?)`,
       [ids]
     );
+
+    if (!result.affectedRows) {
+      return res.status(404).json({
+        success: false,
+        error: "No income heads were deleted. IDs may not exist.",
+      });
+    }
 
     res.json({
       success: true,
