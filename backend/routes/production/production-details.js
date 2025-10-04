@@ -1,11 +1,11 @@
 import express from "express";
 import db from "../../utils/db.js";
+import authenticateToken from "../../middlewares/auth.js";
 
 const router = express.Router();
 
-// GET /api/production/production-details
 // Get production details with pagination and filtering
-router.get("/", async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const {
       page = 1,
@@ -92,7 +92,7 @@ router.get("/", async (req, res) => {
 
 // POST /api/production/production-details
 // Add new production details
-router.post("/", async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
@@ -165,7 +165,7 @@ router.post("/", async (req, res) => {
 
 // GET /api/production/production-details/:id
 // Get specific production details
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -210,7 +210,7 @@ router.get("/:id", async (req, res) => {
 
 // DELETE /api/production/production-details
 // Delete multiple production details
-router.delete("/", async (req, res) => {
+router.delete("/", authenticateToken, async (req, res) => {
   const connection = await db.getConnection();
   try {
     await connection.beginTransaction();
