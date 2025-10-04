@@ -67,7 +67,7 @@ export const Navbar: React.FC = () => {
     {
       icon: User,
       label: "Profile",
-      onClick: () => navigate(`/user/${user?.id}`),
+      onClick: () => navigate("/admin/profile"),
     },
     {
       icon: Lock,
