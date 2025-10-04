@@ -29,6 +29,7 @@ import HeadExpense from "./pages/accounts/HeadExpense";
 import HeadBank from "./pages/accounts/HeadBank";
 import HeadOthers from "./pages/accounts/HeadOthers";
 import Transactions from "./pages/accounts/Transactions";
+import TransactionDetails from "./pages/accounts/TransactionDetails";
 import PartyTypes from "./pages/party/PartyTypes";
 import PartyList from "./pages/party/PartyList";
 import PartyPayments from "./pages/party/PartyPayments";
@@ -104,6 +105,10 @@ function App() {
                 <Route
                   path="/accounts/transactions"
                   element={<Transactions />}
+                />
+                <Route
+                  path="/accounts/transactions/:id"
+                  element={<TransactionDetails />}
                 />
                 <Route path="/party/party-types" element={<PartyTypes />} />
                 <Route path="/party/parties" element={<PartyList />} />

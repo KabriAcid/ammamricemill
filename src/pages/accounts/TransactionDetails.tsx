@@ -42,10 +42,12 @@ const TransactionDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { showToast } = useToast();
-  const [transaction, setTransaction] = useState<TransactionDetail | null>(null);
-  
+  const [transaction, setTransaction] = useState<TransactionDetail | null>(
+    null
+  );
+
   const { data, loading, error } = useFetch<TransactionDetail>(
-    `/api/accounts/transactions/v2/${id}`
+    `/api/accounts/transactions/${id}`
   );
 
   useEffect(() => {
@@ -98,9 +100,10 @@ const TransactionDetails: React.FC = () => {
     );
   }
 
-  const amount = typeof transaction.amount === 'string' 
-    ? parseFloat(transaction.amount) 
-    : transaction.amount;
+  const amount =
+    typeof transaction.amount === "string"
+      ? parseFloat(transaction.amount)
+      : transaction.amount;
 
   const getVoucherTypeColor = (type: string) => {
     switch (type) {
@@ -217,7 +220,11 @@ const TransactionDetails: React.FC = () => {
               <div>
                 <p className="text-sm text-gray-500">Amount</p>
                 <p className="font-medium text-gray-900 text-xl">
-                  ₦{amount.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                  ₦
+                  {amount.toLocaleString("en-US", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })}
                 </p>
               </div>
             </div>
@@ -274,7 +281,7 @@ const TransactionDetails: React.FC = () => {
         </Card>
 
         {/* Party Information */}
-        {transaction.partyName && transaction.partyName !== 'N/A' && (
+        {transaction.partyName && transaction.partyName !== "N/A" && (
           <Card>
             <h2 className="text-xl font-semibold text-gray-900 mb-4">
               Party Information
@@ -314,7 +321,13 @@ const TransactionDetails: React.FC = () => {
         )}
 
         {/* System Information */}
-        <Card className={transaction.partyName && transaction.partyName !== 'N/A' ? '' : 'lg:col-span-1'}>
+        <Card
+          className={
+            transaction.partyName && transaction.partyName !== "N/A"
+              ? ""
+              : "lg:col-span-1"
+          }
+        >
           <h2 className="text-xl font-semibold text-gray-900 mb-4">
             System Information
           </h2>

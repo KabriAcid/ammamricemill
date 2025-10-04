@@ -18,7 +18,9 @@ import headExpenseRoutes from "./accounts/head-expense.js";
 import headBankRoutes from "./accounts/head-bank.js";
 import headOthersRoutes from "./accounts/head-others.js";
 import transactionsRoutes from "./accounts/transactions.js";
-import transactionsV2Routes from "./accounts/transactions-v2.js";
+
+// Party Routes
+import partiesRoutes from "./party/parties.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
@@ -50,7 +52,9 @@ router.use("/accounts/head-expense", headExpenseRoutes);
 router.use("/accounts/head-bank", headBankRoutes);
 router.use("/accounts/head-others", headOthersRoutes);
 router.use("/accounts/transactions", transactionsRoutes);
-router.use("/accounts/transactions/v2", transactionsV2Routes);
+
+// Party routes
+router.use("/party/parties", partiesRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);
