@@ -16,73 +16,169 @@ type ExpenseRow = {
   payments: number;
 };
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
 const HeadExpense = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<ExpenseRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<ExpenseRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [formData, setFormData] = useState({ name: "", payments: 0 });
 
-  useEffect(() => {
+  const fetchExpenseHeads = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setData([
-        { id: "1", name: "Raw Material", payments: 90000 },
-        { id: "2", name: "Utilities", payments: 12000 },
-        { id: "3", name: "Maintenance", payments: 3500 },
-      ]);
+    try {
+      const response = await api.get<ApiResponse<ExpenseRow[]>>(
+        "/accounts/head-expense"
+      );
+      if (response.success && response.data) {
+        setData(response.data);
+      } else {
+        throw new Error("Failed to load expense heads");
+      }
+    } catch (error) {
+      console.error("Error fetching expense heads:", error);
+      showToast("Failed to load expense heads", "error");
+      setData([]);
+    } finally {
       setLoading(false);
-    }, 400);
+      setInitialLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchExpenseHeads();
   }, []);
 
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
+
+  // Filter data
+  const filteredData = data.filter((item) =>
+    item.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
   // Create
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!formData.name.trim()) {
+      showToast("Expense head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => [{ id: Date.now().toString(), ...formData }, ...prev]);
-      setModalOpen(false);
-      setFormData({ name: "", payments: 0 });
+    try {
+      const response = await api.post<ApiResponse<ExpenseRow>>(
+        "/accounts/head-expense",
+        formData
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Expense head created successfully",
+          "success"
+        );
+        setModalOpen(false);
+        setFormData({ name: "", payments: 0 });
+        await fetchExpenseHeads();
+      } else {
+        throw new Error("Failed to create expense head");
+      }
+    } catch (error) {
+      console.error("Error creating expense head:", error);
+      showToast("Failed to create expense head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Update
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!editItem) return;
+    if (!formData.name.trim()) {
+      showToast("Expense head name is required", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((row) =>
-          row.id === editItem.id ? { ...row, ...formData } : row
-        )
+    try {
+      const response = await api.put<ApiResponse<ExpenseRow>>(
+        `/accounts/head-expense/${editItem.id}`,
+        formData
       );
-      setModalOpen(false);
-      setEditItem(null);
-      setFormData({ name: "", payments: 0 });
+
+      if (response.success) {
+        showToast(
+          response.message || "Expense head updated successfully",
+          "success"
+        );
+        setModalOpen(false);
+        setEditItem(null);
+        setFormData({ name: "", payments: 0 });
+        await fetchExpenseHeads();
+      } else {
+        throw new Error("Failed to update expense head");
+      }
+    } catch (error) {
+      console.error("Error updating expense head:", error);
+      showToast("Failed to update expense head", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Delete (single or bulk)
-  const handleDelete = (ids: string[]) => {
+  const handleDelete = async (ids: string[]) => {
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => prev.filter((row) => !ids.includes(row.id)));
-      setSelectedRows([]);
+    try {
+      const response = await api.delete<ApiResponse<void>>(
+        "/accounts/head-expense",
+        { ids }
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Expense head(s) deleted successfully",
+          "success"
+        );
+        setSelectedRows([]);
+        await fetchExpenseHeads();
+      } else {
+        throw new Error("Failed to delete expense head(s)");
+      }
+    } catch (error) {
+      console.error("Error deleting expense heads:", error);
+      showToast("Failed to delete expense heads", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Table columns
   const columns = [
-    { key: "name", label: "Head Name" },
+    { key: "name", label: "Head Name", sortable: true },
     {
       key: "payments",
       label: "Payments",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
   ];
 
@@ -98,74 +194,96 @@ const HeadExpense = () => {
           Manage your expense heads and monitor total payments.
         </p>
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-        <Card icon={<ArrowUpCircle className="w-8 h-8 text-primary-800" />}>
-          <div>
-            <div className="text-xs uppercase text-gray-500 font-semibold">
-              Total Payments
-            </div>
-            <div className="text-2xl font-bold text-gray-900">
-              {totalPayments.toLocaleString()}
-            </div>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+        {initialLoading ? (
+          <>
+            <SkeletonCard />
+            <SkeletonCard />
+          </>
+        ) : (
+          <>
+            <Card icon={<ArrowUpCircle size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦{totalPayments.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Payments</p>
+              </div>
+            </Card>
+            <Card icon={<TrendingUp size={32} />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {data.length}
+                </p>
+                <p className="text-sm text-gray-500">Total Heads</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
-      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              setEditItem(null);
-              setFormData({ name: "", payments: 0 });
-              setModalOpen(true);
-            }}
-            icon={Plus}
-            size="sm"
-          >
-            New Expense Head
-          </Button>
-          {selectedRows.length > 0 && (
+      <Card>
+        <FilterBar
+          onSearch={setSearchQuery}
+          placeholder="Search by expense head name... (Ctrl+F)"
+        >
+          <div className="flex items-center space-x-2">
             <Button
-              variant="danger"
+              onClick={() => {
+                setEditItem(null);
+                setFormData({ name: "", payments: 0 });
+                setModalOpen(true);
+              }}
+              icon={Plus}
               size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedRows)}
-              loading={loading}
             >
-              Delete ({selectedRows.length})
+              New
             </Button>
-          )}
-        </div>
-      </div>
-      <Table
-        data={data}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          currentPage: 1,
-          totalPages: 1,
-          pageSize: PAGE_SIZE_OPTIONS[1],
-          totalItems: data.length,
-          onPageChange: () => {},
-          onPageSizeChange: () => {},
-        }}
-        selection={{
-          selectedItems: selectedRows,
-          onSelectionChange: setSelectedRows,
-        }}
-        actions={{
-          onEdit: (row) => {
-            setEditItem(row);
-            setFormData({ name: row.name, payments: row.payments });
-            setModalOpen(true);
-          },
-        }}
-        summaryRow={{
-          name: <span className="font-semibold">Total</span>,
-          payments: (
-            <span className="font-bold">{totalPayments.toLocaleString()}</span>
-          ),
-        }}
-      />
+            {selectedRows.length > 0 && (
+              <Button
+                variant="danger"
+                size="sm"
+                icon={Trash2}
+                onClick={() => handleDelete(selectedRows)}
+                loading={loading}
+              >
+                Delete ({selectedRows.length})
+              </Button>
+            )}
+          </div>
+        </FilterBar>
+
+        <Table
+          data={paginatedData}
+          columns={columns}
+          loading={loading}
+          pagination={{
+            currentPage,
+            totalPages,
+            pageSize,
+            totalItems: filteredData.length,
+            onPageChange: setCurrentPage,
+            onPageSizeChange: (size) => {
+              setPageSize(size);
+              setCurrentPage(1);
+            },
+          }}
+          selection={{
+            selectedItems: selectedRows,
+            onSelectionChange: setSelectedRows,
+          }}
+          actions={{
+            onEdit: (row) => {
+              setEditItem(row);
+              setFormData({ name: row.name, payments: row.payments });
+              setModalOpen(true);
+            },
+          }}
+          summaryRow={{
+            name: "Total",
+            payments: `₦${totalPayments.toLocaleString()}`,
+          }}
+        />
+      </Card>
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -192,20 +310,26 @@ const HeadExpense = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Payments
             </label>
-            <input
-              type="number"
-              value={formData.payments}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  payments: Number(e.target.value),
-                }))
-              }
-              className="input-base"
-              placeholder="Enter payments amount"
-              min="0"
-              required
-            />
+            <div className="relative">
+              <input
+                type="number"
+                value={formData.payments}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    payments: Number(e.target.value),
+                  }))
+                }
+                className="input-base pl-8"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                required
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                ₦
+              </span>
+            </div>
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>

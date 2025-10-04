@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
@@ -12,8 +12,11 @@ import {
   Printer,
   ArrowUpCircle,
 } from "lucide-react";
-
 import { Card } from "../../components/ui/Card";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
 
 // Transaction type
 interface TransactionRow {
@@ -28,14 +31,17 @@ interface TransactionRow {
   status: "pending" | "completed" | "cancelled";
 }
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
 const Transactions = () => {
+  const { showToast } = useToast();
   const [data, setData] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<TransactionRow | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
   const [formData, setFormData] = useState({
     date: "",
     party: "",
@@ -47,98 +53,180 @@ const Transactions = () => {
     status: "pending" as TransactionRow["status"],
   });
 
-  // Fetch all (GET)
-  useEffect(() => {
+  // Fetch all transactions from API
+  const fetchTransactions = async () => {
     setLoading(true);
-    setTimeout(() => {
-      setData([
-        {
-          id: "1",
-          date: "2025-09-30",
-          party: "ABC Traders",
-          voucherType: "receive",
-          fromHead: "Bank",
-          toHead: "Sales",
-          description: "Payment received for invoice #1234",
-          amount: 50000,
-          status: "completed",
-        },
-        {
-          id: "2",
-          date: "2025-09-29",
-          party: "XYZ Suppliers",
-          voucherType: "payment",
-          fromHead: "Purchase",
-          toHead: "Bank",
-          description: "Payment for raw materials",
-          amount: 30000,
-          status: "pending",
-        },
-      ]);
+    try {
+      const response = await api.get<ApiResponse<TransactionRow[]>>(
+        "/accounts/transactions"
+      );
+      if (response.success && response.data) {
+        setData(response.data);
+      } else {
+        throw new Error("Failed to load transactions");
+      }
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      showToast("Failed to load transactions", "error");
+      setData([]);
+    } finally {
       setLoading(false);
-    }, 400);
+      setInitialLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTransactions();
   }, []);
 
+  // Keyboard shortcuts
+  const handleKeyPress = useCallback((event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key === "f") {
+      event.preventDefault();
+      document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+    }
+  }, []);
+
+  useEffect(() => {
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, [handleKeyPress]);
+
+  // Filter data
+  const filteredData = data.filter(
+    (item) =>
+      item.party.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.fromHead.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.toHead.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredData.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
+
   // Create
-  const handleCreate = () => {
+  const handleCreate = async () => {
+    if (!formData.date || !formData.voucherType || !formData.amount) {
+      showToast("Please fill all required fields", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => [{ id: Date.now().toString(), ...formData }, ...prev]);
-      setModalOpen(false);
-      setFormData({
-        date: "",
-        party: "",
-        voucherType: "receive",
-        fromHead: "",
-        toHead: "",
-        description: "",
-        amount: 0,
-        status: "pending",
-      });
+    try {
+      const response = await api.post<ApiResponse<TransactionRow>>(
+        "/accounts/transactions",
+        formData
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Transaction created successfully",
+          "success"
+        );
+        setModalOpen(false);
+        setFormData({
+          date: "",
+          party: "",
+          voucherType: "receive",
+          fromHead: "",
+          toHead: "",
+          description: "",
+          amount: 0,
+          status: "pending",
+        });
+        await fetchTransactions();
+      } else {
+        throw new Error("Failed to create transaction");
+      }
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      showToast("Failed to create transaction", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Update
-  const handleUpdate = () => {
+  const handleUpdate = async () => {
     if (!editItem) return;
+    if (!formData.date || !formData.amount) {
+      showToast("Please fill all required fields", "error");
+      return;
+    }
+
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) =>
-        prev.map((row) =>
-          row.id === editItem.id ? { ...row, ...formData } : row
-        )
+    try {
+      const response = await api.put<ApiResponse<TransactionRow>>(
+        `/accounts/transactions/${editItem.id}`,
+        {
+          date: formData.date,
+          description: formData.description,
+          amount: formData.amount,
+        }
       );
-      setModalOpen(false);
-      setEditItem(null);
-      setFormData({
-        date: "",
-        party: "",
-        voucherType: "receive",
-        fromHead: "",
-        toHead: "",
-        description: "",
-        amount: 0,
-        status: "pending",
-      });
+
+      if (response.success) {
+        showToast(
+          response.message || "Transaction updated successfully",
+          "success"
+        );
+        setModalOpen(false);
+        setEditItem(null);
+        setFormData({
+          date: "",
+          party: "",
+          voucherType: "receive",
+          fromHead: "",
+          toHead: "",
+          description: "",
+          amount: 0,
+          status: "pending",
+        });
+        await fetchTransactions();
+      } else {
+        throw new Error("Failed to update transaction");
+      }
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      showToast("Failed to update transaction", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Delete (single or bulk)
-  const handleDelete = (ids: string[]) => {
+  const handleDelete = async (ids: string[]) => {
     setLoading(true);
-    setTimeout(() => {
-      setData((prev) => prev.filter((row) => !ids.includes(row.id)));
-      setSelectedRows([]);
+    try {
+      const response = await api.delete<ApiResponse<void>>(
+        "/accounts/transactions",
+        { ids }
+      );
+
+      if (response.success) {
+        showToast(
+          response.message || "Transaction(s) deleted successfully",
+          "success"
+        );
+        setSelectedRows([]);
+        await fetchTransactions();
+      } else {
+        throw new Error("Failed to delete transaction(s)");
+      }
+    } catch (error) {
+      console.error("Error deleting transactions:", error);
+      showToast("Failed to delete transactions", "error");
+    } finally {
       setLoading(false);
-    }, 400);
+    }
   };
 
   // Table columns
   const columns = [
-    { key: "date", label: "Date" },
-    { key: "party", label: "Party" },
+    { key: "date", label: "Date", sortable: true },
+    { key: "party", label: "Party", sortable: true },
     {
       key: "voucherType",
       label: "Voucher Type",
@@ -152,7 +240,7 @@ const Transactions = () => {
     {
       key: "amount",
       label: "Amount",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => `₦${value.toLocaleString()}`,
     },
     {
       key: "status",
@@ -191,132 +279,140 @@ const Transactions = () => {
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-5 gap-4 mb-6">
-          <Card icon={<FileText className="w-8 h-8 text-primary-800" />}>
-            <div>
-              <div className="text-xs uppercase text-gray-500 font-semibold">
-                Total
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {totalTransactions}
-              </div>
-            </div>
-          </Card>
-          <Card icon={<CheckCircle2 className="w-8 h-8 text-green-700" />}>
-            <div>
-              <div className="text-xs uppercase text-gray-500 font-semibold">
-                Completed
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {completedCount}
-              </div>
-            </div>
-          </Card>
-          <Card icon={<XCircle className="w-8 h-8 text-red-700" />}>
-            <div>
-              <div className="text-xs uppercase text-gray-500 font-semibold">
-                Cancelled
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {cancelledCount}
-              </div>
-            </div>
-          </Card>
-          <Card icon={<ArrowUpCircle className="w-8 h-8 text-yellow-700" />}>
-            <div>
-              <div className="text-xs uppercase text-gray-500 font-semibold">
-                Pending
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {pendingCount}
-              </div>
-            </div>
-          </Card>
-          <Card icon={<Printer className="w-8 h-8 text-primary-800" />}>
-            <div>
-              <div className="text-xs uppercase text-gray-500 font-semibold">
-                Total Amount
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {totalAmount.toLocaleString()}
-              </div>
-            </div>
-          </Card>
-        </div>
-        {/* FilterBar, Table, Modal, etc. remain unchanged below */}
-      </div>
-      <div className="mb-4 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-        <div className="flex items-center space-x-2">
-          <Button
-            onClick={() => {
-              setEditItem(null);
-              setFormData({
-                date: "",
-                party: "",
-                voucherType: "receive",
-                fromHead: "",
-                toHead: "",
-                description: "",
-                amount: 0,
-                status: "pending",
-              });
-              setModalOpen(true);
-            }}
-            icon={Plus}
-            size="sm"
-          >
-            New Transaction
-          </Button>
-          {selectedRows.length > 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedRows)}
-              loading={loading}
-            >
-              Delete ({selectedRows.length})
-            </Button>
+          {initialLoading ? (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          ) : (
+            <>
+              <Card icon={<FileText size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {totalTransactions}
+                  </p>
+                  <p className="text-sm text-gray-500">Total</p>
+                </div>
+              </Card>
+              <Card icon={<CheckCircle2 size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {completedCount}
+                  </p>
+                  <p className="text-sm text-gray-500">Completed</p>
+                </div>
+              </Card>
+              <Card icon={<XCircle size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {cancelledCount}
+                  </p>
+                  <p className="text-sm text-gray-500">Cancelled</p>
+                </div>
+              </Card>
+              <Card icon={<ArrowUpCircle size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    {pendingCount}
+                  </p>
+                  <p className="text-sm text-gray-500">Pending</p>
+                </div>
+              </Card>
+              <Card icon={<Printer size={32} />} hover>
+                <div>
+                  <p className="text-3xl font-bold text-gray-700">
+                    ₦{totalAmount.toLocaleString()}
+                  </p>
+                  <p className="text-sm text-gray-500">Total Amount</p>
+                </div>
+              </Card>
+            </>
           )}
-          <Button variant="outline" size="sm" icon={Printer} onClick={() => {}}>
-            Print
-          </Button>
         </div>
+        <Card>
+          <FilterBar
+            onSearch={setSearchQuery}
+            placeholder="Search by party, description, or head... (Ctrl+F)"
+          >
+            <div className="flex items-center space-x-2">
+              <Button
+                onClick={() => {
+                  setEditItem(null);
+                  setFormData({
+                    date: "",
+                    party: "",
+                    voucherType: "receive",
+                    fromHead: "",
+                    toHead: "",
+                    description: "",
+                    amount: 0,
+                    status: "pending",
+                  });
+                  setModalOpen(true);
+                }}
+                icon={Plus}
+                size="sm"
+              >
+                New
+              </Button>
+              {selectedRows.length > 0 && (
+                <Button
+                  variant="danger"
+                  size="sm"
+                  icon={Trash2}
+                  onClick={() => handleDelete(selectedRows)}
+                  loading={loading}
+                >
+                  Delete ({selectedRows.length})
+                </Button>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Printer}
+                onClick={() => window.print()}
+              >
+                Print
+              </Button>
+            </div>
+          </FilterBar>
+
+          <Table
+            data={paginatedData}
+            columns={columns}
+            loading={loading}
+            pagination={{
+              currentPage,
+              totalPages,
+              pageSize,
+              totalItems: filteredData.length,
+              onPageChange: setCurrentPage,
+              onPageSizeChange: (size) => {
+                setPageSize(size);
+                setCurrentPage(1);
+              },
+            }}
+            selection={{
+              selectedItems: selectedRows,
+              onSelectionChange: setSelectedRows,
+            }}
+            actions={{
+              onEdit: (row) => {
+                setEditItem(row);
+                setFormData({ ...row });
+                setModalOpen(true);
+              },
+            }}
+            summaryRow={{
+              date: "Total",
+              amount: `₦${totalAmount.toLocaleString()}`,
+            }}
+          />
+        </Card>
       </div>
-      <FilterBar
-        onSearch={() => {}}
-        onDateRange={() => {}}
-        onFilterChange={() => {}}
-      />
-      <Table
-        data={data}
-        columns={columns}
-        loading={loading}
-        pagination={{
-          currentPage: 1,
-          totalPages: 1,
-          pageSize: PAGE_SIZE_OPTIONS[1],
-          totalItems: data.length,
-          onPageChange: () => {},
-          onPageSizeChange: () => {},
-        }}
-        selection={{
-          selectedItems: selectedRows,
-          onSelectionChange: setSelectedRows,
-        }}
-        actions={{
-          onEdit: (row) => {
-            setEditItem(row);
-            setFormData({ ...row });
-            setModalOpen(true);
-          },
-        }}
-        summaryRow={{
-          date: <span className="font-semibold">Total</span>,
-          amount: (
-            <span className="font-bold">{totalAmount.toLocaleString()}</span>
-          ),
-        }}
-      />
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -445,19 +541,26 @@ const Transactions = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Amount *
             </label>
-            <input
-              type="number"
-              value={formData.amount}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  amount: Number(e.target.value),
-                }))
-              }
-              className="input-base"
-              min="0"
-              required
-            />
+            <div className="relative">
+              <input
+                type="number"
+                value={formData.amount}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    amount: Number(e.target.value),
+                  }))
+                }
+                className="input-base pl-8"
+                placeholder="0.00"
+                step="0.01"
+                min="0"
+                required
+              />
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                ₦
+              </span>
+            </div>
           </div>
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
