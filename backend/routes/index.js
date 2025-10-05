@@ -1,3 +1,4 @@
+// Product Category routes
 import express from "express";
 import dashboardRoutes from "./dashboard.js";
 import generalSettingsRoutes from "./settings/general.js";
@@ -21,6 +22,9 @@ import transactionsRoutes from "./accounts/transactions.js";
 
 // Party Routes
 import partiesRoutes from "./party/parties.js";
+
+// production
+import categoryRoutes from "./products/category.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
@@ -55,6 +59,9 @@ router.use("/accounts/transactions", transactionsRoutes);
 
 // Party routes
 router.use("/party/parties", partiesRoutes);
+
+// Production
+router.use("/categories", categoryRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);
