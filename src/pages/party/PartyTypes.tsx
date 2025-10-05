@@ -11,8 +11,6 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
 
-const PAGE_SIZE_OPTIONS = [10, 25, 50, 100];
-
 // TypeScript Interfaces
 type PartyType = Omit<PartyTypeBase, "id"> & { id: string };
 
@@ -40,45 +38,48 @@ const PartyTypes = () => {
 
   const { showToast } = useToast();
 
-  // Fetch party types - simpler approach without useCallback
-  const fetchPartyTypes = async () => {
-    if (loading) return; // Prevent concurrent fetches
-
+  // Fetch party types (pattern like PartyList)
+  const fetchPartyTypes = () => {
     setLoading(true);
-    try {
-      const response = await api.get<ApiResponse<PartyType[]>>("/party/types");
-
-      if (response.success && response.data) {
-        setData(
-          response.data.map((item) => ({ ...item, id: String(item.id) }))
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching party types:", error);
-      // Only show toast for connection errors, not every failed request
-      if (error instanceof Error && error.message.includes("Failed to fetch")) {
-        showToast(
-          "Cannot connect to server. Please check if the server is running.",
-          "error"
-        );
-      }
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
-    }
+    api
+      .get<ApiResponse<PartyType[]>>("/party/types")
+      .then((response) => {
+        if (response.success && response.data) {
+          setData(
+            response.data.map((item) => ({ ...item, id: String(item.id) }))
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching party types:", error);
+        if (
+          error instanceof Error &&
+          error.message.includes("Failed to fetch")
+        ) {
+          showToast(
+            "Cannot connect to server. Please check if the server is running.",
+            "error"
+          );
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+        setInitialLoading(false);
+      });
   };
 
   // Refresh with animation
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchPartyTypes();
+    fetchPartyTypes();
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
-  // Initial data load
+  // Initial data load (no dependency array, just once)
   useEffect(() => {
     fetchPartyTypes();
-  }, [fetchPartyTypes]);
+    // eslint-disable-next-line
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -127,100 +128,86 @@ const PartyTypes = () => {
   const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
   // Create
-  const handleCreate = async () => {
-    // Validation
+  const handleCreate = () => {
     if (!formData.name.trim()) {
       showToast("Name is required", "error");
       return;
     }
-
     setLoading(true);
-    try {
-      const response = await api.post<ApiResponse<PartyType>>(
-        "/party/types",
-        formData
-      );
-
-      if (response.success) {
-        showToast(
-          response.message || "Party type created successfully",
-          "success"
-        );
-        await fetchPartyTypes();
-        setModalOpen(false);
-        setFormData({ name: "", description: "" });
-      }
-    } catch (error) {
-      console.error("Error creating party type:", error);
-      showToast("Failed to create party type", "error");
-    } finally {
-      setLoading(false);
-    }
+    api
+      .post<ApiResponse<PartyType>>("/party/types", formData)
+      .then((response) => {
+        if (response.success) {
+          showToast(
+            response.message || "Party type created successfully",
+            "success"
+          );
+          fetchPartyTypes();
+          setModalOpen(false);
+          setFormData({ name: "", description: "" });
+        }
+      })
+      .catch((error) => {
+        console.error("Error creating party type:", error);
+        showToast("Failed to create party type", "error");
+      })
+      .finally(() => setLoading(false));
   };
 
   // Update
-  const handleUpdate = async () => {
+  const handleUpdate = () => {
     if (!editItem) return;
-
-    // Validation
     if (!formData.name.trim()) {
       showToast("Name is required", "error");
       return;
     }
-
     setLoading(true);
-    try {
-      const response = await api.put<ApiResponse<PartyType>>(
-        `/party/types/${editItem.id}`,
-        formData
-      );
-
-      if (response.success) {
-        showToast(
-          response.message || "Party type updated successfully",
-          "success"
-        );
-        await fetchPartyTypes();
-        setModalOpen(false);
-        setEditItem(null);
-        setFormData({ name: "", description: "" });
-      }
-    } catch (error) {
-      console.error("Error updating party type:", error);
-      showToast("Failed to update party type", "error");
-    } finally {
-      setLoading(false);
-    }
+    api
+      .put<ApiResponse<PartyType>>(`/party/types/${editItem.id}`, formData)
+      .then((response) => {
+        if (response.success) {
+          showToast(
+            response.message || "Party type updated successfully",
+            "success"
+          );
+          fetchPartyTypes();
+          setModalOpen(false);
+          setEditItem(null);
+          setFormData({ name: "", description: "" });
+        }
+      })
+      .catch((error) => {
+        console.error("Error updating party type:", error);
+        showToast("Failed to update party type", "error");
+      })
+      .finally(() => setLoading(false));
   };
 
   // Delete (single or bulk)
-  const handleDelete = async (ids: string[]) => {
+  const handleDelete = (ids: string[]) => {
     if (
       !confirm(`Are you sure you want to delete ${ids.length} party type(s)?`)
     ) {
       return;
     }
-
     setLoading(true);
-    try {
-      const response = await api.delete<ApiResponse<void>>("/party/types", {
-        ids,
-      });
-
-      if (response.success) {
-        showToast(
-          response.message || "Party types deleted successfully",
-          "success"
-        );
-        await fetchPartyTypes();
-        setSelectedRows([]);
-      }
-    } catch (error) {
-      console.error("Error deleting party types:", error);
-      showToast("Failed to delete party types", "error");
-    } finally {
-      setLoading(false);
-    }
+    api
+      .delete<ApiResponse<void>>("/party/types", { ids })
+      .then((response) => {
+        if (response.success) {
+          showToast(
+            response.message || "Party types deleted successfully",
+            "success"
+          );
+          fetchPartyTypes();
+          setSelectedRows([]);
+        }
+      })
+      .catch((error) => {
+        console.error("Error deleting party types:", error);
+        showToast("Failed to delete party types", "error");
+      })
+      .finally(() => setLoading(false));
   };
 
   // Handle modal open for new party type

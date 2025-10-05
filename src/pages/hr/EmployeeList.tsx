@@ -130,7 +130,8 @@ const EmployeeList: React.FC = () => {
       key: "id",
       label: "S/N",
       width: "80px",
-      render: (_value: any, _row: any, index: number) => startIndex + index + 1,
+      render: (_value: any, _row: any, index?: number) =>
+        startIndex + (typeof index === "number" ? index : 0) + 1,
     },
     { key: "name", label: "Employee Name", sortable: true },
     { key: "empId", label: "Employee ID", sortable: true },

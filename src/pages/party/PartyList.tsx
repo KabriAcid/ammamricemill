@@ -43,7 +43,7 @@ const PartyList = () => {
     const params = new URLSearchParams();
     if (search) params.append("search", search);
     if (partyTypeFilter) params.append("type", partyTypeFilter);
-    fetch(`/api/parties?${params.toString()}`)
+    fetch(`/api/party/parties?${params.toString()}`)
       .then((res) => res.json())
       .then((res) =>
         setData(res.map((item: any) => ({ ...item, id: String(item.id) })))
@@ -54,7 +54,7 @@ const PartyList = () => {
   // Create
   const handleCreate = () => {
     setLoading(true);
-    fetch("/api/parties", {
+    fetch("/api/party/parties", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -81,7 +81,7 @@ const PartyList = () => {
   const handleUpdate = () => {
     if (!editItem) return;
     setLoading(true);
-    fetch(`/api/parties/${editItem.id}`, {
+    fetch(`/api/party/parties/${editItem.id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
@@ -115,7 +115,7 @@ const PartyList = () => {
   const handleDelete = (ids: string[]) => {
     setLoading(true);
     Promise.all(
-      ids.map((id) => fetch(`/api/parties/${id}`, { method: "DELETE" }))
+      ids.map((id) => fetch(`/api/party/parties/${id}`, { method: "DELETE" }))
     )
       .then(() =>
         setData((prev) => prev.filter((row) => !ids.includes(row.id)))

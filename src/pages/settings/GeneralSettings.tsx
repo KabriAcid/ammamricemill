@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Save, Upload, Image, User } from "lucide-react";
+import { Save, Upload, Image } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Tabs } from "../../components/ui/Tabs";
@@ -301,7 +301,7 @@ const GeneralSettings: React.FC = () => {
         success: boolean;
         message: string;
         id?: number;
-      }>("/settings/admin-profile", adminForm);
+      }>("/general/admin", adminForm);
       if (response.success) {
         showToast("New admin created successfully", "success");
         setAdminForm({
@@ -569,7 +569,9 @@ const GeneralSettings: React.FC = () => {
           <div className="flex flex-col items-center mb-6">
             <div className="relative mb-4">
               <img
-                src={adminAvatarPreview || adminForm.avatar_url || "/default.png"}
+                src={
+                  adminAvatarPreview || adminForm.avatar_url || "/default.png"
+                }
                 alt="Avatar Preview"
                 className="w-28 h-28 rounded-full object-cover border-4 border-gray-200"
                 onError={(e) => {
