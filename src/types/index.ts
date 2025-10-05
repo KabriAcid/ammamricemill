@@ -213,7 +213,7 @@ export interface TableColumn {
   label: string;
   sortable?: boolean;
   width?: string;
-  render?: (value: any, item: any) => React.ReactNode;
+  render?: (value: any, item: any, index?: number) => React.ReactNode;
 }
 
 export interface TableProps<T> {

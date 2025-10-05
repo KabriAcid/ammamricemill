@@ -8,8 +8,10 @@
  * formatCurrency(1234.5) // "1,234.50"
  * formatCurrency(0) // "0.00"
  */
-export const formatCurrency = (value: number): string => {
-  return (value || 0).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export const formatCurrency = (value: number | string): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  const safeValue = isNaN(numValue) ? 0 : numValue;
+  return safeValue.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 /**
@@ -21,8 +23,13 @@ export const formatCurrency = (value: number): string => {
  * formatNumber(1234.5678, 2) // "1,234.57"
  * formatNumber(1234.5678, 0) // "1,235"
  */
-export const formatNumber = (value: number, decimals: number = 2): string => {
-  return (value || 0).toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+export const formatNumber = (
+  value: number | string,
+  decimals: number = 2
+): string => {
+  const numValue = typeof value === "string" ? parseFloat(value) : value;
+  const safeValue = isNaN(numValue) ? 0 : numValue;
+  return safeValue.toFixed(decimals).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
 /**

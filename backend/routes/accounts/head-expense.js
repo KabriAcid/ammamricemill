@@ -9,13 +9,15 @@ router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [expenseHeads] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        0 as payments,
-        created_at as createdAt
-      FROM expense_heads 
-      WHERE status = 'active'
-      ORDER BY created_at DESC`
+        eh.id, 
+        eh.name,
+        CAST(COALESCE(SUM(t.amount), 0) AS DECIMAL(12,2)) as payments,
+        eh.created_at as createdAt
+      FROM expense_heads eh
+      LEFT JOIN transactions t ON t.to_head_id = eh.id AND t.to_head_type = 'expense' AND t.status = 'active'
+      WHERE eh.status = 'active'
+      GROUP BY eh.id, eh.name, eh.created_at
+      ORDER BY eh.created_at DESC`
     );
 
     res.json({
@@ -44,8 +46,37 @@ router.post("/", authenticateToken, async (req, res, next) => {
       [name]
     );
 
+    if (!result.affectedRows || !result.insertId) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to create expense head. Please try again.",
+      });
+    }
+
+    // Insert a transaction row for the new head (opening payment = 0)
+    await pool.query(
+      `INSERT INTO transactions (from_head_id, from_head_type, to_head_id, to_head_type, amount, date, description, status)
+       VALUES (?, ?, ?, ?, ?, CURDATE(), ?, 'active')`,
+      [
+        null, // from_head_id
+        null, // from_head_type
+        result.insertId, // to_head_id
+        "expense", // to_head_type
+        0,
+        "Opening payment",
+      ]
+    );
+
     const [newHead] = await pool.query(
-      `SELECT id, name, 0 as payments, created_at as createdAt FROM expense_heads WHERE id = ?`,
+      `SELECT 
+        eh.id, 
+        eh.name, 
+        CAST(COALESCE(SUM(t.amount), 0) AS DECIMAL(12,2)) as payments, 
+        eh.created_at as createdAt 
+      FROM expense_heads eh
+      LEFT JOIN transactions t ON t.to_head_id = eh.id AND t.to_head_type = 'expense' AND t.status = 'active'
+      WHERE eh.id = ?
+      GROUP BY eh.id, eh.name, eh.created_at`,
       [result.insertId]
     );
 
@@ -78,7 +109,15 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     ]);
 
     const [updated] = await pool.query(
-      `SELECT id, name, 0 as payments, created_at as createdAt FROM expense_heads WHERE id = ?`,
+      `SELECT 
+        eh.id, 
+        eh.name, 
+        CAST(COALESCE(SUM(t.amount), 0) AS DECIMAL(12,2)) as payments, 
+        eh.created_at as createdAt 
+      FROM expense_heads eh
+      LEFT JOIN transactions t ON t.to_head_id = eh.id AND t.to_head_type = 'expense' AND t.status = 'active'
+      WHERE eh.id = ?
+      GROUP BY eh.id, eh.name, eh.created_at`,
       [id]
     );
 

@@ -22,9 +22,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    onSearch(searchQuery);
+  // Live search - trigger onSearch immediately when typing
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const query = e.target.value;
+    setSearchQuery(query);
+    onSearch(query); // Call onSearch immediately for live search
   };
 
   const handleDateFilter = () => {
@@ -36,18 +38,18 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   return (
     <div className="bg-white p-4 rounded-lg shadow mb-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <form onSubmit={handleSearch} className="flex-1 max-w-md">
+        <div className="flex-1 max-w-md">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
             <input
-              type="text"
+              type="search"
               placeholder={placeholder}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={handleSearchChange}
               className="input-base pl-10"
             />
           </div>
-        </form>
+        </div>
 
         {onDateRange && (
           <div className="flex items-center gap-2">

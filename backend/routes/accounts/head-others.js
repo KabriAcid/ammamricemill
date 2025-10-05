@@ -9,29 +9,23 @@ router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [otherHeads] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions 
-           WHERE to_head_id = oh.id AND to_head_type = 'others'),
-          0
-        ) as receive,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions 
-           WHERE from_head_id = oh.id AND from_head_type = 'others'),
-          0
-        ) as payment,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions WHERE to_head_id = oh.id AND to_head_type = 'others'),
-          0
-        ) - COALESCE(
-          (SELECT SUM(amount) FROM transactions WHERE from_head_id = oh.id AND from_head_type = 'others'),
-          0
-        ) as balance,
-        created_at as createdAt
+        oh.id, 
+        oh.name,
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        oh.created_at as createdAt
       FROM other_heads oh
-      WHERE status = 'active'
-      ORDER BY created_at DESC`
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = oh.id AND t.to_head_type = 'others') OR 
+        (t.from_head_id = oh.id AND t.from_head_type = 'others')
+      ) AND t.status = 'active'
+      WHERE oh.status = 'active'
+      GROUP BY oh.id, oh.name, oh.created_at
+      ORDER BY oh.created_at DESC`
     );
 
     res.json({
@@ -60,16 +54,45 @@ router.post("/", authenticateToken, async (req, res, next) => {
       [name]
     );
 
+    if (!result.affectedRows || !result.insertId) {
+      return res.status(500).json({
+        success: false,
+        error: "Failed to create other head. Please try again.",
+      });
+    }
+
+    // Insert a transaction row for the new head (opening receive = 0)
+    await pool.query(
+      `INSERT INTO transactions (from_head_id, from_head_type, to_head_id, to_head_type, amount, date, description, status)
+       VALUES (?, ?, ?, ?, ?, CURDATE(), ?, 'active')`,
+      [
+        null, // from_head_id
+        null, // from_head_type
+        result.insertId, // to_head_id
+        "others", // to_head_type
+        0,
+        "Opening balance",
+      ]
+    );
+
     const [newHead] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        0 as receive,
-        0 as payment,
-        0 as balance,
-        created_at as createdAt 
-      FROM other_heads 
-      WHERE id = ?`,
+        oh.id, 
+        oh.name,
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        oh.created_at as createdAt 
+      FROM other_heads oh
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = oh.id AND t.to_head_type = 'others') OR 
+        (t.from_head_id = oh.id AND t.from_head_type = 'others')
+      ) AND t.status = 'active'
+      WHERE oh.id = ?
+      GROUP BY oh.id, oh.name, oh.created_at`,
       [result.insertId]
     );
 
@@ -103,28 +126,22 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 
     const [updated] = await pool.query(
       `SELECT 
-        id, 
-        name,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions 
-           WHERE to_head_id = oh.id AND to_head_type = 'others'),
-          0
-        ) as receive,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions 
-           WHERE from_head_id = oh.id AND from_head_type = 'others'),
-          0
-        ) as payment,
-        COALESCE(
-          (SELECT SUM(amount) FROM transactions WHERE to_head_id = oh.id AND to_head_type = 'others'),
-          0
-        ) - COALESCE(
-          (SELECT SUM(amount) FROM transactions WHERE from_head_id = oh.id AND from_head_type = 'others'),
-          0
-        ) as balance,
-        created_at as createdAt
+        oh.id, 
+        oh.name,
+        CAST(COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as receive,
+        CAST(COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0) AS DECIMAL(12,2)) as payment,
+        CAST(
+          COALESCE(SUM(CASE WHEN t.to_head_id = oh.id AND t.to_head_type = 'others' THEN t.amount ELSE 0 END), 0) -
+          COALESCE(SUM(CASE WHEN t.from_head_id = oh.id AND t.from_head_type = 'others' THEN t.amount ELSE 0 END), 0)
+        AS DECIMAL(12,2)) as balance,
+        oh.created_at as createdAt
       FROM other_heads oh
-      WHERE id = ?`,
+      LEFT JOIN transactions t ON (
+        (t.to_head_id = oh.id AND t.to_head_type = 'others') OR 
+        (t.from_head_id = oh.id AND t.from_head_type = 'others')
+      ) AND t.status = 'active'
+      WHERE oh.id = ?
+      GROUP BY oh.id, oh.name, oh.created_at`,
       [id]
     );
 

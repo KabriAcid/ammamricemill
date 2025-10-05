@@ -59,6 +59,7 @@ import ProductionStockDetails from "./pages/production/ProductionStockDetails";
 import StocksDetails from "./pages/stocks/StocksDetails";
 import GodownStocks from "./pages/stocks/GodownStocks";
 import StockRegisterPage from "./pages/stocks/StockRegisterPage";
+import AdminProfile from "./pages/Profile";
 import AddStocksList from "./pages/stocks/AddStocksList";
 import EmptyBagStocks from "./pages/stocks/EmptyBagStocks";
 import DailyReport from "./pages/reporting/DailyReport";
@@ -85,6 +86,7 @@ function App() {
               >
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/settings/general" element={<GeneralSettings />} />
+                <Route path="/admin/profile" element={<AdminProfile />} />
                 <Route path="/settings/silo" element={<SiloList />} />
                 <Route path="/settings/godown" element={<GodownList />} />
                 <Route path="/hr/designation" element={<DesignationList />} />
