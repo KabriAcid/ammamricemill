@@ -64,15 +64,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   // Set up unauthorized response handler
   useEffect(() => {
     const handleUnauthorized = async () => {
-      console.log("Unauthorized response detected, logging out...");
+      // Save current route before logging out
       try {
+        if (typeof window !== "undefined") {
+          localStorage.setItem(
+            "ammam_last_route",
+            window.location.pathname + window.location.search
+          );
+        }
         await logout();
         // Don't navigate here - let the protected route handle it
       } catch (error) {
         console.error("Error during auto-logout:", error);
       }
     };
-
     setUnauthorizedHandler(handleUnauthorized);
   }, []);
 
@@ -83,15 +88,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const checkAuthStatus = async () => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-
       // First try to get the stored user
       const storedUser = localStorage.getItem("ammam_user");
-
       if (!storedUser) {
         dispatch({ type: "SET_USER", payload: null });
         return;
       }
-
       // Verify token with backend
       try {
         const response = await api.get<ApiResponse>("/auth/verify");
@@ -117,24 +119,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (email: string, password: string) => {
     try {
       dispatch({ type: "SET_LOADING", payload: true });
-
       if (!email || !password) {
         throw new Error("Please enter both email and password");
       }
-
       const response = await api.post<LoginResponse>("/auth/login", {
         email,
         password,
       });
-
       if (!response.success || !response.data) {
         throw new Error(response.message || "Login failed");
       }
-
       const { user } = response.data;
-
       dispatch({ type: "SET_USER", payload: user });
-
       // Store user info and token in localStorage
       localStorage.setItem(
         "ammam_user",
@@ -146,6 +142,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
           token: response.data.accessToken,
         })
       );
+      // No redirect here; handled in Login page
     } catch (error) {
       dispatch({ type: "SET_LOADING", payload: false });
       if (error instanceof ApiError) {

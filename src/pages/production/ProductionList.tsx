@@ -14,6 +14,7 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { format } from "date-fns";
+import { formatCurrency } from "../../utils/formatters";
 import { ProductionFormModal } from "./ProductionFormModal";
 import { api } from "../../utils/fetcher";
 import type { Production, ProductionItem } from "../../types/production";
@@ -97,12 +98,12 @@ const ProductionList: React.FC = () => {
     {
       key: "totalQuantity",
       label: "Quantity",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatCurrency(value),
     },
     {
       key: "totalWeight",
       label: "Weight (Kg)",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => `${formatCurrency(value)} Kg`,
     },
   ];
 
@@ -169,7 +170,7 @@ const ProductionList: React.FC = () => {
         <Card icon={<PackageCheck size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalQuantity.toLocaleString()}
+              {formatCurrency(stats.totalQuantity)}
             </p>
             <p className="text-sm text-gray-500">Total Quantity</p>
           </div>
@@ -177,7 +178,7 @@ const ProductionList: React.FC = () => {
         <Card icon={<Scale size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalWeight.toLocaleString()} Kg
+              {formatCurrency(stats.totalWeight)} Kg
             </p>
             <p className="text-sm text-gray-500">Total Weight</p>
           </div>

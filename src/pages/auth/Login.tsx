@@ -43,7 +43,14 @@ export const Login: React.FC = () => {
 
       await new Promise((resolve) => setTimeout(resolve, 500));
       showToast("Welcome back! You've successfully signed in.", "success");
-      navigate("/dashboard", { replace: true });
+      // Redirect to last route if present, else dashboard
+      const lastRoute = localStorage.getItem("ammam_last_route");
+      if (lastRoute) {
+        localStorage.removeItem("ammam_last_route");
+        navigate(lastRoute, { replace: true });
+      } else {
+        navigate("/dashboard", { replace: true });
+      }
     } catch (err) {
       console.error("Login error:", err);
       if (err instanceof Error) {

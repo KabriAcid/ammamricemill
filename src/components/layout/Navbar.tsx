@@ -44,6 +44,14 @@ export const Navbar: React.FC = () => {
       // First set loading state and close dropdown
       setDropdownOpen(false);
 
+      // Store current route before logout
+      if (typeof window !== "undefined") {
+        localStorage.setItem(
+          "ammam_last_route",
+          window.location.pathname + window.location.search
+        );
+      }
+
       // Call logout
       await logout();
 

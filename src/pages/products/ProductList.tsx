@@ -17,6 +17,7 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency } from "../../utils/formatters";
 
 // TypeScript Interfaces
 export interface Product {
@@ -334,12 +335,12 @@ const ProductList = () => {
     {
       key: "buyPrice",
       label: "Buy Price",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
       key: "salePrice",
       label: "Sale Price",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
   ];
 
@@ -389,7 +390,7 @@ const ProductList = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalBuyPrice.toLocaleString()}
+                  ₦{formatCurrency(totalBuyPrice)}
                 </p>
                 <p className="text-sm text-gray-500">Total Buy Price</p>
               </div>
@@ -400,7 +401,7 @@ const ProductList = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalSalePrice.toLocaleString()}
+                  ₦{formatCurrency(totalSalePrice)}
                 </p>
                 <p className="text-sm text-gray-500">Total Sale Price</p>
               </div>
@@ -472,12 +473,10 @@ const ProductList = () => {
           size: "",
           weight: "",
           buyPrice: (
-            <span className="font-bold">₦{totalBuyPrice.toLocaleString()}</span>
+            <span className="font-bold">₦{formatCurrency(totalBuyPrice)}</span>
           ),
           salePrice: (
-            <span className="font-bold">
-              ₦{totalSalePrice.toLocaleString()}
-            </span>
+            <span className="font-bold">₦{formatCurrency(totalSalePrice)}</span>
           ),
         }}
       />
