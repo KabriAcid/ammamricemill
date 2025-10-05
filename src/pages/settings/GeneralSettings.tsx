@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Save, Upload, Image } from "lucide-react";
+import { Save, Upload, Image, User } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Tabs } from "../../components/ui/Tabs";
@@ -25,6 +25,21 @@ const GeneralSettings: React.FC = () => {
     logo_url: "",
     favicon_url: "",
   });
+
+  const [adminForm, setAdminForm] = useState({
+    full_name: "",
+    email: "",
+    phone: "",
+    password: "",
+    role: "admin",
+    bio: "",
+    address: "",
+    avatar_url: "",
+  });
+  const [adminAvatarPreview, setAdminAvatarPreview] = useState<string>("");
+  const [adminLoading, setAdminLoading] = useState(false);
+
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchSettings();
@@ -123,8 +138,6 @@ const GeneralSettings: React.FC = () => {
     }
   };
 
-  const { showToast } = useToast();
-
   const validateForm = () => {
     const requiredFields: (keyof GeneralSettingsData)[] = [
       "company_name",
@@ -155,7 +168,6 @@ const GeneralSettings: React.FC = () => {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (file) {
         if (file.size > 5 * 1024 * 1024) {
-          // 5MB limit
           showToast("File size should be less than 5MB", "error");
           return;
         }
@@ -207,6 +219,113 @@ const GeneralSettings: React.FC = () => {
       }
     };
     input.click();
+  };
+
+  const handleAdminInputChange = (field: string, value: string) => {
+    setAdminForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleAdminAvatarUpload = async () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) {
+          showToast("File size should be less than 5MB", "error");
+          return;
+        }
+        const allowedTypes = [
+          "image/jpeg",
+          "image/png",
+          "image/gif",
+          "image/webp",
+        ];
+        if (!allowedTypes.includes(file.type)) {
+          showToast(
+            "Please upload a valid image file (JPEG, PNG, GIF, or WebP)",
+            "error"
+          );
+          return;
+        }
+        try {
+          const formData = new FormData();
+          formData.append("avatar", file);
+          const response = await api.upload<{
+            success: boolean;
+            url: string;
+            message?: string;
+          }>("/settings/admin-profile/upload", formData);
+          if (response.success && response.url) {
+            setAdminAvatarPreview(response.url);
+            handleAdminInputChange("avatar_url", response.url);
+            showToast("Avatar uploaded successfully", "success");
+          } else {
+            throw new Error(
+              response.message || "Invalid upload response format"
+            );
+          }
+        } catch (error) {
+          showToast(
+            "An unexpected error occurred while uploading avatar",
+            "error"
+          );
+        }
+      }
+    };
+    input.click();
+  };
+
+  const handleAddAdmin = async () => {
+    if (
+      !adminForm.full_name ||
+      !adminForm.email ||
+      !adminForm.phone ||
+      !adminForm.password
+    ) {
+      showToast("Full name, email, phone, and password are required", "error");
+      return;
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(adminForm.email)) {
+      showToast("Please enter a valid email address", "error");
+      return;
+    }
+    if (adminForm.password.length < 8) {
+      showToast("Password must be at least 8 characters long", "error");
+      return;
+    }
+    setAdminLoading(true);
+    try {
+      const response = await api.post<{
+        success: boolean;
+        message: string;
+        id?: number;
+      }>("/settings/admin-profile", adminForm);
+      if (response.success) {
+        showToast("New admin created successfully", "success");
+        setAdminForm({
+          full_name: "",
+          email: "",
+          phone: "",
+          password: "",
+          role: "admin",
+          bio: "",
+          address: "",
+          avatar_url: "",
+        });
+        setAdminAvatarPreview("");
+      } else {
+        throw new Error(response.message || "Failed to create admin");
+      }
+    } catch (error) {
+      showToast(
+        error instanceof Error ? error.message : "Failed to create admin",
+        "error"
+      );
+    } finally {
+      setAdminLoading(false);
+    }
   };
 
   const tabs = [
@@ -348,7 +467,7 @@ const GeneralSettings: React.FC = () => {
 
           <div className="flex justify-end">
             <Button onClick={handleSave} loading={loading} icon={Save}>
-              Save Other Settings
+              Save Regional Settings
             </Button>
           </div>
         </div>
@@ -436,6 +555,147 @@ const GeneralSettings: React.FC = () => {
           <div className="flex justify-end">
             <Button onClick={handleSave} loading={loading} icon={Save}>
               Save Branding
+            </Button>
+          </div>
+        </div>
+      ),
+    },
+    {
+      id: "add-admin",
+      label: "Add Admin",
+      content: (
+        <div className="space-y-6 max-w-2xl mx-auto">
+          <h2 className="text-xl font-semibold mb-4">Create New Admin</h2>
+          <div className="flex flex-col items-center mb-6">
+            <div className="relative mb-4">
+              <img
+                src={adminAvatarPreview || adminForm.avatar_url || "/default.png"}
+                alt="Avatar Preview"
+                className="w-28 h-28 rounded-full object-cover border-4 border-gray-200"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src = "/default.png";
+                }}
+              />
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              icon={Upload}
+              onClick={handleAdminAvatarUpload}
+            >
+              Upload Avatar
+            </Button>
+            <p className="text-xs text-gray-500 mt-2">
+              Max size: 5MB. Formats: JPEG, PNG, GIF, WebP
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name *
+              </label>
+              <input
+                type="text"
+                value={adminForm.full_name}
+                onChange={(e) =>
+                  handleAdminInputChange("full_name", e.target.value)
+                }
+                className="input-base"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email *
+              </label>
+              <input
+                type="email"
+                value={adminForm.email}
+                onChange={(e) =>
+                  handleAdminInputChange("email", e.target.value)
+                }
+                className="input-base"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone *
+              </label>
+              <input
+                type="tel"
+                value={adminForm.phone}
+                onChange={(e) =>
+                  handleAdminInputChange("phone", e.target.value)
+                }
+                className="input-base"
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Password *
+              </label>
+              <input
+                type="password"
+                value={adminForm.password}
+                onChange={(e) =>
+                  handleAdminInputChange("password", e.target.value)
+                }
+                className="input-base"
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Role
+              </label>
+              <select
+                value={adminForm.role}
+                onChange={(e) => handleAdminInputChange("role", e.target.value)}
+                className="input-base"
+              >
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Address
+              </label>
+              <input
+                type="text"
+                value={adminForm.address}
+                onChange={(e) =>
+                  handleAdminInputChange("address", e.target.value)
+                }
+                className="input-base"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Bio
+            </label>
+            <textarea
+              value={adminForm.bio}
+              onChange={(e) => handleAdminInputChange("bio", e.target.value)}
+              className="input-base"
+              rows={3}
+            />
+          </div>
+
+          <div className="flex justify-end">
+            <Button onClick={handleAddAdmin} loading={adminLoading} icon={Save}>
+              Create Admin
             </Button>
           </div>
         </div>
