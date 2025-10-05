@@ -313,7 +313,7 @@ const HeadOthers = () => {
             <Button
               onClick={() => {
                 setEditItem(null);
-                setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+                setFormData({ name: "" });
                 setModalOpen(true);
               }}
               icon={Plus}
