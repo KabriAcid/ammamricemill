@@ -54,9 +54,9 @@ import SaleDetails from "./pages/sales/SaleDetails";
 import SalesLedger from "./pages/sales/SalesLedger";
 import ProductionList from "./pages/production/ProductionList";
 import ProductionDetails from "./pages/production/ProductionDetails";
-import ProductionStockList from "./pages/production/ProductionStockList";
-import ProductionStockDetails from "./pages/production/ProductionStockDetails";
-import StocksDetails from "./pages/stocks/StocksDetails";
+import ProductionStockList from "./pages/stocks/ProductionStockList";
+import ProductionStockDetails from "./pages/stocks/ProductionStockDetails";
+import MainStock from "./pages/stocks/MainStock";
 import GodownStocks from "./pages/stocks/GodownStocks";
 import StockRegisterPage from "./pages/stocks/StockRegisterPage";
 import Profile from "./pages/settings/Profile";
@@ -163,7 +163,7 @@ function App() {
                   path="/production/details"
                   element={<ProductionDetails />}
                 />
-                <Route path="/stocks" element={<StocksDetails />} />
+                <Route path="/stocks" element={<MainStock />} />
                 <Route path="/stocks-godown" element={<GodownStocks />} />
                 <Route path="/stocks/details" element={<StockRegisterPage />} />
                 <Route path="/stocks/addstocks" element={<AddStocksList />} />

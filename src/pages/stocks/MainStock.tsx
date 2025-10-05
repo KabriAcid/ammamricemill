@@ -1,13 +1,10 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
-  Plus,
-  Trash2,
   Printer,
   Package,
-  PackageCheck,
-  Scale,
+  TrendingUp,
   DollarSign,
+  Warehouse,
   RefreshCcw,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
@@ -20,53 +17,57 @@ import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
 import { formatCurrency } from "../../utils/formatters";
 
-interface AddStock {
+interface StockDetail {
   id: string;
-  date: string;
+  categoryId: string;
+  categoryName: string;
   productId: string;
   productName: string;
-  godownId: string;
-  godownName: string;
-  quantity: number;
-  netWeight: number;
-  rate: number;
+  opening: number;
+  add: number;
+  purchase: number;
+  sales: number;
+  production: number;
+  productionStocks: number;
+  stock: number;
+  avgPrice: number;
   totalPrice: number;
-  notes: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
-interface Product {
+interface Category {
   id: string;
   name: string;
 }
 
-const AddStocksList = () => {
-  const [data, setData] = useState<AddStock[]>([]);
-  const [products, setProducts] = useState<Product[]>([]);
+interface Godown {
+  id: string;
+  name: string;
+}
+
+const MainStock = () => {
+  const [data, setData] = useState<StockDetail[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [search, setSearch] = useState("");
-  const [productFilter, setProductFilter] = useState("");
-  const [dateRange, setDateRange] = useState({ from: "", to: "" });
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const [godownFilter, setGodownFilter] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
 
   const { showToast } = useToast();
-  const navigate = useNavigate();
 
-  const fetchAddStocks = async () => {
+  const fetchStocks = async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
-      if (productFilter) params.append("product_id", productFilter);
-      if (dateRange.from) params.append("from_date", dateRange.from);
-      if (dateRange.to) params.append("to_date", dateRange.to);
+      if (categoryFilter) params.append("category_id", categoryFilter);
+      if (godownFilter) params.append("godown_id", godownFilter);
 
-      const response = await api.get<ApiResponse<AddStock[]>>(
-        `/stocks/add-stocks?${params.toString()}`
+      const response = await api.get<ApiResponse<StockDetail[]>>(
+        `/stocks/main-stocks?${params.toString()}`
       );
 
       if (response.success && response.data) {
@@ -75,43 +76,57 @@ const AddStocksList = () => {
         );
       }
     } catch (error) {
-      console.error("Error fetching add stocks:", error);
-      showToast("Failed to load add stocks", "error");
+      console.error("Error fetching stocks:", error);
+      showToast("Failed to load stocks", "error");
     } finally {
       setLoading(false);
       setInitialLoading(false);
     }
   };
 
-  const fetchProducts = async () => {
+  const fetchCategories = async () => {
     try {
-      const response = await api.get<ApiResponse<Product[]>>("/products");
+      const response = await api.get<ApiResponse<Category[]>>("/categories");
       if (response.success && response.data) {
-        setProducts(
-          response.data.map((p) => ({ id: String(p.id), name: p.name }))
+        setCategories(
+          response.data.map((cat) => ({ id: String(cat.id), name: cat.name }))
         );
       }
     } catch (error) {
-      console.error("Error fetching products:", error);
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchGodowns = async () => {
+    try {
+      const response = await api.get<ApiResponse<Godown[]>>("/godowns");
+      if (response.success && response.data) {
+        setGodowns(
+          response.data.map((gd) => ({ id: String(gd.id), name: gd.name }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching godowns:", error);
     }
   };
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
-    await fetchAddStocks();
+    await fetchStocks();
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
   useEffect(() => {
-    fetchAddStocks();
-    fetchProducts();
+    fetchStocks();
+    fetchCategories();
+    fetchGodowns();
   }, []);
 
   useEffect(() => {
     if (!initialLoading) {
-      fetchAddStocks();
+      fetchStocks();
     }
-  }, [productFilter, dateRange.from, dateRange.to]);
+  }, [categoryFilter, godownFilter]);
 
   useEffect(() => {
     const handleKeyPress = (event: KeyboardEvent) => {
@@ -145,8 +160,7 @@ const AddStocksList = () => {
 
     return (
       item.productName?.toLowerCase().includes(query) ||
-      item.godownName?.toLowerCase().includes(query) ||
-      item.notes?.toLowerCase().includes(query) ||
+      item.categoryName?.toLowerCase().includes(query) ||
       false
     );
   });
@@ -155,49 +169,23 @@ const AddStocksList = () => {
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
-  const totalEntries = filteredData.length;
-  const totalQuantity = filteredData.reduce((sum, s) => sum + s.quantity, 0);
-  const totalWeight = filteredData.reduce((sum, s) => sum + s.netWeight, 0);
+  const totalStock = filteredData.reduce((sum, s) => sum + s.stock, 0);
   const totalValue = filteredData.reduce((sum, s) => sum + s.totalPrice, 0);
+  const totalProducts = filteredData.length;
+  const totalCategories = new Set(filteredData.map((s) => s.categoryId)).size;
 
   const totals = {
-    quantity: filteredData.reduce((sum, s) => sum + s.quantity, 0),
-    netWeight: filteredData.reduce((sum, s) => sum + s.netWeight, 0),
+    opening: filteredData.reduce((sum, s) => sum + s.opening, 0),
+    add: filteredData.reduce((sum, s) => sum + s.add, 0),
+    purchase: filteredData.reduce((sum, s) => sum + s.purchase, 0),
+    sales: filteredData.reduce((sum, s) => sum + s.sales, 0),
+    production: filteredData.reduce((sum, s) => sum + s.production, 0),
+    productionStocks: filteredData.reduce(
+      (sum, s) => sum + s.productionStocks,
+      0
+    ),
+    stock: filteredData.reduce((sum, s) => sum + s.stock, 0),
     totalPrice: filteredData.reduce((sum, s) => sum + s.totalPrice, 0),
-  };
-
-  const handleDelete = async (ids: string[]) => {
-    if (
-      !confirm(
-        `Are you sure you want to delete ${ids.length} stock entry(ies)?`
-      )
-    ) {
-      return;
-    }
-
-    setLoading(true);
-    try {
-      const response = await api.delete<ApiResponse<void>>(
-        "/stocks/add-stocks",
-        {
-          ids,
-        }
-      );
-
-      if (response.success) {
-        showToast(
-          response.message || "Stock entries deleted successfully",
-          "success"
-        );
-        await fetchAddStocks();
-        setSelectedRows([]);
-      }
-    } catch (error) {
-      console.error("Error deleting add stocks:", error);
-      showToast("Failed to delete stock entries", "error");
-    } finally {
-      setLoading(false);
-    }
   };
 
   const handlePrint = () => {
@@ -206,32 +194,46 @@ const AddStocksList = () => {
 
   const columns = [
     { key: "id", label: "#", width: "60px" },
-    {
-      key: "date",
-      label: "Date",
-      sortable: true,
-      render: (value: string) =>
-        new Date(value).toLocaleDateString("en-NG", {
-          year: "numeric",
-          month: "short",
-          day: "numeric",
-        }),
-    },
+    { key: "categoryName", label: "Category", sortable: true },
     { key: "productName", label: "Product", sortable: true },
-    { key: "godownName", label: "Godown" },
     {
-      key: "quantity",
-      label: "Quantity (Bag)",
+      key: "opening",
+      label: "Opening",
       render: (value: number) => value.toLocaleString(),
     },
     {
-      key: "netWeight",
-      label: "Net Weight (Kg)",
+      key: "add",
+      label: "Add",
       render: (value: number) => value.toLocaleString(),
     },
     {
-      key: "rate",
-      label: "Rate",
+      key: "purchase",
+      label: "Purchase",
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: "sales",
+      label: "Sales",
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: "production",
+      label: "Production",
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: "productionStocks",
+      label: "Production Stocks",
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: "stock",
+      label: "Stock",
+      render: (value: number) => value.toLocaleString(),
+    },
+    {
+      key: "avgPrice",
+      label: "Avg Price",
       render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
@@ -245,9 +247,9 @@ const AddStocksList = () => {
     <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Add Stocks List</h1>
+          <h1 className="text-3xl font-bold text-gray-900">Stocks Details</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage manual stock additions and adjustments.
+            View comprehensive stock inventory and movements.
           </p>
         </div>
         <button
@@ -275,28 +277,9 @@ const AddStocksList = () => {
             <Card icon={<Package className="w-8 h-8 text-primary-800" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  {totalEntries}
+                  {totalStock.toLocaleString()}
                 </p>
-                <p className="text-sm text-gray-500">Total Entries</p>
-              </div>
-            </Card>
-            <Card
-              icon={<PackageCheck className="w-8 h-8 text-blue-600" />}
-              hover
-            >
-              <div>
-                <p className="text-3xl font-bold text-gray-700">
-                  {totalQuantity.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-500">Total Quantity</p>
-              </div>
-            </Card>
-            <Card icon={<Scale className="w-8 h-8 text-orange-600" />} hover>
-              <div>
-                <p className="text-3xl font-bold text-gray-700">
-                  {totalWeight.toLocaleString()} Kg
-                </p>
-                <p className="text-sm text-gray-500">Total Weight</p>
+                <p className="text-sm text-gray-500">Total Stock</p>
               </div>
             </Card>
             <Card
@@ -310,63 +293,61 @@ const AddStocksList = () => {
                 <p className="text-sm text-gray-500">Total Value</p>
               </div>
             </Card>
+            <Card
+              icon={<TrendingUp className="w-8 h-8 text-blue-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalProducts}
+                </p>
+                <p className="text-sm text-gray-500">Total Products</p>
+              </div>
+            </Card>
+            <Card
+              icon={<Warehouse className="w-8 h-8 text-orange-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalCategories}
+                </p>
+                <p className="text-sm text-gray-500">Categories</p>
+              </div>
+            </Card>
           </>
         )}
       </div>
 
       <FilterBar
         onSearch={setSearch}
-        placeholder="Search by product, godown, or notes... (Ctrl+K)"
+        placeholder="Search by product or category... (Ctrl+K)"
       >
         <div className="flex items-center space-x-2">
           <select
-            value={productFilter}
-            onChange={(e) => setProductFilter(e.target.value)}
+            value={categoryFilter}
+            onChange={(e) => setCategoryFilter(e.target.value)}
             className="input-base h-9"
           >
-            <option value="">All Products</option>
-            {products.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name}
+            <option value="">All Categories</option>
+            {categories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
               </option>
             ))}
           </select>
-          <input
-            type="date"
-            value={dateRange.from}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, from: e.target.value }))
-            }
+          <select
+            value={godownFilter}
+            onChange={(e) => setGodownFilter(e.target.value)}
             className="input-base h-9"
-            placeholder="From"
-          />
-          <input
-            type="date"
-            value={dateRange.to}
-            onChange={(e) =>
-              setDateRange((prev) => ({ ...prev, to: e.target.value }))
-            }
-            className="input-base h-9"
-            placeholder="To"
-          />
-          <Button
-            onClick={() => navigate("/stocks/add-stocks/new")}
-            icon={Plus}
-            size="sm"
           >
-            New Stock
-          </Button>
-          {selectedRows.length > 0 && (
-            <Button
-              variant="danger"
-              size="sm"
-              icon={Trash2}
-              onClick={() => handleDelete(selectedRows)}
-              loading={loading}
-            >
-              Delete ({selectedRows.length})
-            </Button>
-          )}
+            <option value="">All Godowns</option>
+            {godowns.map((godown) => (
+              <option key={godown.id} value={godown.id}>
+                {godown.name}
+              </option>
+            ))}
+          </select>
           <Button
             variant="outline"
             size="sm"
@@ -393,26 +374,36 @@ const AddStocksList = () => {
             setCurrentPage(1);
           },
         }}
-        selection={{
-          selectedItems: selectedRows,
-          onSelectionChange: setSelectedRows,
-        }}
         summaryRow={{
           id: <span className="font-bold">{filteredData.length}</span>,
-          date: "",
-          productName: <span className="font-semibold">Total</span>,
-          godownName: "",
-          quantity: (
+          categoryName: <span className="font-semibold">Total</span>,
+          productName: "",
+          opening: (
+            <span className="font-bold">{totals.opening.toLocaleString()}</span>
+          ),
+          add: (
+            <span className="font-bold">{totals.add.toLocaleString()}</span>
+          ),
+          purchase: (
+            <span className="font-bold">{totals.purchase.toLocaleString()}</span>
+          ),
+          sales: (
+            <span className="font-bold">{totals.sales.toLocaleString()}</span>
+          ),
+          production: (
             <span className="font-bold">
-              {totals.quantity.toLocaleString()}
+              {totals.production.toLocaleString()}
             </span>
           ),
-          netWeight: (
+          productionStocks: (
             <span className="font-bold">
-              {totals.netWeight.toLocaleString()}
+              {totals.productionStocks.toLocaleString()}
             </span>
           ),
-          rate: "",
+          stock: (
+            <span className="font-bold">{totals.stock.toLocaleString()}</span>
+          ),
+          avgPrice: "",
           totalPrice: (
             <span className="font-bold">
               ₦{formatCurrency(totals.totalPrice)}
@@ -424,4 +415,4 @@ const AddStocksList = () => {
   );
 };
 
-export default AddStocksList;
+export default MainStock;

@@ -36,6 +36,12 @@ import salesListRoutes from "./sales/sales-list.js";
 // Purchase Routes
 import paddyPurchaseRoutes from "./purchase/paddy-purchase.js";
 
+// stocks
+// Stocks
+import mainStocksRoutes from "./stocks/main-stocks.js";
+import godownStocksRoutes from "./stocks/godown-stocks.js";
+// Stocks
+
 const router = express.Router();
 
 // General routes
@@ -76,5 +82,9 @@ router.use("/sales", salesListRoutes);
 
 // Purchase routes
 router.use("/purchase/paddy", paddyPurchaseRoutes);
+
+// stocks
+router.use("/stocks/main-stocks", mainStocksRoutes);
+router.use("/stocks/godown-stocks", godownStocksRoutes);
 
 export default router;

@@ -1,25 +1,30 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   Printer,
   Warehouse,
   Package,
   TrendingUp,
   DollarSign,
+  RefreshCcw,
 } from "lucide-react";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
-import { format } from "date-fns";
+import { SkeletonCard } from "../../components/ui/Skeleton";
+import { useToast } from "../../components/ui/Toast";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
+import { formatCurrency } from "../../utils/formatters";
 
 interface GodownStockDetail {
   id: string;
   categoryId: string;
-  categoryName?: string;
+  categoryName: string;
   productId: string;
-  productName?: string;
+  productName: string;
   godownId: string;
-  godownName?: string;
+  godownName: string;
   opening: number;
   add: number;
   purchase: number;
@@ -31,95 +36,165 @@ interface GodownStockDetail {
   totalPrice: number;
 }
 
-const GodownStocks: React.FC = () => {
-  // State management
-  const [stocks, setStocks] = useState<GodownStockDetail[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(25);
-  const [searchQuery, setSearchQuery] = useState("");
+interface Category {
+  id: string;
+  name: string;
+}
+
+interface Godown {
+  id: string;
+  name: string;
+}
+
+const GodownStocks = () => {
+  const [data, setData] = useState<GodownStockDetail[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [godowns, setGodowns] = useState<Godown[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [search, setSearch] = useState("");
   const [godownFilter, setGodownFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [godowns, setGodowns] = useState<Array<{ id: string; name: string }>>(
-    []
-  );
-  const [categories, setCategories] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
-  // Fetch godown stocks
+  const { showToast } = useToast();
+
+  const fetchGodownStocks = async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams();
+      if (godownFilter) params.append("godown_id", godownFilter);
+      if (categoryFilter) params.append("category_id", categoryFilter);
+
+      const response = await api.get<ApiResponse<GodownStockDetail[]>>(
+        `/stocks/godown-stocks?${params.toString()}`
+      );
+
+      if (response.success && response.data) {
+        setData(
+          response.data.map((item) => ({ ...item, id: String(item.id) }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching godown stocks:", error);
+      showToast("Failed to load godown stocks", "error");
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
+    }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get<ApiResponse<Category[]>>("/categories");
+      if (response.success && response.data) {
+        setCategories(
+          response.data.map((cat) => ({ id: String(cat.id), name: cat.name }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
+  };
+
+  const fetchGodowns = async () => {
+    try {
+      const response = await api.get<ApiResponse<Godown[]>>("/godowns");
+      if (response.success && response.data) {
+        setGodowns(
+          response.data.map((gd) => ({ id: String(gd.id), name: gd.name }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching godowns:", error);
+    }
+  };
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchGodownStocks();
+    setTimeout(() => setIsRefreshing(false), 500);
+  };
+
   useEffect(() => {
-    const fetchGodownStocks = async () => {
-      setLoading(true);
-      try {
-        // TODO: API endpoint - GET /api/stocks/godown-stocks
-        // Query params: ?page={currentPage}&pageSize={pageSize}&search={searchQuery}&godownId={godownFilter}&categoryId={categoryFilter}
-        await new Promise((resolve) => setTimeout(resolve, 1000));
+    fetchGodownStocks();
+    fetchCategories();
+    fetchGodowns();
+  }, []);
 
-        // Mock data
-        const mockStocks: GodownStockDetail[] = [
-          {
-            id: "1",
-            categoryId: "CAT-001",
-            categoryName: "Rice",
-            productId: "PROD-001",
-            productName: "Basmati Rice",
-            godownId: "GD-001",
-            godownName: "Main Godown",
-            opening: 1000,
-            add: 200,
-            purchase: 500,
-            sales: 300,
-            production: 150,
-            productionStocks: 250,
-            stock: 1800,
-            avgPrice: 50,
-            totalPrice: 90000,
-          },
-        ];
+  useEffect(() => {
+    if (!initialLoading) {
+      fetchGodownStocks();
+    }
+  }, [godownFilter, categoryFilter]);
 
-        setStocks(mockStocks);
-
-        // Mock godowns and categories
-        setGodowns([
-          { id: "GD-001", name: "Main Godown" },
-          { id: "GD-002", name: "Secondary Godown" },
-        ]);
-
-        setCategories([
-          { id: "CAT-001", name: "Rice" },
-          { id: "CAT-002", name: "Wheat" },
-        ]);
-      } catch (error) {
-        console.error("Error fetching godown stocks:", error);
-      } finally {
-        setLoading(false);
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      if ((event.ctrlKey || event.metaKey) && event.key === "k") {
+        event.preventDefault();
+        document
+          .querySelector<HTMLInputElement>('input[type="search"]')
+          ?.focus();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "r") {
+        event.preventDefault();
+        handleRefresh();
+      }
+      if ((event.ctrlKey || event.metaKey) && event.key === "p") {
+        event.preventDefault();
+        handlePrint();
       }
     };
 
-    fetchGodownStocks();
-  }, [currentPage, pageSize, searchQuery, godownFilter, categoryFilter]);
+    document.addEventListener("keydown", handleKeyPress);
+    return () => document.removeEventListener("keydown", handleKeyPress);
+  }, []);
 
-  // Filtering logic
-  const filteredStocks = stocks.filter((stock) => {
-    const matchesSearch =
-      stock.productName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      stock.categoryName?.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesGodown = !godownFilter || stock.godownId === godownFilter;
-    const matchesCategory =
-      !categoryFilter || stock.categoryId === categoryFilter;
-    return matchesSearch && matchesGodown && matchesCategory;
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search]);
+
+  const filteredData = data.filter((item) => {
+    const query = search.toLowerCase().trim();
+    if (!query) return true;
+
+    return (
+      item.productName?.toLowerCase().includes(query) ||
+      item.categoryName?.toLowerCase().includes(query) ||
+      item.godownName?.toLowerCase().includes(query) ||
+      false
+    );
   });
 
-  // Pagination
-  const totalPages = Math.ceil(filteredStocks.length / pageSize);
+  const totalPages = Math.ceil(filteredData.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
-  const paginatedStocks = filteredStocks.slice(
-    startIndex,
-    startIndex + pageSize
-  );
+  const paginatedData = filteredData.slice(startIndex, startIndex + pageSize);
 
-  // Table columns
+  const totalStock = filteredData.reduce((sum, s) => sum + s.stock, 0);
+  const totalValue = filteredData.reduce((sum, s) => sum + s.totalPrice, 0);
+  const totalProducts = filteredData.length;
+  const totalGodowns = new Set(filteredData.map((s) => s.godownId)).size;
+
+  const totals = {
+    opening: filteredData.reduce((sum, s) => sum + s.opening, 0),
+    add: filteredData.reduce((sum, s) => sum + s.add, 0),
+    purchase: filteredData.reduce((sum, s) => sum + s.purchase, 0),
+    sales: filteredData.reduce((sum, s) => sum + s.sales, 0),
+    production: filteredData.reduce((sum, s) => sum + s.production, 0),
+    productionStocks: filteredData.reduce(
+      (sum, s) => sum + s.productionStocks,
+      0
+    ),
+    stock: filteredData.reduce((sum, s) => sum + s.stock, 0),
+    totalPrice: filteredData.reduce((sum, s) => sum + s.totalPrice, 0),
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   const columns = [
     { key: "id", label: "#", width: "60px" },
     { key: "godownName", label: "Godown", sortable: true },
@@ -163,96 +238,94 @@ const GodownStocks: React.FC = () => {
     {
       key: "avgPrice",
       label: "Avg Price",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
       key: "totalPrice",
       label: "Total Price",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
   ];
 
-  // Calculate summary statistics
-  const stats = {
-    totalStock: stocks.reduce((sum, s) => sum + s.stock, 0),
-    totalValue: stocks.reduce((sum, s) => sum + s.totalPrice, 0),
-    totalProducts: stocks.length,
-    totalGodowns: new Set(stocks.map((s) => s.godownId)).size,
-  };
-
-  // Calculate totals for table footer
-  const totals = {
-    opening: stocks.reduce((sum, s) => sum + s.opening, 0),
-    add: stocks.reduce((sum, s) => sum + s.add, 0),
-    purchase: stocks.reduce((sum, s) => sum + s.purchase, 0),
-    sales: stocks.reduce((sum, s) => sum + s.sales, 0),
-    production: stocks.reduce((sum, s) => sum + s.production, 0),
-    productionStocks: stocks.reduce((sum, s) => sum + s.productionStocks, 0),
-    stock: stocks.reduce((sum, s) => sum + s.stock, 0),
-    totalPrice: stocks.reduce((sum, s) => sum + s.totalPrice, 0),
-  };
-
-  const loadingCards = loading && !stocks.length;
-
   return (
     <div className="animate-fade-in">
-      {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold text-gray-900">Godown Stocks</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          View godown-wise stock inventory and movements.
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Godown Stocks</h1>
+          <p className="mt-1 text-sm text-gray-500">
+            View godown-wise stock inventory and movements.
+          </p>
+        </div>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className={`p-2 text-gray-500 hover:text-gray-700 transition-colors ${
+            isRefreshing ? "animate-spin" : ""
+          }`}
+          title="Refresh data (Ctrl+R)"
+        >
+          <RefreshCcw className="w-5 h-5" />
+        </button>
       </div>
 
-      {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <Card icon={<Package size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {stats.totalStock.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">Total Stock</p>
-          </div>
-        </Card>
-        <Card icon={<DollarSign size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              ₦{stats.totalValue.toLocaleString()}
-            </p>
-            <p className="text-sm text-gray-500">Total Value</p>
-          </div>
-        </Card>
-        <Card icon={<TrendingUp size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {stats.totalProducts}
-            </p>
-            <p className="text-sm text-gray-500">Total Products</p>
-          </div>
-        </Card>
-        <Card icon={<Warehouse size={32} />} loading={loadingCards} hover>
-          <div>
-            <p className="text-3xl font-bold text-gray-700">
-              {stats.totalGodowns}
-            </p>
-            <p className="text-sm text-gray-500">Godowns</p>
-          </div>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {initialLoading ? (
+          <>
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+            <SkeletonCard variant="stat" />
+          </>
+        ) : (
+          <>
+            <Card icon={<Package className="w-8 h-8 text-primary-800" />} hover>
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalStock.toLocaleString()}
+                </p>
+                <p className="text-sm text-gray-500">Total Stock</p>
+              </div>
+            </Card>
+            <Card
+              icon={<DollarSign className="w-8 h-8 text-green-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  ₦{formatCurrency(totalValue)}
+                </p>
+                <p className="text-sm text-gray-500">Total Value</p>
+              </div>
+            </Card>
+            <Card
+              icon={<TrendingUp className="w-8 h-8 text-blue-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalProducts}
+                </p>
+                <p className="text-sm text-gray-500">Total Products</p>
+              </div>
+            </Card>
+            <Card
+              icon={<Warehouse className="w-8 h-8 text-orange-600" />}
+              hover
+            >
+              <div>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalGodowns}
+                </p>
+                <p className="text-sm text-gray-500">Godowns</p>
+              </div>
+            </Card>
+          </>
+        )}
       </div>
 
-      {/* Company Header (for print) */}
-      <div className="hidden print:block text-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Ammam Rice Mill</h1>
-        <p className="text-sm text-gray-500">123 Rice Mill Road, City</p>
-        <p className="text-sm text-gray-500">
-          Date: {format(new Date(), "dd/MM/yyyy")}
-        </p>
-      </div>
-
-      {/* Filter Bar */}
       <FilterBar
-        onSearch={setSearchQuery}
-        placeholder="Search by product or category..."
+        onSearch={setSearch}
+        placeholder="Search by product, category, or godown... (Ctrl+K)"
       >
         <div className="flex items-center space-x-2">
           <select
@@ -283,23 +356,22 @@ const GodownStocks: React.FC = () => {
             variant="outline"
             size="sm"
             icon={Printer}
-            onClick={() => window.print()}
+            onClick={handlePrint}
           >
             Print
           </Button>
         </div>
       </FilterBar>
 
-      {/* Table */}
       <Table
-        data={paginatedStocks}
+        data={paginatedData}
         columns={columns}
-        loading={loading}
+        loading={initialLoading || loading}
         pagination={{
           currentPage,
           totalPages,
           pageSize,
-          totalItems: filteredStocks.length,
+          totalItems: filteredData.length,
           onPageChange: setCurrentPage,
           onPageSizeChange: (size) => {
             setPageSize(size);
@@ -307,14 +379,41 @@ const GodownStocks: React.FC = () => {
           },
         }}
         summaryRow={{
-          opening: totals.opening.toLocaleString(),
-          add: totals.add.toLocaleString(),
-          purchase: totals.purchase.toLocaleString(),
-          sales: totals.sales.toLocaleString(),
-          production: totals.production.toLocaleString(),
-          productionStocks: totals.productionStocks.toLocaleString(),
-          stock: totals.stock.toLocaleString(),
-          totalPrice: `₦${totals.totalPrice.toLocaleString()}`,
+          id: <span className="font-bold">{filteredData.length}</span>,
+          godownName: "",
+          categoryName: <span className="font-semibold">Total</span>,
+          productName: "",
+          opening: (
+            <span className="font-bold">{totals.opening.toLocaleString()}</span>
+          ),
+          add: (
+            <span className="font-bold">{totals.add.toLocaleString()}</span>
+          ),
+          purchase: (
+            <span className="font-bold">{totals.purchase.toLocaleString()}</span>
+          ),
+          sales: (
+            <span className="font-bold">{totals.sales.toLocaleString()}</span>
+          ),
+          production: (
+            <span className="font-bold">
+              {totals.production.toLocaleString()}
+            </span>
+          ),
+          productionStocks: (
+            <span className="font-bold">
+              {totals.productionStocks.toLocaleString()}
+            </span>
+          ),
+          stock: (
+            <span className="font-bold">{totals.stock.toLocaleString()}</span>
+          ),
+          avgPrice: "",
+          totalPrice: (
+            <span className="font-bold">
+              ₦{formatCurrency(totals.totalPrice)}
+            </span>
+          ),
         }}
       />
     </div>
