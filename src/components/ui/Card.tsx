@@ -19,7 +19,7 @@ export const Card: React.FC<CardProps> = ({
 }) => {
   const mergedBase =
     "bg-white rounded-xl p-3 shadow-card-hover transition-all duration-300";
-  const mergedHover = hover ? "hover:card cursor-pointer" : "";
+  const mergedHover = hover ? "hover:card" : "";
 
   return (
     <div className={`${mergedBase} ${mergedHover} ${className}`}>

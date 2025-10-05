@@ -17,7 +17,7 @@ import {
 import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
-import { formatCurrency } from "../../utils/formatters";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 import { ApiResponse } from "../../types";
 
 // TypeScript Interfaces
@@ -335,11 +335,23 @@ const EmptybagPaddyPurchase = () => {
   // Table columns
   const columns = [
     { key: "id", label: "#", width: "60px" },
-    { key: "date", label: "Date", sortable: true },
+    {
+      key: "date",
+      label: "Date",
+      sortable: true,
+      render: (value: string) => {
+        const d = value ? new Date(value) : null;
+        return d && !isNaN(d.getTime()) ? d.toLocaleDateString() : "";
+      },
+    },
     { key: "invoiceNo", label: "Invoice No", sortable: true },
     { key: "party", label: "Party", sortable: true },
     { key: "items", label: "Items" },
-    { key: "quantity", label: "Quantity" },
+    {
+      key: "quantity",
+      label: "Quantity",
+      render: (value: number) => formatNumber(value, 0),
+    },
     {
       key: "price",
       label: "Price",
@@ -397,7 +409,7 @@ const EmptybagPaddyPurchase = () => {
             <Card icon={<Package className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  {totalQuantity.toLocaleString()}
+                  {formatNumber(totalQuantity, 0)}
                 </p>
                 <p className="text-sm text-gray-500">Total Quantity</p>
               </div>
@@ -478,7 +490,7 @@ const EmptybagPaddyPurchase = () => {
           party: "",
           items: "",
           quantity: (
-            <span className="font-bold">{totalQuantity.toLocaleString()}</span>
+            <span className="font-bold">{formatNumber(totalQuantity, 0)}</span>
           ),
           price: (
             <span className="font-bold">₦{formatCurrency(totalPrice)}</span>
