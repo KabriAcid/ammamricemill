@@ -13,6 +13,12 @@ export const navigationData: NavigationItem[] = [
         link: "/settings/general",
       },
       {
+        id: "admin-profile",
+        title: "Admin Profile",
+        icon: "user",
+        link: "/admin/profile",
+      },
+      {
         id: "silo-setting",
         title: "Silo Setting",
         icon: "warehouse",

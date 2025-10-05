@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { Save, Upload, Image, Lock, User } from "lucide-react";
-import { Card } from "../components/ui/Card";
-import { Button } from "../components/ui/Button";
-import { Tabs } from "../components/ui/Tabs";
-import { useToast } from "../components/ui/Toast";
-import { Skeleton } from "../components/ui/Skeleton";
-import { api } from "../utils/fetcher";
+import { Save, Upload, Lock, User } from "lucide-react";
+import { Card } from "../../components/ui/Card";
+import { Button } from "../../components/ui/Button";
+import { Tabs } from "../../components/ui/Tabs";
+import { useToast } from "../../components/ui/Toast";
+import { Skeleton } from "../../components/ui/Skeleton";
+import { api } from "../../utils/fetcher";
 
 interface AdminProfileData {
   id?: number;
@@ -24,7 +24,7 @@ interface PasswordData {
   confirm_password: string;
 }
 
-const AdminProfile: React.FC = () => {
+const Profile: React.FC = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -542,4 +542,4 @@ const AdminProfile: React.FC = () => {
   );
 };
 
-export default AdminProfile;
+export default Profile;
