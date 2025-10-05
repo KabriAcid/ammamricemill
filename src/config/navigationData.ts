@@ -294,12 +294,6 @@ export const navigationData: NavigationItem[] = [
         icon: "info",
         link: "/stocks/production-stock/details",
       },
-      {
-        id: "emptybag-stocks",
-        title: "Empty Bag Stocks",
-        icon: "shopping-bag",
-        link: "/stocks/emptybag-stocks",
-      },
     ],
   },
   {

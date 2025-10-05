@@ -42,7 +42,7 @@ import ProductList from "./pages/products/ProductList";
 import EmptybagPurchaseList from "./pages/emptybags/EmptybagPurchaseList";
 import EmptybagSalesList from "./pages/emptybags/EmptybagSalesList";
 import EmptybagPaymentList from "./pages/emptybags/EmptybagPaymentList";
-import EmptybagStocksList from "./pages/emptybags/EmptybagStocksList";
+import EmptybagStocks from "./pages/emptybags/EmptybagStocks";
 
 import PaddyPurchase from "./pages/purchase/PaddyPurchase";
 import PurchaseDetails from "./pages/purchase/PurchaseDetails";
@@ -136,7 +136,7 @@ function App() {
                 />
                 <Route
                   path="/empty/emptybag-stocks"
-                  element={<EmptybagStocksList />}
+                  element={<EmptybagStocks />}
                 />
                 <Route path="/purchase/paddy" element={<PaddyPurchase />} />
                 <Route
