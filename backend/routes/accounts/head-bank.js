@@ -17,7 +17,8 @@ router.get("/", authenticateToken, async (req, res, next) => {
           COALESCE(SUM(CASE WHEN t.to_head_id = bh.id AND t.to_head_type = 'bank' THEN t.amount ELSE 0 END), 0) -
           COALESCE(SUM(CASE WHEN t.from_head_id = bh.id AND t.from_head_type = 'bank' THEN t.amount ELSE 0 END), 0)
         AS DECIMAL(12,2)) as balance,
-        bh.created_at as createdAt
+        bh.created_at as create
+        dAt
       FROM bank_heads bh
       LEFT JOIN transactions t ON (
         (t.to_head_id = bh.id AND t.to_head_type = 'bank') OR 

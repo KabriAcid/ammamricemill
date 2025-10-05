@@ -27,7 +27,7 @@ const HeadExpense = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [formData, setFormData] = useState({ name: "", payments: 0 });
+  const [formData, setFormData] = useState({ name: "" });
 
   const fetchExpenseHeads = async () => {
     setLoading(true);
@@ -97,7 +97,7 @@ const HeadExpense = () => {
           "success"
         );
         setModalOpen(false);
-        setFormData({ name: "", payments: 0 });
+        setFormData({ name: "" });
         await fetchExpenseHeads();
       } else {
         throw new Error("Failed to create expense head");
@@ -132,7 +132,7 @@ const HeadExpense = () => {
         );
         setModalOpen(false);
         setEditItem(null);
-        setFormData({ name: "", payments: 0 });
+        setFormData({ name: "" });
         await fetchExpenseHeads();
       } else {
         throw new Error("Failed to update expense head");
@@ -244,7 +244,7 @@ const HeadExpense = () => {
             <Button
               onClick={() => {
                 setEditItem(null);
-                setFormData({ name: "", payments: 0 });
+                setFormData({ name: "" });
                 setModalOpen(true);
               }}
               icon={Plus}
@@ -288,7 +288,7 @@ const HeadExpense = () => {
           actions={{
             onEdit: (row) => {
               setEditItem(row);
-              setFormData({ name: row.name, payments: row.payments });
+              setFormData({ name: row.name });
               setModalOpen(true);
             },
           }}
@@ -323,31 +323,7 @@ const HeadExpense = () => {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Payments
-            </label>
-            <div className="relative">
-              <input
-                type="number"
-                value={formData.payments}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    payments: Number(e.target.value),
-                  }))
-                }
-                className="input-base pl-8"
-                placeholder="0.00"
-                step="0.01"
-                min="0"
-                required
-              />
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                ₦
-              </span>
-            </div>
-          </div>
+          {/* Payments input removed: payments are calculated from transactions, not user input */}
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel

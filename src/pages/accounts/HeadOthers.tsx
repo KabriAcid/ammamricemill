@@ -38,9 +38,6 @@ const HeadOthers = () => {
   const [pageSize, setPageSize] = useState(25);
   const [formData, setFormData] = useState({
     name: "",
-    receive: 0,
-    payment: 0,
-    balance: 0,
   });
 
   const fetchOtherHeads = async () => {
@@ -111,7 +108,7 @@ const HeadOthers = () => {
           "success"
         );
         setModalOpen(false);
-        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        setFormData({ name: "" });
         await fetchOtherHeads();
       } else {
         throw new Error("Failed to create other head");
@@ -146,7 +143,7 @@ const HeadOthers = () => {
         );
         setModalOpen(false);
         setEditItem(null);
-        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        setFormData({ name: "" });
         await fetchOtherHeads();
       } else {
         throw new Error("Failed to update other head");
@@ -362,9 +359,6 @@ const HeadOthers = () => {
               setEditItem(row);
               setFormData({
                 name: row.name,
-                receive: row.receive,
-                payment: row.payment,
-                balance: row.balance,
               });
               setModalOpen(true);
             },

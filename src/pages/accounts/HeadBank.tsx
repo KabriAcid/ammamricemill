@@ -36,9 +36,6 @@ const HeadBank = () => {
   const [pageSize, setPageSize] = useState(25);
   const [formData, setFormData] = useState({
     name: "",
-    receive: 0,
-    payment: 0,
-    balance: 0,
   });
   const { showToast } = useToast();
 
@@ -118,7 +115,7 @@ const HeadBank = () => {
         );
         await fetchBankHeads();
         setModalOpen(false);
-        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        setFormData({ name: "" });
       } else {
         throw new Error("Failed to create bank head");
       }
@@ -154,7 +151,7 @@ const HeadBank = () => {
         await fetchBankHeads();
         setModalOpen(false);
         setEditItem(null);
-        setFormData({ name: "", receive: 0, payment: 0, balance: 0 });
+        setFormData({ name: "" });
       } else {
         throw new Error("Failed to update bank head");
       }
@@ -365,9 +362,6 @@ const HeadBank = () => {
               setEditItem(row);
               setFormData({
                 name: row.name,
-                receive: row.receive,
-                payment: row.payment,
-                balance: row.balance,
               });
               setModalOpen(true);
             },
@@ -411,83 +405,7 @@ const HeadBank = () => {
               required
             />
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Receive (₦) *
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  ₦
-                </span>
-                <input
-                  type="number"
-                  value={formData.receive}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      receive: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base pl-8"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Payment (₦) *
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  ₦
-                </span>
-                <input
-                  type="number"
-                  value={formData.payment}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      payment: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base pl-8"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Balance (₦) *
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                  ₦
-                </span>
-                <input
-                  type="number"
-                  value={formData.balance}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      balance: Number(e.target.value),
-                    }))
-                  }
-                  className="input-base pl-8"
-                  placeholder="0.00"
-                  min="0"
-                  step="0.01"
-                  required
-                />
-              </div>
-            </div>
-          </div>
+          {/* Receive, Payment, and Balance inputs removed: these are calculated from transactions, not user input */}
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel

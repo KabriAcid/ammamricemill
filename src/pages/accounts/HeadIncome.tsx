@@ -27,7 +27,7 @@ const HeadIncome = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
-  const [formData, setFormData] = useState({ name: "", receives: 0 });
+  const [formData, setFormData] = useState({ name: "" });
 
   const fetchIncomeHeads = async () => {
     setLoading(true);
@@ -98,7 +98,7 @@ const HeadIncome = () => {
           "success"
         );
         setModalOpen(false);
-        setFormData({ name: "", receives: 0 });
+        setFormData({ name: "" });
         await fetchIncomeHeads();
       } else {
         throw new Error("Failed to create income head");
@@ -133,7 +133,7 @@ const HeadIncome = () => {
         );
         setModalOpen(false);
         setEditItem(null);
-        setFormData({ name: "", receives: 0 });
+        setFormData({ name: "" });
         await fetchIncomeHeads();
       } else {
         throw new Error("Failed to update income head");
@@ -246,7 +246,7 @@ const HeadIncome = () => {
             <Button
               onClick={() => {
                 setEditItem(null);
-                setFormData({ name: "", receives: 0 });
+                setFormData({ name: "" });
                 setModalOpen(true);
               }}
               icon={Plus}
@@ -290,7 +290,7 @@ const HeadIncome = () => {
           actions={{
             onEdit: (row) => {
               setEditItem(row);
-              setFormData({ name: row.name, receives: row.receives });
+              setFormData({ name: row.name });
               setModalOpen(true);
             },
           }}
@@ -325,31 +325,7 @@ const HeadIncome = () => {
               required
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Receives (₦) *
-            </label>
-            <div className="relative">
-              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
-                ₦
-              </span>
-              <input
-                type="number"
-                value={formData.receives}
-                onChange={(e) =>
-                  setFormData((prev) => ({
-                    ...prev,
-                    receives: Number(e.target.value),
-                  }))
-                }
-                className="input-base pl-8"
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-                required
-              />
-            </div>
-          </div>
+          {/* Receives input removed: receives are calculated from transactions, not user input */}
           <div className="flex justify-end space-x-3 pt-4">
             <Button variant="outline" onClick={() => setModalOpen(false)}>
               Cancel
