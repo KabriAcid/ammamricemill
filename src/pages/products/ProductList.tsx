@@ -46,6 +46,9 @@ interface ProductFormData {
 const ProductList = () => {
   // State Management
   const [data, setData] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
@@ -95,9 +98,27 @@ const ProductList = () => {
     setTimeout(() => setIsRefreshing(false), 500);
   };
 
+  // Fetch categories for select dropdown
+  const fetchCategories = async () => {
+    try {
+      const response = await api.get<
+        ApiResponse<{ id: string; name: string }[]>
+      >("/categories");
+      if (response.success && response.data) {
+        setCategories(
+          response.data.map((cat) => ({ id: String(cat.id), name: cat.name }))
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+      showToast("Failed to load categories", "error");
+    }
+  };
+
   // Initial data load - ONLY runs once on mount
   useEffect(() => {
     fetchProducts();
+    fetchCategories();
   }, []); // Empty array = runs once, no dependencies
 
   // Keyboard shortcuts
@@ -494,17 +515,24 @@ const ProductList = () => {
               <label className="block text-sm font-medium text-gray-700 mb-2 required">
                 Category
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.category}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, category: e.target.value }))
                 }
                 className="input-base"
-                placeholder="Enter category"
                 required
                 autoFocus
-              />
+              >
+                <option value="" disabled>
+                  Select category
+                </option>
+                {categories.map((cat) => (
+                  <option key={cat.id} value={cat.name}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -525,35 +553,40 @@ const ProductList = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 required">
                 Unit
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.unit}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, unit: e.target.value }))
                 }
                 className="input-base"
-                placeholder="e.g., kg, bags"
                 required
-              />
+              >
+                <option value="" disabled>Select unit</option>
+                <option value="bag">Bag</option>
+                <option value="kg">Kg</option>
+              </select>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Type
               </label>
-              <input
-                type="text"
+              <select
                 value={formData.type}
                 onChange={(e) =>
                   setFormData((prev) => ({ ...prev, type: e.target.value }))
                 }
                 className="input-base"
-                placeholder="Enter type"
-              />
+              >
+                <option value="" disabled>Select type</option>
+                <option value="raw">Raw</option>
+                <option value="finish">Finish</option>
+              </select>
             </div>
 
             <div>
