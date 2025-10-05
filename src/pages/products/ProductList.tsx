@@ -553,7 +553,6 @@ const ProductList = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2 required">
                 Unit
@@ -566,7 +565,9 @@ const ProductList = () => {
                 className="input-base"
                 required
               >
-                <option value="" disabled>Select unit</option>
+                <option value="" disabled>
+                  Select unit
+                </option>
                 <option value="bag">Bag</option>
                 <option value="kg">Kg</option>
               </select>
@@ -583,7 +584,9 @@ const ProductList = () => {
                 }
                 className="input-base"
               >
-                <option value="" disabled>Select type</option>
+                <option value="" disabled>
+                  Select type
+                </option>
                 <option value="raw">Raw</option>
                 <option value="finish">Finish</option>
               </select>

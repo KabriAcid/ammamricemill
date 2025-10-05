@@ -27,6 +27,9 @@ import partiesRoutes from "./party/parties.js";
 import categoryRoutes from "./products/category.js";
 import ProductRoutes from "./products/products.js";
 
+// Emptybags
+import emptybagPurchaseRoutes from "./emptybags/purchase.js";
+
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
 
@@ -64,6 +67,9 @@ router.use("/party/parties", partiesRoutes);
 // Production
 router.use("/categories", categoryRoutes);
 router.use("/products", ProductRoutes);
+
+// Empty bag purchases
+router.use("/emptybag-purchases", emptybagPurchaseRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);
