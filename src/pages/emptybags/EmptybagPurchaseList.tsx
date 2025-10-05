@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Select } from "../../components/ui/Select";
 import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { Modal } from "../../components/ui/Modal";
@@ -16,6 +17,7 @@ import {
 import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
+import { formatCurrency } from "../../utils/formatters";
 import { ApiResponse } from "../../types";
 
 // TypeScript Interfaces
@@ -23,7 +25,8 @@ export interface EmptybagPurchase {
   id: string;
   date: string;
   invoiceNo: string;
-  party: string;
+  party: string; // party name for display
+  party_id?: string; // party id for edit
   items: number;
   quantity: number;
   price: number;
@@ -33,7 +36,7 @@ export interface EmptybagPurchase {
 interface EmptybagPurchaseFormData {
   date: string;
   invoiceNo: string;
-  party: string;
+  party_id: string;
   items: number;
   quantity: number;
   price: number;
@@ -52,12 +55,26 @@ const EmptybagPaddyPurchase = () => {
   const [formData, setFormData] = useState<EmptybagPurchaseFormData>({
     date: "",
     invoiceNo: "",
-    party: "",
+    party_id: "",
     items: 0,
     quantity: 0,
     price: 0,
     description: "",
   });
+
+  // Parties for select
+  const [parties, setParties] = useState<{ id: string; name: string }[]>([]);
+
+  // Fetch parties for dropdown
+  useEffect(() => {
+    api
+      .get<ApiResponse<{ id: string; name: string }[]>>("/party/parties")
+      .then((res) => {
+        if (res.success && res.data) {
+          setParties(res.data.map((p) => ({ id: String(p.id), name: p.name })));
+        }
+      });
+  }, []);
   const [search, setSearch] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(25);
@@ -161,7 +178,7 @@ const EmptybagPaddyPurchase = () => {
       return;
     }
 
-    if (!formData.party.trim()) {
+    if (!formData.party_id) {
       showToast("Party is required", "error");
       return;
     }
@@ -203,7 +220,7 @@ const EmptybagPaddyPurchase = () => {
       return;
     }
 
-    if (!formData.party.trim()) {
+    if (!formData.party_id) {
       showToast("Party is required", "error");
       return;
     }
@@ -267,9 +284,9 @@ const EmptybagPaddyPurchase = () => {
   const handleNewPurchase = () => {
     setEditItem(null);
     setFormData({
-      date: new Date().toISOString().split("T")[0], // Today's date
+      date: new Date().toISOString().split("T")[0],
       invoiceNo: "",
-      party: "",
+      party_id: "",
       items: 0,
       quantity: 0,
       price: 0,
@@ -283,7 +300,7 @@ const EmptybagPaddyPurchase = () => {
     setFormData({
       date: row.date,
       invoiceNo: row.invoiceNo,
-      party: row.party,
+      party_id: row.party_id || "",
       items: row.items || 0,
       quantity: row.quantity || 0,
       price: row.price || 0,
@@ -298,7 +315,7 @@ const EmptybagPaddyPurchase = () => {
     setFormData({
       date: "",
       invoiceNo: "",
-      party: "",
+      party_id: "",
       items: 0,
       quantity: 0,
       price: 0,
@@ -327,7 +344,7 @@ const EmptybagPaddyPurchase = () => {
       key: "price",
       label: "Price",
       sortable: true,
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     { key: "description", label: "Description" },
   ];
@@ -464,7 +481,7 @@ const EmptybagPaddyPurchase = () => {
             <span className="font-bold">{totalQuantity.toLocaleString()}</span>
           ),
           price: (
-            <span className="font-bold">₦{totalPrice.toLocaleString()}</span>
+            <span className="font-bold">₦{formatCurrency(totalPrice)}</span>
           ),
           description: "",
         }}
@@ -519,16 +536,21 @@ const EmptybagPaddyPurchase = () => {
             <label className="block text-sm font-medium text-gray-700 mb-2 required">
               Party
             </label>
-            <input
-              type="text"
-              value={formData.party}
+            <Select
+              value={formData.party_id}
               onChange={(e) =>
-                setFormData((prev) => ({ ...prev, party: e.target.value }))
+                setFormData((prev) => ({ ...prev, party_id: e.target.value }))
               }
-              className="input-base"
-              placeholder="Enter party name"
               required
-            />
+              className="input-base"
+            >
+              <option value="">Select party</option>
+              {parties.map((party) => (
+                <option key={party.id} value={party.id}>
+                  {party.name}
+                </option>
+              ))}
+            </Select>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

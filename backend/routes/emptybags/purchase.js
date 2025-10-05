@@ -4,11 +4,14 @@ import { authenticateToken } from "../../middlewares/auth.js";
 
 const router = express.Router();
 
-// GET /api/emptybag-purchases - List all purchases
+// GET /api/emptybag-purchases - List all purchases (with party name)
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [rows] = await pool.query(
-      `SELECT id, date, invoice_no AS invoiceNo, party, items, quantity, price, description FROM emptybag_purchases ORDER BY date DESC`
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+       FROM emptybag_purchases p
+       LEFT JOIN parties ON p.party_id = parties.id
+       ORDER BY p.date DESC`
     );
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -16,12 +19,15 @@ router.get("/", authenticateToken, async (req, res, next) => {
   }
 });
 
-// GET /api/emptybag-purchases/:id - Get single purchase
+// GET /api/emptybag-purchases/:id - Get single purchase (with party name)
 router.get("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      `SELECT id, date, invoice_no AS invoiceNo, party, items, quantity, price, description FROM emptybag_purchases WHERE id = ?`,
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+       FROM emptybag_purchases p
+       LEFT JOIN parties ON p.party_id = parties.id
+       WHERE p.id = ?`,
       [id]
     );
     if (rows.length === 0) {
@@ -33,25 +39,25 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
   }
 });
 
-// POST /api/emptybag-purchases - Create purchase
+// POST /api/emptybag-purchases - Create purchase (accepts party_id)
 router.post("/", authenticateToken, async (req, res, next) => {
   try {
-    const { date, invoiceNo, party, items, quantity, price, description } =
+    const { date, invoiceNo, party_id, items, quantity, price, description } =
       req.body;
-    if (!date || !invoiceNo || !party) {
+    if (!date || !invoiceNo || !party_id) {
       return res
         .status(400)
         .json({
           success: false,
-          message: "Date, invoiceNo, and party are required",
+          message: "Date, invoiceNo, and party_id are required",
         });
     }
     const [result] = await pool.query(
-      `INSERT INTO emptybag_purchases (date, invoice_no, party, items, quantity, price, description) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO emptybag_purchases (date, invoice_no, party_id, items, quantity, price, description) VALUES (?, ?, ?, ?, ?, ?, ?)`,
       [
         date,
         invoiceNo,
-        party,
+        party_id,
         items || 0,
         quantity || 0,
         price || 0,
@@ -59,7 +65,10 @@ router.post("/", authenticateToken, async (req, res, next) => {
       ]
     );
     const [newRows] = await pool.query(
-      `SELECT id, date, invoice_no AS invoiceNo, party, items, quantity, price, description FROM emptybag_purchases WHERE id = ?`,
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+       FROM emptybag_purchases p
+       LEFT JOIN parties ON p.party_id = parties.id
+       WHERE p.id = ?`,
       [result.insertId]
     );
     res
@@ -74,11 +83,11 @@ router.post("/", authenticateToken, async (req, res, next) => {
   }
 });
 
-// PUT /api/emptybag-purchases/:id - Update purchase
+// PUT /api/emptybag-purchases/:id - Update purchase (accepts party_id)
 router.put("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { date, invoiceNo, party, items, quantity, price, description } =
+    const { date, invoiceNo, party_id, items, quantity, price, description } =
       req.body;
     const [existing] = await pool.query(
       `SELECT id FROM emptybag_purchases WHERE id = ?`,
@@ -88,11 +97,11 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       return res.status(404).json({ success: false, message: "Not found" });
     }
     await pool.query(
-      `UPDATE emptybag_purchases SET date = ?, invoice_no = ?, party = ?, items = ?, quantity = ?, price = ?, description = ? WHERE id = ?`,
+      `UPDATE emptybag_purchases SET date = ?, invoice_no = ?, party_id = ?, items = ?, quantity = ?, price = ?, description = ? WHERE id = ?`,
       [
         date,
         invoiceNo,
-        party,
+        party_id,
         items || 0,
         quantity || 0,
         price || 0,
@@ -101,7 +110,10 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       ]
     );
     const [updatedRows] = await pool.query(
-      `SELECT id, date, invoice_no AS invoiceNo, party, items, quantity, price, description FROM emptybag_purchases WHERE id = ?`,
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+       FROM emptybag_purchases p
+       LEFT JOIN parties ON p.party_id = parties.id
+       WHERE p.id = ?`,
       [id]
     );
     res.json({
