@@ -56,7 +56,7 @@ import ProductionList from "./pages/production/ProductionList";
 import ProductionDetails from "./pages/production/ProductionDetails";
 import ProductionStockList from "./pages/stocks/ProductionStockList";
 import ProductionStockDetails from "./pages/production/ProductionStockDetails";
-import ProductionStockForm from "./pages/stocks/ProductionStockForm";
+import ProductionStockForm from "./pages/production/ProductionStockForm";
 import MainStock from "./pages/stocks/MainStock";
 import GodownStocks from "./pages/stocks/GodownStocks";
 import StockRegisterPage from "./pages/stocks/StockRegisterPage";
@@ -133,6 +133,10 @@ function App() {
                 <Route
                   path="/empty/emptybag-payment"
                   element={<EmptybagPaymentList />}
+                />
+                <Route
+                  path="/empty/emptybag-stocks"
+                  element={<EmptybagStocks />}
                 />
                 <Route path="/purchase/paddy" element={<PaddyPurchase />} />
                 <Route

@@ -1,24 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { Modal } from "../../components/ui/Modal";
+import { useNavigate } from "react-router-dom";
 import { Button } from "../../components/ui/Button";
 import { Production, ProductionItem } from "../../types/production";
 import { Select } from "../../components/ui/Select";
 import { Input } from "../../components/ui/Input";
 import { Plus, Trash } from "lucide-react";
 
-interface ProductionFormModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-  onSave: (data: Partial<Production>) => void;
-  item?: Production | null;
-}
-
-export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
-  isOpen,
-  onClose,
-  onSave,
-  item,
-}) => {
+const ProductionStockForm: React.FC = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState<Partial<Production>>({
     invoiceNo: "",
     date: new Date().toISOString().split("T")[0],
@@ -28,7 +17,6 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     totalQuantity: 0,
     totalWeight: 0,
   });
-
   const [categories, setCategories] = useState<
     Array<{ id: string; name: string }>
   >([]);
@@ -40,22 +28,6 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
   );
   const [silos, setSilos] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (item) {
-      setFormData(item);
-    } else {
-      setFormData({
-        invoiceNo: "",
-        date: new Date().toISOString().split("T")[0],
-        description: "",
-        siloInfo: "",
-        items: [],
-        totalQuantity: 0,
-        totalWeight: 0,
-      });
-    }
-  }, [item]);
 
   useEffect(() => {
     const fetchMasterData = async () => {
@@ -167,16 +139,14 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    onSave(formData);
+    // TODO: Save logic (API call)
+    // After save, redirect or show a message
+    navigate("/stocks/production-stocks");
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={item ? "Edit Production" : "New Production"}
-      size="xl"
-    >
+    <div className="max-w-4xl mx-auto p-6">
+      <h1 className="text-2xl font-bold mb-4">New Production Stock Entry</h1>
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Basic Details */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -203,8 +173,6 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
           name="description"
           value={formData.description}
           onChange={handleInputChange}
-          multiline
-          rows={2}
         />
 
         <Input
@@ -329,7 +297,8 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                     onClick={() => handleRemoveItem(index)}
                     variant="danger"
                     icon={Trash}
-                    size="icon"
+                    size="sm"
+                    aria-label="Remove"
                   />
                 </div>
               </div>
@@ -355,16 +324,16 @@ export const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
 
         {/* Form Actions */}
         <div className="flex justify-end gap-4">
-          <Button type="button" variant="outline" onClick={onClose}>
+          <Button type="button" variant="outline" onClick={() => navigate(-1)}>
             Cancel
           </Button>
           <Button type="submit" disabled={loading}>
-            {item ? "Update" : "Create"} Production
+            Create Production
           </Button>
         </div>
       </form>
-    </Modal>
+    </div>
   );
 };
 
-export default ProductionFormModal;
+export default ProductionStockForm;

@@ -8,7 +8,7 @@ const router = express.Router();
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [rows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
        FROM emptybag_purchases p
        LEFT JOIN parties ON p.party_id = parties.id
        ORDER BY p.date DESC`
@@ -24,7 +24,7 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
        FROM emptybag_purchases p
        LEFT JOIN parties ON p.party_id = parties.id
        WHERE p.id = ?`,
@@ -45,12 +45,10 @@ router.post("/", authenticateToken, async (req, res, next) => {
     const { date, invoiceNo, party_id, items, quantity, price, description } =
       req.body;
     if (!date || !invoiceNo || !party_id) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "Date, invoiceNo, and party_id are required",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "Date, invoiceNo, and party_id are required",
+      });
     }
     const [result] = await pool.query(
       `INSERT INTO emptybag_purchases (date, invoice_no, party_id, items, quantity, price, description) VALUES (?, ?, ?, ?, ?, ?, ?)`,
@@ -65,19 +63,17 @@ router.post("/", authenticateToken, async (req, res, next) => {
       ]
     );
     const [newRows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
        FROM emptybag_purchases p
        LEFT JOIN parties ON p.party_id = parties.id
        WHERE p.id = ?`,
       [result.insertId]
     );
-    res
-      .status(201)
-      .json({
-        success: true,
-        data: newRows[0],
-        message: "Purchase created successfully",
-      });
+    res.status(201).json({
+      success: true,
+      data: newRows[0],
+      message: "Purchase created successfully",
+    });
   } catch (err) {
     next(err);
   }
@@ -110,7 +106,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
       ]
     );
     const [updatedRows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, parties.name AS party, p.items, p.quantity, p.price, p.description
+      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
        FROM emptybag_purchases p
        LEFT JOIN parties ON p.party_id = parties.id
        WHERE p.id = ?`,

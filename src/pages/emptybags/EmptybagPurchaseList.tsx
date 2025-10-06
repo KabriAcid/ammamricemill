@@ -65,6 +65,15 @@ const EmptybagPaddyPurchase = () => {
   // Parties for select
   const [parties, setParties] = useState<{ id: string; name: string }[]>([]);
 
+  // Ensure form has a sensible default date on first mount
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      date: prev.date || new Date().toISOString().split("T")[0],
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Fetch parties for dropdown
   useEffect(() => {
     api
@@ -91,7 +100,11 @@ const EmptybagPaddyPurchase = () => {
 
       if (response.success && response.data) {
         setData(
-          response.data.map((item) => ({ ...item, id: String(item.id) }))
+          response.data.map((item) => ({
+            ...item,
+            id: String(item.id),
+            party_id: item.party_id ? String(item.party_id) : "",
+          }))
         );
       }
     } catch (error) {
@@ -323,6 +336,17 @@ const EmptybagPaddyPurchase = () => {
     });
   };
 
+  // Focus first input in the modal when it opens for better UX
+  useEffect(() => {
+    if (modalOpen) {
+      // small timeout to wait for modal render
+      setTimeout(() => {
+        const el = document.querySelector<HTMLInputElement>("input[autoFocus]");
+        el?.focus();
+      }, 10);
+    }
+  }, [modalOpen]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     editItem ? handleUpdate() : handleCreate();
@@ -420,7 +444,7 @@ const EmptybagPaddyPurchase = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalPrice.toLocaleString()}
+                  ₦{formatCurrency(totalPrice)}
                 </p>
                 <p className="text-sm text-gray-500">Total Price</p>
               </div>
@@ -428,8 +452,6 @@ const EmptybagPaddyPurchase = () => {
           </>
         )}
       </div>
-
-      {/* Filter Bar */}
       <FilterBar
         onSearch={setSearch}
         placeholder="Search by invoice no, party, or description... (Ctrl+K)"
