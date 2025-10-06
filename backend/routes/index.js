@@ -31,6 +31,7 @@ import ProductRoutes from "./products/products.js";
 import emptybagPurchaseRoutes from "./emptybags/purchase.js";
 import emptybagSalesRoutes from "./emptybags/sales.js";
 import emptybagReceiveRoutes from "./emptybags/receive.js";
+import emptybagPaymentRoutes from "./emptybags/payment.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
@@ -84,6 +85,8 @@ router.use("/emptybag-purchases", emptybagPurchaseRoutes);
 router.use("/emptybag-sales", emptybagSalesRoutes);
 // Empty bag receive
 router.use("/emptybag-receive", emptybagReceiveRoutes);
+// Empty bag payments
+router.use("/emptybags/payments", emptybagPaymentRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);

@@ -16,34 +16,14 @@ Search are frontend based no POST requests
 Refer to the components/ui folder for the comps
 
 ## Accounts
-### Income Head
-- Income Head update not working properly.
-- No single delete only bulk.
-- No skeleton loaders.
-- No refresh buttons.
-
-### Expense Head
-- No total expense card count 
-- No skeleton loaders.
-- No refresh buttons.
-
 ### Bank Head
-- No total bank card count 
-- No skeleton loaders.
-- No refresh buttons.
 
-### Others Head
-- No total others head card count 
-- No skeleton loaders.
-- Calculation of cards and tables not working.
-- proper data type handling not working.
-- No refresh buttons.
-
+- SQL syntax fetch error on component mount.
 ### Transactions
-- No total others head card count 
-- No skeleton loaders.
-- Calculation of cards and tables not working.
-- proper data type handling not working.
-- No refresh buttons.
-- TRANSACTIONS NEED V1 FEATURES
+- Database query failed. Check schema.
+
+### Party Pages
+- Invalid json error. Prolly DB schema.
+
+
 

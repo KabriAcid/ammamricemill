@@ -169,7 +169,7 @@ router.post("/login", async (req, res, next) => {
     console.error("Error in login route:", err);
     return res.status(500).json({
       success: false,
-      message: "Internal server error during login",
+      message: "MySQL database is unavailable",
       error: err.message,
     });
   }

@@ -105,7 +105,7 @@ const EmptybagPaymentList = () => {
 
   const fetchParties = async () => {
     try {
-      const response = await api.get<ApiResponse<Party[]>>("/parties");
+      const response = await api.get<ApiResponse<Party[]>>("/party/parties");
       if (response.success && response.data) {
         setParties(
           response.data.map((p) => ({ id: String(p.id), name: p.name }))
@@ -137,7 +137,9 @@ const EmptybagPaymentList = () => {
     const handleKeyPress = (event: KeyboardEvent) => {
       if ((event.ctrlKey || event.metaKey) && event.key === "k") {
         event.preventDefault();
-        document.querySelector<HTMLInputElement>('input[type="search"]')?.focus();
+        document
+          .querySelector<HTMLInputElement>('input[type="search"]')
+          ?.focus();
       }
       if ((event.ctrlKey || event.metaKey) && event.key === "r") {
         event.preventDefault();
@@ -207,7 +209,10 @@ const EmptybagPaymentList = () => {
       );
 
       if (response.success) {
-        showToast(response.message || "Payment created successfully", "success");
+        showToast(
+          response.message || "Payment created successfully",
+          "success"
+        );
         await fetchPayments();
         handleModalClose();
       }
@@ -245,7 +250,10 @@ const EmptybagPaymentList = () => {
       );
 
       if (response.success) {
-        showToast(response.message || "Payment updated successfully", "success");
+        showToast(
+          response.message || "Payment updated successfully",
+          "success"
+        );
         await fetchPayments();
         handleModalClose();
       }
@@ -264,12 +272,18 @@ const EmptybagPaymentList = () => {
 
     setLoading(true);
     try {
-      const response = await api.delete<ApiResponse<void>>("/emptybags/payments", {
-        ids,
-      });
+      const response = await api.delete<ApiResponse<void>>(
+        "/emptybags/payments",
+        {
+          ids,
+        }
+      );
 
       if (response.success) {
-        showToast(response.message || "Payments deleted successfully", "success");
+        showToast(
+          response.message || "Payments deleted successfully",
+          "success"
+        );
         await fetchPayments();
         setSelectedRows([]);
       }
@@ -375,7 +389,9 @@ const EmptybagPaymentList = () => {
     <div className="animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Empty Bag Payments</h1>
+          <h1 className="text-3xl font-bold text-gray-900">
+            Empty Bag Payments
+          </h1>
           <p className="mt-1 text-sm text-gray-500">
             Manage empty bag payment records and transactions.
           </p>
@@ -401,9 +417,14 @@ const EmptybagPaymentList = () => {
           </>
         ) : (
           <>
-            <Card icon={<CreditCard className="w-8 h-8 text-primary-800" />} hover>
+            <Card
+              icon={<CreditCard className="w-8 h-8 text-primary-800" />}
+              hover
+            >
               <div>
-                <p className="text-3xl font-bold text-gray-700">{totalPayments}</p>
+                <p className="text-3xl font-bold text-gray-700">
+                  {totalPayments}
+                </p>
                 <p className="text-sm text-gray-500">Total Payments</p>
               </div>
             </Card>
@@ -415,7 +436,10 @@ const EmptybagPaymentList = () => {
                 <p className="text-sm text-gray-500">Total Quantity</p>
               </div>
             </Card>
-            <Card icon={<DollarSign className="w-8 h-8 text-green-600" />} hover>
+            <Card
+              icon={<DollarSign className="w-8 h-8 text-green-600" />}
+              hover
+            >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
                   ₦{formatCurrency(totalAmount)}
@@ -464,7 +488,12 @@ const EmptybagPaymentList = () => {
               Delete ({selectedRows.length})
             </Button>
           )}
-          <Button variant="outline" size="sm" icon={Printer} onClick={handlePrint}>
+          <Button
+            variant="outline"
+            size="sm"
+            icon={Printer}
+            onClick={handlePrint}
+          >
             Print
           </Button>
         </div>
@@ -499,7 +528,9 @@ const EmptybagPaymentList = () => {
           partyName: "",
           items: "",
           quantity: (
-            <span className="font-bold">{totals.quantity.toLocaleString()}</span>
+            <span className="font-bold">
+              {totals.quantity.toLocaleString()}
+            </span>
           ),
           amount: (
             <span className="font-bold">₦{formatCurrency(totals.amount)}</span>
@@ -540,7 +571,10 @@ const EmptybagPaymentList = () => {
                 type="text"
                 value={formData.invoiceNo}
                 onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, invoiceNo: e.target.value }))
+                  setFormData((prev) => ({
+                    ...prev,
+                    invoiceNo: e.target.value,
+                  }))
                 }
                 className="input-base"
                 placeholder="Enter invoice number"
