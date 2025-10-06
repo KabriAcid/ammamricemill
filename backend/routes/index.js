@@ -29,6 +29,7 @@ import ProductRoutes from "./products/products.js";
 
 // Emptybags
 import emptybagPurchaseRoutes from "./emptybags/purchase.js";
+import emptybagSalesRoutes from "./emptybags/sales.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
@@ -77,6 +78,8 @@ router.use("/products", ProductRoutes);
 
 // Empty bag purchases
 router.use("/emptybag-purchases", emptybagPurchaseRoutes);
+// Empty bag sales
+router.use("/emptybag-sales", emptybagSalesRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);
