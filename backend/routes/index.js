@@ -30,6 +30,7 @@ import ProductRoutes from "./products/products.js";
 // Emptybags
 import emptybagPurchaseRoutes from "./emptybags/purchase.js";
 import emptybagSalesRoutes from "./emptybags/sales.js";
+import emptybagReceiveRoutes from "./emptybags/receive.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
@@ -42,6 +43,7 @@ import paddyPurchaseRoutes from "./purchase/paddy-purchase.js";
 import mainStocksRoutes from "./stocks/main-stocks.js";
 import godownStocksRoutes from "./stocks/godown-stocks.js";
 import stockRegisterRoutes from "./stocks/register.js";
+import emptybagStocksRoutes from "./stocks/emptybag-stocks.js";
 // Stocks
 
 const router = express.Router();
@@ -80,6 +82,8 @@ router.use("/products", ProductRoutes);
 router.use("/emptybag-purchases", emptybagPurchaseRoutes);
 // Empty bag sales
 router.use("/emptybag-sales", emptybagSalesRoutes);
+// Empty bag receive
+router.use("/emptybag-receive", emptybagReceiveRoutes);
 
 // Sales routes
 router.use("/sales", salesListRoutes);
@@ -91,5 +95,6 @@ router.use("/purchase/paddy", paddyPurchaseRoutes);
 router.use("/stocks/main-stocks", mainStocksRoutes);
 router.use("/stocks/godown-stocks", godownStocksRoutes);
 router.use("/stocks/register", stockRegisterRoutes);
+router.use("/stocks/emptybag-stocks", emptybagStocksRoutes);
 
 export default router;

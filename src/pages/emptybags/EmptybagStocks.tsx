@@ -11,6 +11,9 @@ import { Button } from "../../components/ui/Button";
 import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { format } from "date-fns";
+import { api } from "../../utils/fetcher";
+import { useToast } from "../../components/ui/Toast";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 
 interface EmptybagStock {
   id: string;
@@ -39,44 +42,46 @@ const EmptybagStocks: React.FC = () => {
   const [parties, setParties] = useState<Array<{ id: string; name: string }>>(
     []
   );
+  const { showToast } = useToast();
 
   // Fetch emptybag stocks
   useEffect(() => {
     const fetchEmptybagStocks = async () => {
       setLoading(true);
       try {
-        // TODO: API endpoint - GET /api/stocks/emptybag-stocks
-        // Query params: ?page={currentPage}&pageSize={pageSize}&search={searchQuery}&partyId={partyFilter}
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Mock data
-        const mockStocks: EmptybagStock[] = [
-          {
-            id: "1",
-            categoryId: "CAT-001",
-            categoryName: "Packaging",
-            productId: "PROD-001",
-            productName: "50kg Empty Bag",
-            size: "50kg",
-            weight: "50",
-            opening: 1000,
-            receive: 500,
-            purchase: 300,
-            payment: 200,
-            sales: 400,
-            stocks: 1200,
-          },
-        ];
-
-        setStocks(mockStocks);
-
-        // Mock parties
-        setParties([
-          { id: "PARTY-001", name: "Supplier A" },
-          { id: "PARTY-002", name: "Supplier B" },
-        ]);
+        const res = await api.get<any>(`/stocks/emptybag-stocks`);
+        if (res.success && res.data) {
+          setStocks(
+            res.data.map((r: any) => ({
+              id: String(r.productId || r.id || ""),
+              categoryId: String(r.categoryId || ""),
+              categoryName: r.categoryName || "",
+              productId: String(r.productId || ""),
+              productName: r.productName || "",
+              size: r.size || "",
+              weight: r.weight || "",
+              opening: Number(r.opening) || 0,
+              receive: Number(r.receive) || 0,
+              purchase: Number(r.purchase) || 0,
+              payment: Number(r.payment) || 0,
+              sales: Number(r.sales) || 0,
+              stocks: Number(r.stocks) || 0,
+            }))
+          );
+        }
+        // fetch parties for filter dropdown
+        try {
+          const p = await api.get<any>(`/party/parties`);
+          if (p.success && p.data)
+            setParties(
+              p.data.map((x: any) => ({ id: String(x.id), name: x.name }))
+            );
+        } catch (e) {
+          // ignore party fetch failure
+        }
       } catch (error) {
         console.error("Error fetching emptybag stocks:", error);
+        showToast("Failed to load emptybag stocks", "error");
       } finally {
         setLoading(false);
       }
@@ -111,32 +116,32 @@ const EmptybagStocks: React.FC = () => {
     {
       key: "opening",
       label: "Opening",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
     {
       key: "receive",
       label: "Receive",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
     {
       key: "purchase",
       label: "Purchase",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
     {
       key: "payment",
       label: "Payment",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
     {
       key: "sales",
       label: "Sales",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
     {
       key: "stocks",
       label: "Stocks",
-      render: (value: number) => value.toLocaleString(),
+      render: (value: number) => formatNumber(value, 0),
     },
   ];
 
@@ -175,7 +180,7 @@ const EmptybagStocks: React.FC = () => {
         <Card icon={<Package size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalStock.toLocaleString()}
+              {formatNumber(stats.totalStock, 0)}
             </p>
             <p className="text-sm text-gray-500">Total Stock</p>
           </div>
@@ -183,7 +188,7 @@ const EmptybagStocks: React.FC = () => {
         <Card icon={<ShoppingBag size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalPurchase.toLocaleString()}
+              {formatNumber(stats.totalPurchase, 0)}
             </p>
             <p className="text-sm text-gray-500">Total Purchase</p>
           </div>
@@ -191,7 +196,7 @@ const EmptybagStocks: React.FC = () => {
         <Card icon={<DollarSign size={32} />} loading={loadingCards} hover>
           <div>
             <p className="text-3xl font-bold text-gray-700">
-              {stats.totalSales.toLocaleString()}
+              ₦{formatCurrency(stats.totalSales)}
             </p>
             <p className="text-sm text-gray-500">Total Sales</p>
           </div>
@@ -258,12 +263,12 @@ const EmptybagStocks: React.FC = () => {
           },
         }}
         summaryRow={{
-          opening: totals.opening.toLocaleString(),
-          receive: totals.receive.toLocaleString(),
-          purchase: totals.purchase.toLocaleString(),
-          payment: totals.payment.toLocaleString(),
-          sales: totals.sales.toLocaleString(),
-          stocks: totals.stocks.toLocaleString(),
+          opening: formatNumber(totals.opening, 0),
+          receive: formatNumber(totals.receive, 0),
+          purchase: formatNumber(totals.purchase, 0),
+          payment: formatNumber(totals.payment, 0),
+          sales: `₦${formatCurrency(totals.sales)}`,
+          stocks: formatNumber(totals.stocks, 0),
         }}
       />
     </div>

@@ -336,17 +336,6 @@ const EmptybagPaddyPurchase = () => {
     });
   };
 
-  // Focus first input in the modal when it opens for better UX
-  useEffect(() => {
-    if (modalOpen) {
-      // small timeout to wait for modal render
-      setTimeout(() => {
-        const el = document.querySelector<HTMLInputElement>("input[autoFocus]");
-        el?.focus();
-      }, 10);
-    }
-  }, [modalOpen]);
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     editItem ? handleUpdate() : handleCreate();

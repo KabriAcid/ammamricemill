@@ -4,18 +4,16 @@ import { authenticateToken } from "../../middlewares/auth.js";
 
 const router = express.Router();
 
-// NOTE: There is no dedicated emptybag_receive table in schema; reuse emptybag_purchases
-// to represent received orders (fields match). This keeps DB unchanged and provides
-// the Receive UX without migration. If you prefer a dedicated table, we can add a migration.
+// Using dedicated emptybag_receive table (migration created at schema/migrations/002_create_emptybag_receive.sql)
 
 // GET /api/emptybag-receive
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
     const [rows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
-       FROM emptybag_purchases p
-       LEFT JOIN parties ON p.party_id = parties.id
-       ORDER BY p.date DESC`
+      `SELECT r.id, r.date, r.invoice_no AS invoiceNo, r.party_id AS party_id, parties.name AS party, r.items, r.quantity, r.price, r.total_amount AS totalAmount, r.description
+       FROM emptybag_receive r
+       LEFT JOIN parties ON r.party_id = parties.id
+       ORDER BY r.date DESC`
     );
     res.json({ success: true, data: rows });
   } catch (err) {
@@ -28,10 +26,10 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
     const [rows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
-       FROM emptybag_purchases p
-       LEFT JOIN parties ON p.party_id = parties.id
-       WHERE p.id = ?`,
+      `SELECT r.id, r.date, r.invoice_no AS invoiceNo, r.party_id AS party_id, parties.name AS party, r.items, r.quantity, r.price, r.total_amount AS totalAmount, r.description
+       FROM emptybag_receive r
+       LEFT JOIN parties ON r.party_id = parties.id
+       WHERE r.id = ?`,
       [id]
     );
     if (rows.length === 0)
@@ -51,8 +49,9 @@ router.post("/", authenticateToken, async (req, res, next) => {
       return res
         .status(400)
         .json({ success: false, message: "Date and invoiceNo required" });
+    const totalAmount = (quantity || 0) * (price || 0);
     const [result] = await pool.query(
-      `INSERT INTO emptybag_purchases (date, invoice_no, party_id, items, quantity, price, description) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO emptybag_receive (date, invoice_no, party_id, items, quantity, price, total_amount, description) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         date,
         invoiceNo,
@@ -60,23 +59,22 @@ router.post("/", authenticateToken, async (req, res, next) => {
         items || 0,
         quantity || 0,
         price || 0,
+        totalAmount,
         description || "",
       ]
     );
     const [newRows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
-       FROM emptybag_purchases p
-       LEFT JOIN parties ON p.party_id = parties.id
-       WHERE p.id = ?`,
+      `SELECT r.id, r.date, r.invoice_no AS invoiceNo, r.party_id AS party_id, parties.name AS party, r.items, r.quantity, r.price, r.total_amount AS totalAmount, r.description
+       FROM emptybag_receive r
+       LEFT JOIN parties ON r.party_id = parties.id
+       WHERE r.id = ?`,
       [result.insertId]
     );
-    res
-      .status(201)
-      .json({
-        success: true,
-        data: newRows[0],
-        message: "Receive order created",
-      });
+    res.status(201).json({
+      success: true,
+      data: newRows[0],
+      message: "Receive order created",
+    });
   } catch (err) {
     next(err);
   }
@@ -89,13 +87,14 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     const { date, invoiceNo, party_id, items, quantity, price, description } =
       req.body;
     const [existing] = await pool.query(
-      `SELECT id FROM emptybag_purchases WHERE id = ?`,
+      `SELECT id FROM emptybag_receive WHERE id = ?`,
       [id]
     );
     if (existing.length === 0)
       return res.status(404).json({ success: false, message: "Not found" });
+    const totalAmount = (quantity || 0) * (price || 0);
     await pool.query(
-      `UPDATE emptybag_purchases SET date = ?, invoice_no = ?, party_id = ?, items = ?, quantity = ?, price = ?, description = ? WHERE id = ?`,
+      `UPDATE emptybag_receive SET date = ?, invoice_no = ?, party_id = ?, items = ?, quantity = ?, price = ?, total_amount = ?, description = ? WHERE id = ?`,
       [
         date,
         invoiceNo,
@@ -103,15 +102,16 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
         items || 0,
         quantity || 0,
         price || 0,
+        totalAmount,
         description || "",
         id,
       ]
     );
     const [updatedRows] = await pool.query(
-      `SELECT p.id, p.date, p.invoice_no AS invoiceNo, p.party_id AS party_id, parties.name AS party, p.items, p.quantity, p.price, p.description
-       FROM emptybag_purchases p
-       LEFT JOIN parties ON p.party_id = parties.id
-       WHERE p.id = ?`,
+      `SELECT r.id, r.date, r.invoice_no AS invoiceNo, r.party_id AS party_id, parties.name AS party, r.items, r.quantity, r.price, r.total_amount AS totalAmount, r.description
+       FROM emptybag_receive r
+       LEFT JOIN parties ON r.party_id = parties.id
+       WHERE r.id = ?`,
       [id]
     );
     res.json({
@@ -128,7 +128,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 router.delete("/:id", authenticateToken, async (req, res, next) => {
   try {
     const { id } = req.params;
-    await pool.query(`DELETE FROM emptybag_purchases WHERE id = ?`, [id]);
+    await pool.query(`DELETE FROM emptybag_receive WHERE id = ?`, [id]);
     res.json({ success: true, message: "Receive order deleted" });
   } catch (err) {
     next(err);
@@ -143,7 +143,7 @@ router.delete("/", authenticateToken, async (req, res, next) => {
       return res
         .status(400)
         .json({ success: false, message: "Provide array of IDs to delete" });
-    await pool.query(`DELETE FROM emptybag_purchases WHERE id IN (?)`, [ids]);
+    await pool.query(`DELETE FROM emptybag_receive WHERE id IN (?)`, [ids]);
     res.json({ success: true, message: "Receive orders deleted" });
   } catch (err) {
     next(err);
