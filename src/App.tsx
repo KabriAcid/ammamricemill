@@ -41,6 +41,7 @@ import CategoryList from "./pages/products/CategoryList";
 import ProductList from "./pages/products/ProductList";
 import EmptybagPurchaseList from "./pages/emptybags/EmptybagPurchaseList";
 import EmptybagSalesList from "./pages/emptybags/EmptybagSalesList";
+import EmptybagReceiveList from "./pages/emptybags/EmptybagReceiveList";
 import EmptybagPaymentList from "./pages/emptybags/EmptybagPaymentList";
 import EmptybagStocks from "./pages/emptybags/EmptybagStocks";
 
@@ -128,6 +129,10 @@ function App() {
                 <Route
                   path="/empty/emptybag-sales"
                   element={<EmptybagSalesList />}
+                />
+                <Route
+                  path="/empty/emptybag-receive"
+                  element={<EmptybagReceiveList />}
                 />
 
                 <Route
