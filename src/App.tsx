@@ -55,13 +55,13 @@ import SalesLedger from "./pages/sales/SalesLedger";
 import ProductionList from "./pages/production/ProductionList";
 import ProductionDetails from "./pages/production/ProductionDetails";
 import ProductionStockList from "./pages/stocks/ProductionStockList";
-import ProductionStockDetails from "./pages/stocks/ProductionStockDetails";
+import ProductionStockDetails from "./pages/production/ProductionStockDetails";
+import ProductionStockForm from "./pages/stocks/ProductionStockForm";
 import MainStock from "./pages/stocks/MainStock";
 import GodownStocks from "./pages/stocks/GodownStocks";
 import StockRegisterPage from "./pages/stocks/StockRegisterPage";
 import Profile from "./pages/settings/Profile";
 import AddStocksList from "./pages/stocks/AddStocksList";
-import EmptyBagStocks from "./pages/stocks/EmptyBagStocks";
 import DailyReport from "./pages/reporting/DailyReport";
 import FinancialStatement from "./pages/reporting/FinancialStatement";
 import { SMSTemplates } from "./pages/sms/SMSTemplates";
@@ -134,10 +134,6 @@ function App() {
                   path="/empty/emptybag-payment"
                   element={<EmptybagPaymentList />}
                 />
-                <Route
-                  path="/empty/emptybag-stocks"
-                  element={<EmptybagStocks />}
-                />
                 <Route path="/purchase/paddy" element={<PaddyPurchase />} />
                 <Route
                   path="/purchase/paddy/:id"
@@ -176,9 +172,10 @@ function App() {
                   element={<ProductionStockDetails />}
                 />
                 <Route
-                  path="/stocks/emptybag-stocks"
-                  element={<EmptyBagStocks />}
+                  path="/stocks/production-stock-form"
+                  element={<ProductionStockForm />}
                 />
+
                 <Route path="/dailyreport" element={<DailyReport />} />
                 <Route
                   path="/financial-statement"

@@ -247,7 +247,7 @@ const AddStocksList = () => {
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Add Stocks List</h1>
           <p className="mt-1 text-sm text-gray-500">
-            Manage manual stock additions and adjustments.
+            Manage manual stock additions and adjustments.  
           </p>
         </div>
         <button

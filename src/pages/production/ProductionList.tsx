@@ -15,7 +15,7 @@ import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { format } from "date-fns";
 import { formatCurrency } from "../../utils/formatters";
-import { ProductionFormModal } from "./ProductionFormModal";
+import { ProductionFormModal } from "../stocks/ProductionStockForm";
 import { api } from "../../utils/fetcher";
 import type { Production, ProductionItem } from "../../types/production";
 

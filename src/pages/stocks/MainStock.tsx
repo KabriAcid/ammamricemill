@@ -293,10 +293,7 @@ const MainStock = () => {
                 <p className="text-sm text-gray-500">Total Value</p>
               </div>
             </Card>
-            <Card
-              icon={<TrendingUp className="w-8 h-8 text-blue-600" />}
-              hover
-            >
+            <Card icon={<TrendingUp className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
                   {totalProducts}
@@ -381,11 +378,11 @@ const MainStock = () => {
           opening: (
             <span className="font-bold">{totals.opening.toLocaleString()}</span>
           ),
-          add: (
-            <span className="font-bold">{totals.add.toLocaleString()}</span>
-          ),
+          add: <span className="font-bold">{totals.add.toLocaleString()}</span>,
           purchase: (
-            <span className="font-bold">{totals.purchase.toLocaleString()}</span>
+            <span className="font-bold">
+              {totals.purchase.toLocaleString()}
+            </span>
           ),
           sales: (
             <span className="font-bold">{totals.sales.toLocaleString()}</span>
