@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 07, 2025 at 12:55 PM
+-- Generation Time: Oct 07, 2025 at 04:08 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -517,8 +517,8 @@ CREATE TABLE `parties` (
 --
 
 INSERT INTO `parties` (`id`, `name`, `type_id`, `phone`, `address`, `balance`, `status`, `created_at`) VALUES
-(1, 'Dangote Farms', NULL, '+2347034567890', 'Kano, Nigeria', 0.00, 'active', '2025-10-02 21:49:12'),
-(2, 'Alhaji Sani Traders', NULL, '+2347045678901', 'Kaduna, Nigeria', 50000.00, 'active', '2025-10-02 21:49:12'),
+(1, 'Dangote Farms', NULL, '+2347034567890', 'Kano, Nigeria', 6.00, 'active', '2025-10-02 21:49:12'),
+(2, 'Alhaji Sani Traders', NULL, '+2347045678901', 'Kaduna, Nigeria', 58558.00, 'active', '2025-10-02 21:49:12'),
 (13, 'Dangote Farms', 6, '+2347034567890', 'Kano, Nigeria', 0.00, 'active', '2025-10-02 20:49:12'),
 (14, 'Alhaji Sani Traders', 7, '+2347045678901', 'Kaduna, Nigeria', 50000.00, 'active', '2025-10-02 20:49:12'),
 (15, 'New Supplier Ltd', 6, '+2347011122334', 'Lagos, Nigeria', 0.00, 'active', '2025-10-07 10:46:04'),
@@ -638,6 +638,7 @@ CREATE TABLE `production_orders` (
   `invoice_no` varchar(50) NOT NULL,
   `date` date NOT NULL,
   `description` text DEFAULT NULL,
+  `silo_info` text DEFAULT NULL,
   `total_quantity` int(11) NOT NULL DEFAULT 0,
   `total_weight` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` enum('active','completed','cancelled') DEFAULT 'active',
@@ -741,6 +742,14 @@ CREATE TABLE `purchases` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `purchases`
+--
+
+INSERT INTO `purchases` (`id`, `date`, `invoice_no`, `challan_no`, `party_id`, `transport_info`, `broker_id`, `notes`, `total_quantity`, `total_net_weight`, `invoice_amount`, `discount`, `total_amount`, `previous_balance`, `net_payable`, `paid_amount`, `current_balance`, `payment_mode`, `reference_no`, `status`, `created_at`, `updated_at`) VALUES
+(1, '2025-10-07', 'PUR-200', 'CH-200', 1, 'Truck 1', NULL, 'Sample purchase', 100.00, 100.00, 50000.00, 0.00, 50000.00, 0.00, 50000.00, 50000.00, 0.00, 'cash', NULL, 'completed', '2025-10-07 10:57:43', '2025-10-07 10:57:43'),
+(4, '2025-10-07', 'LEDGER-1759837221297', NULL, NULL, NULL, NULL, NULL, 92.00, 15.00, 6256.00, 0.00, 6256.00, 0.00, 0.00, 0.00, 6256.00, 'cash', NULL, 'completed', '2025-10-07 11:40:21', '2025-10-07 11:40:21');
+
 -- --------------------------------------------------------
 
 --
@@ -759,6 +768,13 @@ CREATE TABLE `purchase_items` (
   `total_price` decimal(12,2) DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `purchase_items`
+--
+
+INSERT INTO `purchase_items` (`id`, `purchase_id`, `category_id`, `product_id`, `godown_id`, `quantity`, `net_weight`, `rate`, `total_price`, `created_at`) VALUES
+(1, 4, NULL, 4, 1, 92.00, 15.00, 68.00, 6256.00, '2025-10-07 11:40:21');
 
 -- --------------------------------------------------------
 
@@ -809,6 +825,15 @@ CREATE TABLE `sales` (
   `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `sales`
+--
+
+INSERT INTO `sales` (`id`, `date`, `invoice_no`, `challan_no`, `party_id`, `transport_info`, `notes`, `total_quantity`, `total_net_weight`, `invoice_amount`, `discount`, `total_amount`, `previous_balance`, `net_receivable`, `received_amount`, `current_balance`, `payment_mode`, `reference_no`, `status`, `created_at`, `updated_at`) VALUES
+(1, '1978-01-02', '1', NULL, 2, 'Itaque molestiae inc', 'Impedit ullam esse', 3.00, 3.00, 9.00, 4.00, 5.00, 8500.00, 8505.00, 0.00, 8505.00, 'cash', NULL, '', '2025-10-07 11:52:41', '2025-10-07 11:52:41'),
+(2, '1981-05-10', '4', NULL, 2, 'Amet voluptatum inc', 'Inventore doloremque', 3.00, 4.00, 15.00, 20.00, -5.00, 58.00, 53.00, 0.00, 53.00, 'cash', NULL, '', '2025-10-07 12:20:51', '2025-10-07 12:20:51'),
+(3, '2025-10-07', '6', NULL, 1, 'fjslfjslfjsklfjsdlkj', NULL, 2.00, 55.00, 6.00, 0.00, 6.00, 0.00, 6.00, 0.00, 6.00, 'cash', NULL, '', '2025-10-07 12:34:10', '2025-10-07 12:34:10');
+
 -- --------------------------------------------------------
 
 --
@@ -827,6 +852,15 @@ CREATE TABLE `sales_items` (
   `total_price` decimal(12,2) DEFAULT 0.00,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `sales_items`
+--
+
+INSERT INTO `sales_items` (`id`, `sales_id`, `category_id`, `product_id`, `godown_id`, `quantity`, `net_weight`, `rate`, `total_price`, `created_at`) VALUES
+(1, 1, 1, 1, 1, 3.00, 3.00, 3.00, 9.00, '2025-10-07 11:52:41'),
+(2, 2, 1, 1, 1, 3.00, 4.00, 5.00, 15.00, '2025-10-07 12:20:51'),
+(3, 3, 1, 2, 1, 2.00, 55.00, 3.00, 6.00, '2025-10-07 12:34:10');
 
 -- --------------------------------------------------------
 
@@ -968,6 +1002,15 @@ CREATE TABLE `stock_movements` (
   `remarks` text DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `stock_movements`
+--
+
+INSERT INTO `stock_movements` (`id`, `date`, `product_id`, `godown_id`, `movement_type`, `reference_type`, `reference_id`, `quantity_in`, `quantity_out`, `balance`, `rate`, `remarks`, `created_at`) VALUES
+(1, '1978-01-02', 1, 1, 'sales', 'sales', 1, 0.00, 3.00, 0.00, 3.00, 'Sale 1', '2025-10-07 11:52:41'),
+(2, '1981-05-10', 1, 1, 'sales', 'sales', 2, 0.00, 3.00, 0.00, 5.00, 'Sale 4', '2025-10-07 12:20:51'),
+(3, '2025-10-07', 2, 1, 'sales', 'sales', 3, 0.00, 2.00, 0.00, 3.00, 'Sale 6', '2025-10-07 12:34:10');
 
 -- --------------------------------------------------------
 
@@ -1563,13 +1606,13 @@ ALTER TABLE `production_details`
 -- AUTO_INCREMENT for table `production_items`
 --
 ALTER TABLE `production_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `production_orders`
 --
 ALTER TABLE `production_orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `production_stocks`
@@ -1593,13 +1636,13 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `purchases`
 --
 ALTER TABLE `purchases`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `purchase_items`
 --
 ALTER TABLE `purchase_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `salary`
@@ -1611,13 +1654,13 @@ ALTER TABLE `salary`
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `sales_items`
 --
 ALTER TABLE `sales_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `settings`
@@ -1653,7 +1696,7 @@ ALTER TABLE `stocks`
 -- AUTO_INCREMENT for table `stock_movements`
 --
 ALTER TABLE `stock_movements`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `transactions`

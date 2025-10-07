@@ -48,7 +48,7 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 
     // Add pagination
-  query += ` ORDER BY p.date DESC, p.invoice_no DESC LIMIT ? OFFSET ?`;
+    query += ` ORDER BY p.date DESC, p.invoice_no DESC LIMIT ? OFFSET ?`;
 
     // Prepare query parameters
     const queryParams = [];
@@ -137,15 +137,27 @@ router.post("/", authenticateToken, async (req, res) => {
       });
     }
 
-    // Insert production order
-    const [result] = await connection.query(
-      `INSERT INTO productions 
-        (invoice_no, date, description, silo_info, total_quantity, total_weight, status)
-      VALUES (?, ?, ?, ?, ?, ?, 'active')`,
-      [invoiceNo, date, description, siloInfo, totalQuantity, totalWeight]
+    // Some dumps don't have AUTO_INCREMENT on id — create an explicit id
+    const [nextIdRow] = await connection.query(
+      `SELECT COALESCE(MAX(id), 0) + 1 as nextId FROM productions FOR UPDATE`
     );
+    const productionId = nextIdRow[0].nextId;
 
-    const productionId = result.insertId;
+    // Insert production order with explicit id
+    await connection.query(
+      `INSERT INTO productions 
+        (id, invoice_no, date, description, silo_info, total_quantity, total_weight, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
+      [
+        productionId,
+        invoiceNo,
+        date,
+        description,
+        siloInfo,
+        totalQuantity,
+        totalWeight,
+      ]
+    );
 
     // Insert production items
     for (const item of items) {
