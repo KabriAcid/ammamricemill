@@ -15,7 +15,6 @@ export async function fetcher<T>(
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   try {
-    
     // Get token from localStorage
     const user = localStorage.getItem("ammam_user");
     const token = user ? JSON.parse(user).token : null;
@@ -69,15 +68,18 @@ export async function fetcher<T>(
 
     // If response is not ok, throw error even if we got JSON
     if (!res.ok) {
-      throw new ApiError(
-        data?.message || `Request failed with status ${res.status}`,
-        res.status
-      );
+      // prefer fields: message -> error -> fallback status text
+      const errMsg =
+        data?.message ||
+        data?.error ||
+        `Request failed with status ${res.status}`;
+      throw new ApiError(errMsg, res.status);
     }
 
     // Check if we have a valid API response
     if (!data || (typeof data.success === "boolean" && !data.success)) {
-      throw new ApiError(data?.message || "Operation failed", res.status);
+      const errMsg = data?.message || data?.error || "Operation failed";
+      throw new ApiError(errMsg, res.status);
     }
 
     return data;

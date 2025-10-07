@@ -19,6 +19,8 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
+import { SaleFormModal } from "./SaleFormModal";
 
 // TypeScript Interfaces
 export interface SaleItem {
@@ -55,17 +57,7 @@ export interface Sale {
   updatedAt: string;
 }
 
-interface SaleFormData {
-  invoiceNo: string;
-  date: string;
-  challanNo: string;
-  partyId: string;
-  transportInfo: string;
-  notes: string;
-  items: SaleItem[];
-  discount: number;
-  paidAmount: number;
-}
+// ... no local SaleFormData type required (using Sale)
 
 const SalesList = () => {
   // State Management
@@ -81,6 +73,8 @@ const SalesList = () => {
 
   const { showToast } = useToast();
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
 
   // Fetch sales function
   const fetchSales = async () => {
@@ -212,7 +206,28 @@ const SalesList = () => {
 
   // Handlers
   const handleNew = () => {
-    navigate("/sales/new");
+    // Open modal to create new sale
+    setEditingSale(null);
+    setModalOpen(true);
+  };
+
+  const handleSaveSale = async (data: Partial<Sale>) => {
+    setLoading(true);
+    try {
+      const response = await api.post<ApiResponse<Sale>>("/sales", data);
+      if (response.success) {
+        showToast("Sale saved successfully", "success");
+        await fetchSales();
+        setModalOpen(false);
+      } else {
+        showToast(response.message || "Failed to save sale", "error");
+      }
+    } catch (err) {
+      console.error("Error saving sale:", err);
+      showToast("Failed to save sale", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleEdit = (row: Sale) => {
@@ -242,22 +257,22 @@ const SalesList = () => {
     {
       key: "totalQuantity",
       label: "Quantity",
-      render: (value: number) => `${value.toLocaleString()} Bags`,
+      render: (value: number) => `${formatNumber(value, 0)} Bags`,
     },
     {
       key: "totalNetWeight",
       label: "Net Weight",
-      render: (value: number) => `${value.toLocaleString()} Kg`,
+      render: (value: number) => `${formatNumber(value, 2)} Kg`,
     },
     {
       key: "totalAmount",
       label: "Total",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
       key: "paidAmount",
       label: "Paid",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value)}`,
     },
     {
       key: "currentBalance",
@@ -268,7 +283,7 @@ const SalesList = () => {
             value > 0 ? "text-red-600" : "text-green-600"
           }`}
         >
-          ₦{value.toLocaleString()}
+          ₦{formatCurrency(value)}
         </span>
       ),
     },
@@ -321,7 +336,7 @@ const SalesList = () => {
             <Card icon={<Package className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  {stats.totalQuantity.toLocaleString()}
+                  {formatNumber(stats.totalQuantity, 0)}
                 </p>
                 <p className="text-sm text-gray-500">Total Quantity (Bags)</p>
               </div>
@@ -332,7 +347,7 @@ const SalesList = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{stats.totalAmount.toLocaleString()}
+                  ₦{formatCurrency(stats.totalAmount)}
                 </p>
                 <p className="text-sm text-gray-500">Total Amount</p>
               </div>
@@ -343,7 +358,7 @@ const SalesList = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{stats.totalBalance.toLocaleString()}
+                  ₦{formatCurrency(stats.totalBalance)}
                 </p>
                 <p className="text-sm text-gray-500">Total Balance</p>
               </div>
@@ -426,6 +441,17 @@ const SalesList = () => {
           onEdit: handleEdit,
           onView: handleView,
         }}
+      />
+
+      {/* Sale Form Modal */}
+      <SaleFormModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingSale(null);
+        }}
+        onSave={handleSaveSale}
+        item={editingSale}
       />
     </div>
   );

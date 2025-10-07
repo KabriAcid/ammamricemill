@@ -3,6 +3,7 @@ import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
 import { Plus, ShoppingCart } from "lucide-react";
 import type { Sale, SaleItem } from "../../types/sales";
+import { formatCurrency } from "../../utils/formatters";
 
 interface SaleFormModalProps {
   isOpen: boolean;
@@ -160,6 +161,32 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
     e.preventDefault();
     setLoading(true);
     try {
+      // Client-side validation
+      if (!formData.date || !formData.invoiceNo || !formData.partyId) {
+        alert("Date, Invoice No and Party are required");
+        setLoading(false);
+        return;
+      }
+
+      if (
+        !formData.items ||
+        !Array.isArray(formData.items) ||
+        formData.items.length === 0
+      ) {
+        alert("Please add at least one product item");
+        setLoading(false);
+        return;
+      }
+
+      for (let i = 0; i < formData.items.length; i++) {
+        const it = formData.items[i];
+        if (!it.productId || !it.quantity) {
+          alert(`Please fill product and quantity for item ${i + 1}`);
+          setLoading(false);
+          return;
+        }
+      }
+
       await onSave(formData);
       onClose();
     } catch (error) {
@@ -486,7 +513,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Invoice Amount:</div>
               <div className="text-sm font-medium">
-                ₦{formData.invoiceAmount?.toLocaleString()}
+                ₦{formatCurrency(formData.invoiceAmount || 0)}
               </div>
             </div>
             <div>
@@ -523,7 +550,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Total Amount:</div>
               <div className="text-sm font-medium">
-                ₦{formData.totalAmount?.toLocaleString()}
+                ₦{formatCurrency(formData.totalAmount || 0)}
               </div>
             </div>
             <div>
@@ -556,7 +583,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Net Payable:</div>
               <div className="text-sm font-medium">
-                ₦{formData.netPayable?.toLocaleString()}
+                ₦{formatCurrency(formData.netPayable || 0)}
               </div>
             </div>
             <div>
@@ -586,7 +613,7 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
             <div className="grid grid-cols-2 gap-2">
               <div className="text-sm text-gray-500">Current Balance:</div>
               <div className="text-sm font-medium">
-                ₦{formData.currentBalance?.toLocaleString()}
+                ₦{formatCurrency(formData.currentBalance || 0)}
               </div>
             </div>
           </div>

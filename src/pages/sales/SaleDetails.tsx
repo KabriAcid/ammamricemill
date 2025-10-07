@@ -8,6 +8,7 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 
 // TypeScript Interfaces
 interface SaleItem {
@@ -62,8 +63,8 @@ const SaleDetails = () => {
 
   // State Management
   const [sale, setSale] = useState<Sale | null>(null);
-  const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Fetch sale details
@@ -141,7 +142,7 @@ const SaleDetails = () => {
   return (
     <div className="animate-fade-in">
       {/* Action Bar - Hidden on Print */}
-      <div className="print:hidden bg-white border-b sticky top-0 z-10 shadow-sm">
+      <div className="print:hidden">
         <div className="max-w-5xl mx-auto px-6 py-4 flex items-center justify-between">
           <Button onClick={handleBack} icon={ArrowLeft} variant="outline">
             Back to Sales
@@ -158,6 +159,11 @@ const SaleDetails = () => {
           {/* Company Header */}
           <div className="border-b-2 border-gray-900 px-8 py-6 print:py-4">
             <div className="text-center">
+              <img
+                src="/favicon.png"
+                alt="AMMAM Logo"
+                className="mx-auto w-16 h-16 object-contain mb-2 print:mb-1"
+              />
               <h1 className="text-3xl font-bold text-gray-900 print:text-4xl">
                 AMMAM RICE MILL LTD.
               </h1>
@@ -293,16 +299,16 @@ const SaleDetails = () => {
                         {item.productSize || "-"}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-200 print:border-black">
-                        {item.quantity.toLocaleString()}
+                        {formatNumber(item.quantity, 0)}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-200 print:border-black">
-                        {item.netWeight.toLocaleString()}
+                        {formatNumber(item.netWeight, 2)}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-200 print:border-black">
-                        ₦{item.rate.toLocaleString()}
+                        ₦{formatCurrency(item.rate)}
                       </td>
                       <td className="px-3 py-3 text-sm text-gray-900 text-right">
-                        ₦{item.totalPrice.toLocaleString()}
+                        ₦{formatCurrency(item.totalPrice)}
                       </td>
                     </tr>
                   ))}
@@ -315,16 +321,16 @@ const SaleDetails = () => {
                       Total
                     </td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-300 print:border-black">
-                      {sale.totalQuantity.toLocaleString()}
+                      {formatNumber(sale.totalQuantity, 0)}
                     </td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-300 print:border-black">
-                      {sale.totalNetWeight.toLocaleString()}
+                      {formatNumber(sale.totalNetWeight, 2)}
                     </td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-right border-r border-gray-300 print:border-black">
                       -
                     </td>
                     <td className="px-3 py-3 text-sm text-gray-900 text-right">
-                      ₦{sale.invoiceAmount.toLocaleString()}
+                      ₦{formatCurrency(sale.invoiceAmount)}
                     </td>
                   </tr>
                 </tbody>
@@ -375,13 +381,13 @@ const SaleDetails = () => {
                 <div className="flex justify-between py-1">
                   <dt className="text-sm text-gray-600">Invoice Amount:</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    ₦{sale.invoiceAmount.toLocaleString()}
+                    ₦{formatCurrency(sale.invoiceAmount)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1">
                   <dt className="text-sm text-gray-600">Discount:</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    ₦{sale.discount.toLocaleString()}
+                    ₦{formatCurrency(sale.discount)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-2 border-t border-gray-300">
@@ -389,13 +395,13 @@ const SaleDetails = () => {
                     Total Amount:
                   </dt>
                   <dd className="text-sm font-bold text-gray-900">
-                    ₦{sale.totalAmount.toLocaleString()}
+                    ₦{formatCurrency(sale.totalAmount)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1">
                   <dt className="text-sm text-gray-600">Previous Balance:</dt>
                   <dd className="text-sm font-medium text-gray-900">
-                    ₦{sale.previousBalance.toLocaleString()}
+                    ₦{formatCurrency(sale.previousBalance)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-2 border-t border-gray-300">
@@ -403,13 +409,13 @@ const SaleDetails = () => {
                     Net Payable:
                   </dt>
                   <dd className="text-sm font-bold text-gray-900">
-                    ₦{sale.netPayable.toLocaleString()}
+                    ₦{formatCurrency(sale.netPayable)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-1">
                   <dt className="text-sm text-gray-600">Paid Amount:</dt>
                   <dd className="text-sm font-medium text-primary-600">
-                    ₦{sale.paidAmount.toLocaleString()}
+                    ₦{formatCurrency(sale.paidAmount)}
                   </dd>
                 </div>
                 <div className="flex justify-between py-2 border-t-2 border-gray-900">
@@ -423,7 +429,7 @@ const SaleDetails = () => {
                         : "text-green-600"
                     }`}
                   >
-                    ₦{sale.currentBalance.toLocaleString()}
+                    ₦{formatCurrency(sale.currentBalance)}
                   </dd>
                 </div>
               </dl>
