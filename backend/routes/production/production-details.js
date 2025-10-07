@@ -28,8 +28,8 @@ router.get("/", authenticateToken, async (req, res) => {
         pd.created_at as createdAt,
         pd.updated_at as updatedAt,
         po.invoice_no as productionInvoiceNo
-      FROM production_details pd
-      LEFT JOIN production_orders po ON pd.production_id = po.id
+        FROM production_details pd
+        LEFT JOIN productions po ON pd.production_id = po.id
       WHERE 1=1
     `;
 
@@ -63,7 +63,7 @@ router.get("/", authenticateToken, async (req, res) => {
     // Get total count
     const [countResult] = await pool.query(
       `SELECT COUNT(*) as total FROM production_details pd
-       LEFT JOIN production_orders po ON pd.production_id = po.id
+  LEFT JOIN productions po ON pd.production_id = po.id
        WHERE 1=1` +
         (search ? ` AND (po.invoice_no LIKE ? OR pd.notes LIKE ?)` : "") +
         (fromDate ? ` AND pd.date >= ?` : "") +
@@ -114,9 +114,9 @@ router.post("/", authenticateToken, async (req, res) => {
       });
     }
 
-    // Check if production order exists
+    // Check if production exists
     const [productions] = await connection.query(
-      "SELECT id FROM production_orders WHERE id = ?",
+      "SELECT id FROM productions WHERE id = ?",
       [productionId]
     );
 
@@ -135,9 +135,9 @@ router.post("/", authenticateToken, async (req, res) => {
       [productionId, date, quantityProduced, weightProduced, status, notes]
     );
 
-    // Update production order total quantities
+    // Update production total quantities
     await connection.query(
-      `UPDATE production_orders 
+      `UPDATE productions 
        SET total_quantity = total_quantity + ?,
            total_weight = total_weight + ?
        WHERE id = ?`,
@@ -182,7 +182,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
         pd.updated_at as updatedAt,
         po.invoice_no as productionInvoiceNo
       FROM production_details pd
-      LEFT JOIN production_orders po ON pd.production_id = po.id
+  LEFT JOIN productions po ON pd.production_id = po.id
       WHERE pd.id = ?`,
       [id]
     );
@@ -234,7 +234,7 @@ router.delete("/", authenticateToken, async (req, res) => {
     // Update production order totals
     for (const detail of details) {
       await connection.query(
-        `UPDATE production_orders 
+        `UPDATE productions 
          SET total_quantity = total_quantity - ?,
              total_weight = total_weight - ?
          WHERE id = ?`,
@@ -256,14 +256,14 @@ router.delete("/", authenticateToken, async (req, res) => {
       message: `${result.affectedRows} production detail(s) deleted successfully`,
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) await connection.rollback();
     console.error("Error deleting production details:", error);
     res.status(500).json({
       success: false,
       error: error.message,
     });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 });
 

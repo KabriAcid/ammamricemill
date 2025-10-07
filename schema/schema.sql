@@ -638,7 +638,6 @@ CREATE TABLE `production_orders` (
   `invoice_no` varchar(50) NOT NULL,
   `date` date NOT NULL,
   `description` text DEFAULT NULL,
-  `silo_info` text DEFAULT NULL,
   `total_quantity` int(11) NOT NULL DEFAULT 0,
   `total_weight` decimal(10,2) NOT NULL DEFAULT 0.00,
   `status` enum('active','completed','cancelled') DEFAULT 'active',

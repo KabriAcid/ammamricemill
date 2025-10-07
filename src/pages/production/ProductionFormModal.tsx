@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal } from "../../components/ui/Modal";
 import { Button } from "../../components/ui/Button";
+import { Spinner } from "../../components/ui/Spinner";
 import { Production, ProductionItem } from "../../types/production";
 import { formatNumber } from "../../utils/formatters";
 import { api } from "../../utils/fetcher";
@@ -178,7 +179,8 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     >
       {initialLoading ? (
         <div className="p-6">
-          <p className="text-sm text-gray-500">Loading master data...</p>
+          {/* spinner instead */}
+          <Spinner/>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -239,11 +241,8 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 {formData.items.map((it, index) => {
                   const product = products.find((p) => p.id === it.productId);
                   return (
-                    <div
-                      key={it.id}
-                      className="grid grid-cols-1 md:grid-cols-5 gap-4"
-                    >
-                      <div>
+                    <div key={it.id} className="grid grid-cols-12 gap-4">
+                      <div className="col-span-12 md:col-span-3">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Category
                         </label>
@@ -269,7 +268,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         </select>
                       </div>
 
-                      <div>
+                      <div className="col-span-12 md:col-span-3">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Product
                         </label>
@@ -278,7 +277,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         </div>
                       </div>
 
-                      <div>
+                      <div className="col-span-12 md:col-span-3">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Godown
                         </label>
@@ -300,7 +299,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         </select>
                       </div>
 
-                      <div>
+                      <div className="col-span-6 md:col-span-1.5">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Quantity
                         </label>
@@ -321,7 +320,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         />
                       </div>
 
-                      <div>
+                      <div className="col-span-6 md:col-span-1.5">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Weight (kg)
                         </label>

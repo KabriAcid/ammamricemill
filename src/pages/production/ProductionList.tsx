@@ -15,9 +15,11 @@ import { Table } from "../../components/ui/Table";
 import { FilterBar } from "../../components/ui/FilterBar";
 import { format } from "date-fns";
 import { formatCurrency } from "../../utils/formatters";
-import ProductionFormModal  from "./ProductionStockForm";
+import ProductionFormModal from "./ProductionFormModal";
 import { api } from "../../utils/fetcher";
-import type { Production, ProductionItem } from "../../types/production";
+import { useToast } from "../../components/ui/Toast";
+import type { Production } from "../../types/production";
+import { ApiResponse } from "../../types";
 
 const ProductionList: React.FC = () => {
   // State management
@@ -31,6 +33,7 @@ const ProductionList: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
   const [editItem, setEditItem] = useState<Production | null>(null);
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   // Fetch productions function
   const fetchProductions = useCallback(async () => {
@@ -41,7 +44,7 @@ const ProductionList: React.FC = () => {
         data: Production[];
         message: string;
       }>(
-        `/api/production/production-order?page=${currentPage}&pageSize=${pageSize}` +
+        `/production/production-order?page=${currentPage}&pageSize=${pageSize}` +
           `${searchQuery ? `&search=${searchQuery}` : ""}` +
           `${dateRange.from ? `&fromDate=${dateRange.from}` : ""}` +
           `${dateRange.to ? `&toDate=${dateRange.to}` : ""}`
@@ -132,7 +135,25 @@ const ProductionList: React.FC = () => {
   };
 
   const handleView = (production: Production) => {
-    navigate(`/production/production-order/${production.id}`);
+    (async () => {
+      try {
+        const resp = await api.get<ApiResponse<Production>>(
+          `/production/production-order/${production.id}`
+        );
+        if (resp.success && resp.data) {
+          navigate(`/production/production-order/${production.id}`, {
+            state: { item: resp.data },
+          });
+        } else {
+          showToast(resp.message || "Failed to load production", "error");
+          navigate(`/production/production-order/${production.id}`);
+        }
+      } catch (err) {
+        console.error("Error fetching production:", err);
+        showToast("Failed to load production", "error");
+        navigate(`/production/production-order/${production.id}`);
+      }
+    })();
   };
 
   // Calculate summary statistics
@@ -258,20 +279,20 @@ const ProductionList: React.FC = () => {
           setLoading(true);
           try {
             if (editItem) {
-              // TODO: API call to update production
               await api.put(
-                `/api/production/production-order/${editItem.id}`,
+                `/production/production-order/${editItem.id}`,
                 data
               );
             } else {
-              // TODO: API call to create production
-              await api.post("/api/production/production-order", data);
+              await api.post("/production/production-order", data);
             }
             await fetchProductions();
-            setModalOpen(false);
             setEditItem(null);
-          } catch (error) {
+            return true;
+          } catch (error: any) {
             console.error("Error saving production:", error);
+            showToast(error?.message || "Failed to save production", "error");
+            return false;
           } finally {
             setLoading(false);
           }

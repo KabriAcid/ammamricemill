@@ -57,7 +57,7 @@ import ProductionList from "./pages/production/ProductionList";
 import ProductionDetails from "./pages/production/ProductionDetails";
 import ProductionStockList from "./pages/stocks/ProductionStockList";
 import ProductionStockDetails from "./pages/production/ProductionStockDetails";
-import ProductionStockForm from "./pages/production/ProductionStockForm";
+import ProductionStockForm from "./pages/production/ProductionFormModal";
 import MainStock from "./pages/stocks/MainStock";
 import GodownStocks from "./pages/stocks/GodownStocks";
 import StockRegisterPage from "./pages/stocks/StockRegisterPage";

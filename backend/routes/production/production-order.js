@@ -30,7 +30,7 @@ router.get("/", authenticateToken, async (req, res) => {
         p.status,
         p.created_at as createdAt,
         p.updated_at as updatedAt
-      FROM production_orders p
+  FROM productions p
       WHERE 1=1
     `;
 
@@ -48,7 +48,7 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 
     // Add pagination
-    query += ` ORDER BY p.date DESC, p.invoice_no DESC LIMIT ? OFFSET ?`;
+  query += ` ORDER BY p.date DESC, p.invoice_no DESC LIMIT ? OFFSET ?`;
 
     // Prepare query parameters
     const queryParams = [];
@@ -85,8 +85,8 @@ router.get("/", authenticateToken, async (req, res) => {
     }
 
     // Get total count for pagination
-    const [countResult] = await db.query(
-      `SELECT COUNT(*) as total FROM production_orders WHERE 1=1` +
+    const [countResult] = await pool.query(
+      `SELECT COUNT(*) as total FROM productions WHERE 1=1` +
         (search ? ` AND (invoice_no LIKE ? OR description LIKE ?)` : "") +
         (fromDate ? ` AND date >= ?` : "") +
         (toDate ? ` AND date <= ?` : ""),
@@ -115,7 +115,7 @@ router.get("/", authenticateToken, async (req, res) => {
 // POST /api/production/production-order
 // Create a new production order
 router.post("/", authenticateToken, async (req, res) => {
-  const connection = await db.getConnection();
+  const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
@@ -139,7 +139,7 @@ router.post("/", authenticateToken, async (req, res) => {
 
     // Insert production order
     const [result] = await connection.query(
-      `INSERT INTO production_orders 
+      `INSERT INTO productions 
         (invoice_no, date, description, silo_info, total_quantity, total_weight, status)
       VALUES (?, ?, ?, ?, ?, ?, 'active')`,
       [invoiceNo, date, description, siloInfo, totalQuantity, totalWeight]
@@ -170,17 +170,17 @@ router.post("/", authenticateToken, async (req, res) => {
     res.status(201).json({
       success: true,
       data: { id: productionId },
-      message: "Production order created successfully",
+      message: "Production created successfully",
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) await connection.rollback();
     console.error("Error creating production order:", error);
     res.status(500).json({
       success: false,
       error: error.message,
     });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 });
 
@@ -191,7 +191,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
     const { id } = req.params;
 
     // Get production order
-    const [productions] = await db.query(
+    const [productions] = await pool.query(
       `SELECT 
         p.id,
         p.invoice_no as invoiceNo,
@@ -203,7 +203,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
         p.status,
         p.created_at as createdAt,
         p.updated_at as updatedAt
-      FROM production_orders p
+      FROM productions p
       WHERE p.id = ?`,
       [id]
     );
@@ -218,7 +218,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
     const production = productions[0];
 
     // Get production items
-    const [items] = await db.query(
+    const [items] = await pool.query(
       `SELECT 
         pi.id,
         pi.category_id as categoryId,
@@ -237,7 +237,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
     res.json({
       success: true,
       data: production,
-      message: "Production order retrieved successfully",
+      message: "Production retrieved successfully",
     });
   } catch (error) {
     console.error("Error retrieving production order:", error);
@@ -251,7 +251,7 @@ router.get("/:id", authenticateToken, async (req, res) => {
 // DELETE /api/production/production-order
 // Delete multiple production orders
 router.delete("/", authenticateToken, async (req, res) => {
-  const connection = await db.getConnection();
+  const connection = await pool.getConnection();
   try {
     await connection.beginTransaction();
 
@@ -271,7 +271,7 @@ router.delete("/", authenticateToken, async (req, res) => {
 
     // Delete production orders
     const [result] = await connection.query(
-      "DELETE FROM production_orders WHERE id IN (?)",
+      "DELETE FROM productions WHERE id IN (?)",
       [ids]
     );
 
@@ -283,14 +283,14 @@ router.delete("/", authenticateToken, async (req, res) => {
       message: `${result.affectedRows} production order(s) deleted successfully`,
     });
   } catch (error) {
-    await connection.rollback();
+    if (connection) await connection.rollback();
     console.error("Error deleting production orders:", error);
     res.status(500).json({
       success: false,
       error: error.message,
     });
   } finally {
-    connection.release();
+    if (connection) connection.release();
   }
 });
 
