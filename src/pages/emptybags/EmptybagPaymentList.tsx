@@ -105,23 +105,16 @@ const EmptybagPaymentList = () => {
 
   const fetchParties = async () => {
     try {
-      const url = "http://localhost:5000/api/party/parties";
-      console.debug("Fetching parties from", url);
-      const response = await api.get<ApiResponse<Party[]>>(url);
+      const response = await api.get<ApiResponse<Party[]>>("/party/parties");
       if (response.success && response.data) {
         setParties(
           response.data.map((p) => ({ id: String(p.id), name: p.name }))
         );
       }
-    } catch (error) {
-      try {
-        // attempt to surface raw response if available
-        // @ts-ignore
-        const raw = error?.response || error?.message || String(error);
-        console.error("Error fetching parties:", raw, error);
-      } catch (e) {
-        console.error("Error fetching parties:", error);
-      }
+    } catch (error: any) {
+      // Log the error and show a toast so the user sees the failure
+      console.error("Error fetching parties:", error?.message ?? error);
+      showToast("Failed to load parties", "error");
     }
   };
 
