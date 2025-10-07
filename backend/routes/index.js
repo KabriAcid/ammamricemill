@@ -35,6 +35,7 @@ import emptybagPaymentRoutes from "./emptybags/payment.js";
 
 // Sales Routes
 import salesListRoutes from "./sales/sales-list.js";
+import salesLedgerRoutes from "./sales/sales-ledger.js";
 
 // Purchase Routes
 import paddyPurchaseRoutes from "./purchase/paddy-purchase.js";
@@ -91,6 +92,7 @@ router.use("/emptybag-receive", emptybagReceiveRoutes);
 router.use("/emptybags/payments", emptybagPaymentRoutes);
 
 // Sales routes
+router.use("/sales/ledger", salesLedgerRoutes);
 router.use("/sales", salesListRoutes);
 
 // Purchase routes

@@ -7,6 +7,7 @@ import {
   RefreshCcw,
   Printer,
   Download,
+  Plus,
   TrendingUp,
   ArrowUpCircle,
   ArrowDownCircle,
@@ -16,6 +17,9 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
+import { SaleFormModal } from "../sales/SaleFormModal";
+import type { Sale } from "./SalesList";
 
 // TypeScript Interfaces
 interface Party {
@@ -52,6 +56,8 @@ const SalesLedger = () => {
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editingSale, setEditingSale] = useState<Sale | null>(null);
   const [search, setSearch] = useState("");
   const [partyFilter, setPartyFilter] = useState("");
   const [dateRange, setDateRange] = useState({ from: "", to: "" });
@@ -176,21 +182,26 @@ const SalesLedger = () => {
     window.print();
   };
 
-  const handleExport = async (format: "excel" | "pdf") => {
+  // Open New Sale modal
+  const handleNew = () => {
+    setEditingSale(null);
+    setModalOpen(true);
+  };
+
+  const handleSaveSale = async (data: Partial<Sale>) => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (partyFilter) params.append("partyId", partyFilter);
-      if (dateRange.from) params.append("from", dateRange.from);
-      if (dateRange.to) params.append("to", dateRange.to);
-      params.append("format", format);
-
-      const response = await api.download(`/sales/ledger/export?${params}`);
-
-      showToast(`Ledger exported as ${format.toUpperCase()}`, "success");
-    } catch (error) {
-      console.error("Error exporting ledger:", error);
-      showToast("Failed to export ledger", "error");
+      const response = await api.post<ApiResponse<Sale>>("/sales", data);
+      if (response.success) {
+        showToast("Sale saved successfully", "success");
+        await fetchLedger();
+        setModalOpen(false);
+      } else {
+        showToast(response.message || "Failed to save sale", "error");
+      }
+    } catch (err) {
+      console.error("Error saving sale:", err);
+      showToast("Failed to save sale", "error");
     } finally {
       setLoading(false);
     }
@@ -232,7 +243,7 @@ const SalesLedger = () => {
             <Card icon={<TrendingUp className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{openingBalance.toLocaleString()}
+                  ₦{formatCurrency(openingBalance)}
                 </p>
                 <p className="text-sm text-gray-500">Opening Balance</p>
               </div>
@@ -243,7 +254,7 @@ const SalesLedger = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalDebit.toLocaleString()}
+                  ₦{formatCurrency(totalDebit)}
                 </p>
                 <p className="text-sm text-gray-500">Total Debit</p>
               </div>
@@ -254,7 +265,7 @@ const SalesLedger = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalCredit.toLocaleString()}
+                  ₦{formatCurrency(totalCredit)}
                 </p>
                 <p className="text-sm text-gray-500">Total Credit</p>
               </div>
@@ -270,7 +281,7 @@ const SalesLedger = () => {
                       : "text-gray-700"
                   }`}
                 >
-                  ₦{closingBalance.toLocaleString()}
+                  ₦{formatCurrency(closingBalance)}
                 </p>
                 <p className="text-sm text-gray-500">Closing Balance</p>
               </div>
@@ -324,13 +335,8 @@ const SalesLedger = () => {
           >
             Print
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            icon={Download}
-            onClick={() => handleExport("excel")}
-          >
-            Export
+          <Button onClick={handleNew} icon={Plus} size="sm">
+            New Sale
           </Button>
         </div>
       </FilterBar>
@@ -449,32 +455,32 @@ const SalesLedger = () => {
                         {entry.size || "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                        {entry.weight ? entry.weight.toLocaleString() : "-"}
+                        {entry.weight ? formatNumber(entry.weight, 2) : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                        {entry.quantity ? entry.quantity.toLocaleString() : "-"}
+                        {entry.quantity ? formatNumber(entry.quantity, 0) : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                         {entry.netWeight
-                          ? entry.netWeight.toLocaleString()
+                          ? formatNumber(entry.netWeight, 2)
                           : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                        {entry.rate ? `₦${entry.rate.toLocaleString()}` : "-"}
+                        {entry.rate ? `₦${formatCurrency(entry.rate)}` : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                         {entry.totalPrice
-                          ? `₦${entry.totalPrice.toLocaleString()}`
+                          ? `₦${formatCurrency(entry.totalPrice)}`
                           : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium">
                         {entry.debit > 0
-                          ? `₦${entry.debit.toLocaleString()}`
+                          ? `₦${formatCurrency(entry.debit)}`
                           : "-"}
                       </td>
                       <td className="px-3 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium">
                         {entry.credit > 0
-                          ? `₦${entry.credit.toLocaleString()}`
+                          ? `₦${formatCurrency(entry.credit)}`
                           : "-"}
                       </td>
                       <td
@@ -486,7 +492,7 @@ const SalesLedger = () => {
                             : "text-gray-900"
                         }`}
                       >
-                        ₦{entry.balance.toLocaleString()}
+                        ₦{formatCurrency(entry.balance)}
                       </td>
                     </tr>
                   ))}
@@ -558,6 +564,16 @@ const SalesLedger = () => {
           </div>
         )}
       </div>
+      {/* Sale Form Modal */}
+      <SaleFormModal
+        isOpen={modalOpen}
+        onClose={() => {
+          setModalOpen(false);
+          setEditingSale(null);
+        }}
+        onSave={handleSaveSale}
+        item={editingSale}
+      />
     </div>
   );
 };
