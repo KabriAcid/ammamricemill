@@ -18,6 +18,7 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 import PaddyPurchaseForm from "./PaddyPurchaseForm";
 
 // TypeScript Interfaces
@@ -369,7 +370,7 @@ const RicePurchase = () => {
             <Card icon={<Package className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  {stats.totalQuantity.toLocaleString()}
+                  {formatNumber(stats.totalQuantity, 0)}
                 </p>
                 <p className="text-sm text-gray-500">Total Quantity (Bags)</p>
               </div>
@@ -380,7 +381,7 @@ const RicePurchase = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{stats.totalAmount.toLocaleString()}
+                  ₦{formatCurrency(stats.totalAmount)}
                 </p>
                 <p className="text-sm text-gray-500">Total Amount</p>
               </div>
@@ -391,7 +392,7 @@ const RicePurchase = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{stats.totalBalance.toLocaleString()}
+                  ₦{formatCurrency(stats.totalBalance)}
                 </p>
                 <p className="text-sm text-gray-500">Total Balance</p>
               </div>

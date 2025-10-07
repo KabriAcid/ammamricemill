@@ -38,6 +38,8 @@ import salesListRoutes from "./sales/sales-list.js";
 
 // Purchase Routes
 import paddyPurchaseRoutes from "./purchase/paddy-purchase.js";
+import ricePurchaseRoutes from "./purchase/rice-purchase.js";
+import riceLedgerRoutes from "./purchase/rice-ledger.js";
 
 // stocks
 // Stocks
@@ -93,6 +95,13 @@ router.use("/sales", salesListRoutes);
 
 // Purchase routes
 router.use("/purchase/paddy", paddyPurchaseRoutes);
+// Rice purchase & ledger (mount ledger first so its path isn't swallowed by the broader /purchase/rice router)
+router.use("/purchase/rice/ledger", riceLedgerRoutes);
+router.use("/purchase/rice", ricePurchaseRoutes);
+
+// Expose parties and godowns at top-level plural routes for frontend compatibility
+router.use("/parties", partiesRoutes);
+router.use("/godowns", godownSettingsRoutes);
 
 // stocks
 router.use("/stocks/main-stocks", mainStocksRoutes);

@@ -469,17 +469,19 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, notes: e.target.value }))
               }
-              rows={3}
-              className="input-base"
+              rows={5}
+              className="input-base w-full h-32"
             />
           </div>
+
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-sm text-gray-500">Invoice Amount:</div>
-              <div className="text-sm font-medium">
+            <div className="grid grid-cols-2 gap-2 items-center">
+              <div className="text-sm text-gray-500">Invoice Amount</div>
+              <div className="text-sm font-medium text-right">
                 ₦{formData.invoiceAmount?.toLocaleString()}
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Discount
@@ -488,7 +490,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                 type="number"
                 value={formData.discount}
                 onChange={(e) => {
-                  const discount = Number(e.target.value);
+                  const discount = Number(e.target.value || 0);
                   setFormData((prev) => {
                     const invoiceAmount = prev.invoiceAmount || 0;
                     const previousBalance = prev.previousBalance || 0;
@@ -507,16 +509,18 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                     };
                   });
                 }}
-                className="input-base"
+                className="input-base w-full"
                 min="0"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-sm text-gray-500">Total Amount:</div>
-              <div className="text-sm font-medium">
+
+            <div className="grid grid-cols-2 gap-2 items-center">
+              <div className="text-sm text-gray-500">Total Amount</div>
+              <div className="text-sm font-medium text-right">
                 ₦{formData.totalAmount?.toLocaleString()}
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Previous Balance
@@ -525,7 +529,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                 type="number"
                 value={formData.previousBalance}
                 onChange={(e) => {
-                  const previousBalance = Number(e.target.value);
+                  const previousBalance = Number(e.target.value || 0);
                   setFormData((prev) => {
                     const totalAmount = prev.totalAmount || 0;
                     const paidAmount = prev.paidAmount || 0;
@@ -541,15 +545,17 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                     };
                   });
                 }}
-                className="input-base"
+                className="input-base w-full"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-sm text-gray-500">Net Payable:</div>
-              <div className="text-sm font-medium">
+
+            <div className="grid grid-cols-2 gap-2 items-center">
+              <div className="text-sm text-gray-500">Net Payable</div>
+              <div className="text-sm font-medium text-right">
                 ₦{formData.netPayable?.toLocaleString()}
               </div>
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Paid Amount
@@ -558,7 +564,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                 type="number"
                 value={formData.paidAmount}
                 onChange={(e) => {
-                  const paidAmount = Number(e.target.value);
+                  const paidAmount = Number(e.target.value || 0);
                   setFormData((prev) => {
                     const netPayable = prev.netPayable || 0;
                     const currentBalance = netPayable - paidAmount;
@@ -570,13 +576,14 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                     };
                   });
                 }}
-                className="input-base"
+                className="input-base w-full"
                 min="0"
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="text-sm text-gray-500">Current Balance:</div>
-              <div className="text-sm font-medium">
+
+            <div className="grid grid-cols-2 gap-2 items-center">
+              <div className="text-sm text-gray-500">Current Balance</div>
+              <div className="text-sm font-medium text-right">
                 ₦{formData.currentBalance?.toLocaleString()}
               </div>
             </div>
