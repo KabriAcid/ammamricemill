@@ -19,6 +19,7 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 
 // TypeScript Interfaces
 interface Party {
@@ -397,7 +398,7 @@ const RicePaddyPurchaseLedger = () => {
             <Card icon={<TrendingUp className="w-8 h-8 text-blue-600" />} hover>
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{openingBalance.toLocaleString()}
+                  ₦{formatCurrency(openingBalance || 0)}
                 </p>
                 <p className="text-sm text-gray-500">Opening Balance</p>
               </div>
@@ -408,7 +409,7 @@ const RicePaddyPurchaseLedger = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalDebit.toLocaleString()}
+                  ₦{formatCurrency(totalDebit || 0)}
                 </p>
                 <p className="text-sm text-gray-500">Total Debit</p>
               </div>
@@ -419,7 +420,7 @@ const RicePaddyPurchaseLedger = () => {
             >
               <div>
                 <p className="text-3xl font-bold text-gray-700">
-                  ₦{totalCredit.toLocaleString()}
+                  ₦{formatCurrency(totalCredit || 0)}
                 </p>
                 <p className="text-sm text-gray-500">Total Credit</p>
               </div>
@@ -435,7 +436,7 @@ const RicePaddyPurchaseLedger = () => {
                       : "text-gray-700"
                   }`}
                 >
-                  ₦{closingBalance.toLocaleString()}
+                  ₦{formatCurrency(closingBalance || 0)}
                 </p>
                 <p className="text-sm text-gray-500">Closing Balance</p>
               </div>
@@ -635,24 +636,24 @@ const RicePaddyPurchaseLedger = () => {
                             {item.size || "-"}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {item.weight ? item.weight.toLocaleString() : "-"}
+                            {item.weight ? formatNumber(item.weight, 2) : "-"}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                             {item.quantity
-                              ? item.quantity.toLocaleString()
+                              ? formatNumber(item.quantity, 0)
                               : "-"}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                             {item.netWeight
-                              ? item.netWeight.toLocaleString()
+                              ? formatNumber(item.netWeight, 2)
                               : "-"}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
-                            {item.rate ? `₦${item.rate.toLocaleString()}` : "-"}
+                            {item.rate ? `₦${formatCurrency(item.rate)}` : "-"}
                           </td>
                           <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900 text-right">
                             {item.totalPrice
-                              ? `₦${item.totalPrice.toLocaleString()}`
+                              ? `₦${formatCurrency(item.totalPrice)}`
                               : "-"}
                           </td>
                           {itemIndex === 0 ? (
@@ -662,7 +663,7 @@ const RicePaddyPurchaseLedger = () => {
                                 className="px-3 py-4 whitespace-nowrap text-sm text-red-600 text-right font-medium border-l border-gray-200"
                               >
                                 {entry.debit > 0
-                                  ? `₦${entry.debit.toLocaleString()}`
+                                  ? `₦${formatCurrency(entry.debit)}`
                                   : "-"}
                               </td>
                               <td
@@ -670,7 +671,7 @@ const RicePaddyPurchaseLedger = () => {
                                 className="px-3 py-4 whitespace-nowrap text-sm text-green-600 text-right font-medium"
                               >
                                 {entry.credit > 0
-                                  ? `₦${entry.credit.toLocaleString()}`
+                                  ? `₦${formatCurrency(entry.credit)}`
                                   : "-"}
                               </td>
                               <td
@@ -683,7 +684,7 @@ const RicePaddyPurchaseLedger = () => {
                                     : "text-gray-900"
                                 }`}
                               >
-                                ₦{entry.balance.toLocaleString()}
+                                ₦{formatCurrency(entry.balance)}
                               </td>
                               <td
                                 rowSpan={entry.items.length}
@@ -714,10 +715,10 @@ const RicePaddyPurchaseLedger = () => {
                       </span>
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-red-600 text-right font-bold">
-                      ₦{totalDebit.toLocaleString()}
+                      ₦{formatCurrency(totalDebit || 0)}
                     </td>
                     <td className="px-3 py-4 whitespace-nowrap text-sm text-green-600 text-right font-bold">
-                      ₦{totalCredit.toLocaleString()}
+                      ₦{formatCurrency(totalCredit || 0)}
                     </td>
                     <td
                       className={`px-3 py-4 whitespace-nowrap text-sm text-right font-bold ${
@@ -728,7 +729,7 @@ const RicePaddyPurchaseLedger = () => {
                           : "text-gray-900"
                       }`}
                     >
-                      ₦{closingBalance.toLocaleString()}
+                      ₦{formatCurrency(closingBalance || 0)}
                     </td>
                     <td></td>
                   </tr>
