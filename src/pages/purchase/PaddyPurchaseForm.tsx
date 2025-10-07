@@ -18,6 +18,9 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
   item,
 }) => {
   const [loading, setLoading] = useState(false);
+  const [modalSize, setModalSize] = useState<
+    "sm" | "md" | "lg" | "xl" | "full"
+  >(typeof window !== "undefined" && window.innerWidth < 768 ? "full" : "xl");
   const [formData, setFormData] = useState<Partial<Purchase>>({
     invoiceNo: "",
     date: new Date().toISOString().split("T")[0],
@@ -64,6 +67,15 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setModalSize(window.innerWidth < 768 ? "full" : "xl");
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   useEffect(() => {
@@ -189,10 +201,10 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
       isOpen={isOpen}
       onClose={onClose}
       title={item ? "Edit Purchase" : "New Purchase"}
-      size="xl"
+      size={modalSize}
     >
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Invoice No *
@@ -203,7 +215,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, invoiceNo: e.target.value }))
               }
-              className="input-base"
+              className="input-base w-full"
               required
             />
           </div>
@@ -217,7 +229,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, date: e.target.value }))
               }
-              className="input-base"
+              className="input-base w-full"
               required
             />
           </div>
@@ -231,12 +243,12 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, challanNo: e.target.value }))
               }
-              className="input-base"
+              className="input-base w-full"
             />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Party *
@@ -246,7 +258,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
               onChange={(e) =>
                 setFormData((prev) => ({ ...prev, partyId: e.target.value }))
               }
-              className="input-base"
+              className="input-base w-full"
               required
             >
               <option value="">Select Party</option>
@@ -270,7 +282,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                   transportInfo: e.target.value,
                 }))
               }
-              className="input-base"
+              className="input-base w-full"
             />
           </div>
         </div>
@@ -289,8 +301,8 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
             </Button>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
+          <div className="overflow-x-auto -mx-4 px-4 sm:-mx-0 sm:px-0">
+            <table className="min-w-full divide-y divide-gray-200 table-auto">
               <thead>
                 <tr>
                   <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -326,7 +338,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                         onChange={(e) =>
                           handleItemChange(index, "categoryId", e.target.value)
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         required
                       >
                         <option value="">Select Category</option>
@@ -343,7 +355,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                         onChange={(e) =>
                           handleItemChange(index, "productId", e.target.value)
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         required
                       >
                         <option value="">Select Product</option>
@@ -360,7 +372,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                         onChange={(e) =>
                           handleItemChange(index, "godownId", e.target.value)
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         required
                       >
                         <option value="">Select Godown</option>
@@ -382,7 +394,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                             Number(e.target.value)
                           )
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         min="0"
                         required
                       />
@@ -398,7 +410,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                             Number(e.target.value)
                           )
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         min="0"
                         required
                       />
@@ -414,7 +426,7 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                             Number(e.target.value)
                           )
                         }
-                        className="input-base text-sm py-1"
+                        className="input-base text-sm py-1 w-full"
                         min="0"
                         required
                       />
@@ -435,8 +447,9 @@ const PaddyPurchaseForm: React.FC<PaddyPurchaseFormProps> = ({
                         size="sm"
                         loading={false}
                         variant="danger"
+                        aria-label="Remove item"
                       >
-                        ""
+                        <></>
                       </Button>
                     </td>
                   </tr>
