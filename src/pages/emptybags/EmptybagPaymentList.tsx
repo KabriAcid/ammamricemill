@@ -85,9 +85,10 @@ const EmptybagPaymentList = () => {
       if (dateRange.from) params.append("from_date", dateRange.from);
       if (dateRange.to) params.append("to_date", dateRange.to);
 
-      const response = await api.get<ApiResponse<EmptybagPayment[]>>(
-        `/emptybags/payments?${params.toString()}`
-      );
+      const query = params.toString();
+      const endpoint = `/emptybags/payments${query ? `?${query}` : ""}`;
+
+      const response = await api.get<ApiResponse<EmptybagPayment[]>>(endpoint);
 
       if (response.success && response.data) {
         setData(
