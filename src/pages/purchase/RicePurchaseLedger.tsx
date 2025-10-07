@@ -314,7 +314,16 @@ const RicePaddyPurchaseLedger = () => {
     setLoading(true);
     try {
       const payload = {
-        items: ledgerItems,
+        items: ledgerItems.map((it) => ({
+          productId: it.product || null,
+          godownId: it.godown || null,
+          size: it.size,
+          weight: it.weight,
+          quantity: it.quantity,
+          netWeight: it.netWeight,
+          rate: it.rate,
+          totalPrice: it.totalPrice,
+        })),
       };
 
       const response = editingEntry
