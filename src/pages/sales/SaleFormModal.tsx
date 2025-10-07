@@ -8,7 +8,7 @@ import { formatCurrency } from "../../utils/formatters";
 interface SaleFormModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (data: Partial<Sale>) => Promise<void>;
+  onSave: (data: Partial<Sale>) => Promise<boolean>;
   item: Sale | null;
 }
 
@@ -187,8 +187,10 @@ const SaleFormModal: React.FC<SaleFormModalProps> = ({
         }
       }
 
-      await onSave(formData);
-      onClose();
+      const success = await onSave(formData);
+      if (success) {
+        onClose();
+      }
     } catch (error) {
       console.error("Error saving sale:", error);
     } finally {

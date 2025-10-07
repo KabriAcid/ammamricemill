@@ -219,12 +219,20 @@ const SalesList = () => {
         showToast("Sale saved successfully", "success");
         await fetchSales();
         setModalOpen(false);
+        return true;
       } else {
         showToast(response.message || "Failed to save sale", "error");
+        return false;
       }
     } catch (err) {
       console.error("Error saving sale:", err);
-      showToast("Failed to save sale", "error");
+      if (err && typeof err === "object" && "message" in err) {
+        // @ts-ignore
+        showToast(err.message, "error");
+      } else {
+        showToast("Failed to save sale", "error");
+      }
+      return false;
     } finally {
       setLoading(false);
     }
