@@ -39,7 +39,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
     for (let i = 0; i < purchases.length; i++) {
       const p = purchases[i];
       const [items] = await pool.query(
-        `SELECT pi.id, pi.quantity, pi.net_weight as netWeight, pi.rate, pi.total_price as totalPrice,
+        `SELECT pi.id, pi.product_id as productId, pi.godown_id as godownId, pi.quantity, pi.net_weight as netWeight, pi.rate, pi.total_price as totalPrice,
                 pr.name as product, g.name as godown
          FROM purchase_items pi
          LEFT JOIN products pr ON pi.product_id = pr.id
@@ -64,7 +64,9 @@ router.get("/", authenticateToken, async (req, res, next) => {
         items: items.map((it) => ({
           id: it.id,
           godown: it.godown,
+          godownId: it.godownId,
           product: it.product,
+          productId: it.productId,
           size: "",
           weight: it.netWeight,
           quantity: it.quantity,
@@ -127,9 +129,11 @@ router.post("/", authenticateToken, async (req, res, next) => {
     for (const it of items) {
       await connection.query(
         `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price)
-         VALUES (?, NULL, NULL, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           purchaseId,
+          it.productId || null,
+          it.godownId || null,
           it.quantity || 0,
           it.netWeight || 0,
           it.rate || 0,
@@ -182,9 +186,11 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
     for (const it of items || []) {
       await connection.query(
         `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price)
-         VALUES (?, NULL, NULL, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [
           id,
+          it.productId || null,
+          it.godownId || null,
           it.quantity || 0,
           it.netWeight || 0,
           it.rate || 0,

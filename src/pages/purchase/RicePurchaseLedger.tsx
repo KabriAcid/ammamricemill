@@ -247,8 +247,8 @@ const RicePaddyPurchaseLedger = () => {
     setEditingEntry(entry);
     setLedgerItems(
       entry.items.map((item) => ({
-        godown: item.godown,
-        product: item.product,
+        godown: (item as any).godownId || item.godown,
+        product: (item as any).productId || item.product,
         size: item.size,
         weight: item.weight,
         quantity: item.quantity,
@@ -835,7 +835,7 @@ const RicePaddyPurchaseLedger = () => {
                         >
                           <option value="">Select Godown</option>
                           {godowns.map((godown) => (
-                            <option key={godown.id} value={godown.name}>
+                            <option key={godown.id} value={godown.id}>
                               {godown.name}
                             </option>
                           ))}
@@ -852,7 +852,7 @@ const RicePaddyPurchaseLedger = () => {
                         >
                           <option value="">Select Product</option>
                           {products.map((product) => (
-                            <option key={product.id} value={product.name}>
+                            <option key={product.id} value={product.id}>
                               {product.name}
                             </option>
                           ))}
