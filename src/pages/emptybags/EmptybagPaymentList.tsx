@@ -105,14 +105,23 @@ const EmptybagPaymentList = () => {
 
   const fetchParties = async () => {
     try {
-      const response = await api.get<ApiResponse<Party[]>>("/party/parties");
+      const url = "http://localhost:5000/api/party/parties";
+      console.debug("Fetching parties from", url);
+      const response = await api.get<ApiResponse<Party[]>>(url);
       if (response.success && response.data) {
         setParties(
           response.data.map((p) => ({ id: String(p.id), name: p.name }))
         );
       }
     } catch (error) {
-      console.error("Error fetching parties:", error);
+      try {
+        // attempt to surface raw response if available
+        // @ts-ignore
+        const raw = error?.response || error?.message || String(error);
+        console.error("Error fetching parties:", raw, error);
+      } catch (e) {
+        console.error("Error fetching parties:", error);
+      }
     }
   };
 
