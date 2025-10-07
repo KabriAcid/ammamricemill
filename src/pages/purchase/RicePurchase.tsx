@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 import { Button } from "../../components/ui/Button";
@@ -18,6 +18,7 @@ import { SkeletonCard } from "../../components/ui/Skeleton";
 import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
+import PaddyPurchaseForm from "./PaddyPurchaseForm";
 
 // TypeScript Interfaces
 interface PurchaseItem {
@@ -54,8 +55,18 @@ export interface Purchase {
   updatedAt: string;
 }
 
+type Column = {
+  key: keyof Purchase | string;
+  label: string;
+  width?: string;
+  sortable?: boolean;
+  render?: (value: any, row?: Purchase) => ReactNode;
+};
+
 const RicePurchase = () => {
   // State Management
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<Purchase | null>(null);
   const [data, setData] = useState<Purchase[]>([]);
   const [loading, setLoading] = useState(false);
   const [initialLoading, setInitialLoading] = useState(true);
@@ -179,10 +190,9 @@ const RicePurchase = () => {
 
     setLoading(true);
     try {
-      const response = await api.delete<ApiResponse<void>>(
-        "/purchase/rice",
-        { ids }
-      );
+      const response = await api.delete<ApiResponse<void>>("/purchase/rice", {
+        ids,
+      });
 
       if (response.success) {
         showToast(
@@ -202,15 +212,61 @@ const RicePurchase = () => {
 
   // Handlers
   const handleNew = () => {
-    navigate("/purchase/rice-purchase/new");
+    setEditingPurchase(null);
+    setIsFormOpen(true);
   };
 
   const handleEdit = (row: Purchase) => {
-    navigate(`/purchase/rice-purchase/edit/${row.id}`);
+    setEditingPurchase(row);
+    setIsFormOpen(true);
   };
 
   const handleView = (row: Purchase) => {
     navigate(`/purchase/rice-purchase/${row.id}`);
+  };
+
+  const handleCloseForm = () => {
+    setIsFormOpen(false);
+    setEditingPurchase(null);
+  };
+
+  const handleSavePurchase = async (payload: Partial<Purchase>) => {
+    try {
+      if (editingPurchase) {
+        const response = await api.put<ApiResponse<Purchase>>(
+          `/purchase/rice/${editingPurchase.id}`,
+          payload
+        );
+        if (response.success) {
+          showToast(
+            response.message || "Purchase updated successfully",
+            "success"
+          );
+          await fetchPurchases();
+          handleCloseForm();
+        } else {
+          throw new Error(response.error || "Failed to update purchase");
+        }
+      } else {
+        const response = await api.post<ApiResponse<Purchase>>(
+          `/purchase/rice`,
+          payload
+        );
+        if (response.success) {
+          showToast(
+            response.message || "Purchase created successfully",
+            "success"
+          );
+          await fetchPurchases();
+          handleCloseForm();
+        } else {
+          throw new Error(response.error || "Failed to create purchase");
+        }
+      }
+    } catch (err) {
+      console.error("Error saving purchase:", err);
+      showToast("Failed to save purchase", "error");
+    }
   };
 
   const handlePrint = () => {
@@ -218,7 +274,7 @@ const RicePurchase = () => {
   };
 
   // Table columns
-  const columns = [
+  const columns: Column[] = [
     { key: "id", label: "#", width: "60px" },
     {
       key: "date",
@@ -395,6 +451,13 @@ const RicePurchase = () => {
       </FilterBar>
 
       {/* Table */}
+      <PaddyPurchaseForm
+        isOpen={isFormOpen}
+        onClose={handleCloseForm}
+        onSave={handleSavePurchase}
+        item={editingPurchase}
+      />
+
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -434,7 +497,10 @@ const RicePurchase = () => {
             <tbody className="bg-white divide-y divide-gray-200">
               {initialLoading || loading ? (
                 <tr>
-                  <td colSpan={columns.length + 2} className="px-3 py-8 text-center">
+                  <td
+                    colSpan={columns.length + 2}
+                    className="px-3 py-8 text-center"
+                  >
                     <div className="flex items-center justify-center">
                       <RefreshCcw className="w-6 h-6 animate-spin text-gray-400" />
                       <span className="ml-2 text-sm text-gray-500">
@@ -445,10 +511,11 @@ const RicePurchase = () => {
                 </tr>
               ) : paginatedData.length === 0 ? (
                 <tr>
-                  <td colSpan={columns.length + 2} className="px-3 py-8 text-center">
-                    <p className="text-sm text-gray-500">
-                      No purchases found
-                    </p>
+                  <td
+                    colSpan={columns.length + 2}
+                    className="px-3 py-8 text-center"
+                  >
+                    <p className="text-sm text-gray-500">No purchases found</p>
                   </td>
                 </tr>
               ) : (
@@ -476,7 +543,7 @@ const RicePurchase = () => {
                         className="px-3 py-4 whitespace-nowrap text-sm text-gray-900"
                       >
                         {col.render
-                          ? col.render((row as any)[col.key])
+                          ? col.render((row as any)[col.key], row)
                           : (row as any)[col.key] || "-"}
                       </td>
                     ))}
