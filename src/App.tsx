@@ -170,6 +170,10 @@ function App() {
                 <Route path="/sales/ledger" element={<SalesLedger />} />
                 <Route path="/productions" element={<ProductionList />} />
                 <Route
+                  path="/production/production-order/:id"
+                  element={<ProductionDetails />}
+                />
+                <Route
                   path="/production/details"
                   element={<ProductionDetails />}
                 />
@@ -184,10 +188,6 @@ function App() {
                 <Route
                   path="/stocks/production-stock/details"
                   element={<ProductionStockDetails />}
-                />
-                <Route
-                  path="/stocks/production-stock-form"
-                  element={<ProductionStockForm />}
                 />
 
                 <Route path="/dailyreport" element={<DailyReport />} />

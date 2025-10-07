@@ -92,7 +92,6 @@ const ProductionList: React.FC = () => {
       render: (value: string) => format(new Date(value), "dd/MM/yyyy"),
     },
     { key: "invoiceNo", label: "Invoice No", sortable: true },
-    { key: "siloInfo", label: "Silo Info", sortable: true },
     {
       key: "items",
       label: "Items",
@@ -283,12 +282,22 @@ const ProductionList: React.FC = () => {
                 `/production/production-order/${editItem.id}`,
                 data
               );
+              await fetchProductions();
+              setEditItem(null);
+              return true;
             } else {
-              await api.post("/production/production-order", data);
+              const resp = await api.post<ApiResponse<{ id: number }>>(
+                "/production/production-order",
+                data
+              );
+              if (resp.success && resp.data?.id) {
+                // navigate to details page for the newly created production
+                navigate(`/production/production-order/${resp.data.id}`);
+                return true;
+              }
+              showToast(resp.message || "Failed to create production", "error");
+              return false;
             }
-            await fetchProductions();
-            setEditItem(null);
-            return true;
           } catch (error: any) {
             console.error("Error saving production:", error);
             showToast(error?.message || "Failed to save production", "error");

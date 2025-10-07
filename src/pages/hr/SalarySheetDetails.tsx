@@ -273,7 +273,9 @@ const SalarySheetDetails: React.FC = () => {
                     {emp.bonus > 0 ? `₦${formatCurrency(emp.bonus)}` : "0"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
-                    {emp.deduction > 0 ? `₦${formatCurrency(emp.deduction)}` : "0"}
+                    {emp.deduction > 0
+                      ? `₦${formatCurrency(emp.deduction)}`
+                      : "0"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                     ₦{formatCurrency(emp.payment || 0)}
@@ -293,13 +295,31 @@ const SalarySheetDetails: React.FC = () => {
                   Total:
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.salary, 0))}
+                  ₦
+                  {formatCurrency(
+                    data.employeeSalaries.reduce(
+                      (sum, emp) => sum + emp.salary,
+                      0
+                    )
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.bonus, 0))}
+                  ₦
+                  {formatCurrency(
+                    data.employeeSalaries.reduce(
+                      (sum, emp) => sum + emp.bonus,
+                      0
+                    )
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.deduction, 0))}
+                  ₦
+                  {formatCurrency(
+                    data.employeeSalaries.reduce(
+                      (sum, emp) => sum + emp.deduction,
+                      0
+                    )
+                  )}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
                   ₦{formatCurrency(data.totalSalary || 0)}
