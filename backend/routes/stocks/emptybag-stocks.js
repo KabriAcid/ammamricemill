@@ -8,7 +8,10 @@ const router = express.Router();
 // Returns aggregated stock numbers per emptybag product
 router.get("/", authenticateToken, async (req, res, next) => {
   try {
-    // Simple aggregation using available tables. Adjust joins as needed.
+    // Aggregation: use add_stocks and stock_movements which have product_id.
+    // The emptybag_* tables (purchases/payments/sales) do not store product_id in this schema,
+    // so querying them by product would fail. We aggregate from add_stocks and stock_movements
+    // which reliably reference products.
     const [rows] = await pool.query(
       `SELECT p.id AS productId,
               p.name AS productName,
@@ -16,29 +19,22 @@ router.get("/", authenticateToken, async (req, res, next) => {
               c.name AS categoryName,
               p.size,
               p.weight,
-              COALESCE(opening.opening_qty,0) AS opening,
-              COALESCE(receive.receive_qty,0) AS receive,
-              COALESCE(purchase.purchase_qty,0) AS purchase,
-              COALESCE(payment.payment_qty,0) AS payment,
-              COALESCE(sales.sales_qty,0) AS sales,
-              (COALESCE(opening.opening_qty,0) + COALESCE(receive.receive_qty,0) + COALESCE(purchase.purchase_qty,0) - COALESCE(payment.payment_qty,0) - COALESCE(sales.sales_qty,0)) AS stocks
+              COALESCE(a.added_qty,0) AS opening,
+              COALESCE(m.in_qty,0) AS receive,
+              COALESCE(a.added_qty,0) AS purchase,
+              COALESCE(m.out_qty,0) AS payment,
+              COALESCE(m.out_qty,0) AS sales,
+              (COALESCE(a.added_qty,0) + COALESCE(m.in_qty,0) - COALESCE(m.out_qty,0)) AS stocks
        FROM emptybag_products p
        LEFT JOIN emptybag_categories c ON p.category_id = c.id
        LEFT JOIN (
-         SELECT product_id, SUM(quantity) AS opening_qty FROM add_stocks WHERE 1 GROUP BY product_id
-       ) opening ON opening.product_id = p.id
+         -- additions recorded via add_stocks
+         SELECT product_id, SUM(quantity) AS added_qty FROM add_stocks GROUP BY product_id
+       ) a ON a.product_id = p.id
        LEFT JOIN (
-         SELECT product_id, SUM(quantity) AS receive_qty FROM emptybag_purchases WHERE 1 GROUP BY product_id
-       ) receive ON receive.product_id = p.id
-       LEFT JOIN (
-         SELECT product_id, SUM(quantity) AS purchase_qty FROM add_stocks WHERE 1 GROUP BY product_id
-       ) purchase ON purchase.product_id = p.id
-       LEFT JOIN (
-         SELECT product_id, SUM(quantity) AS payment_qty FROM emptybag_payments WHERE 1 GROUP BY product_id
-       ) payment ON payment.product_id = p.id
-       LEFT JOIN (
-         SELECT product_id, SUM(quantity) AS sales_qty FROM emptybag_sales WHERE 1 GROUP BY product_id
-       ) sales ON sales.product_id = p.id
+         -- general stock movements (in/out)
+         SELECT product_id, COALESCE(SUM(quantity_in),0) AS in_qty, COALESCE(SUM(quantity_out),0) AS out_qty FROM stock_movements GROUP BY product_id
+       ) m ON m.product_id = p.id
        ORDER BY p.name ASC`
     );
 
