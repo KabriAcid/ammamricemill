@@ -148,6 +148,11 @@ function App() {
                   path="/purchase/paddy/:id"
                   element={<PurchaseDetails />}
                 />
+                {/* Rice purchase detail route (singular path used by the UI) */}
+                <Route
+                  path="/purchase/rice-purchase/:id"
+                  element={<PurchaseDetails />}
+                />
                 <Route
                   path="/purchases/ledger"
                   element={<PaddyPurchaseLedger />}

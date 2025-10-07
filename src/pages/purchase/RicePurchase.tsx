@@ -289,22 +289,22 @@ const RicePurchase = () => {
     {
       key: "totalQuantity",
       label: "Quantity",
-      render: (value: number) => `${value.toLocaleString()} Bags`,
+      render: (value: number) => `${formatNumber(value || 0, 0)} Bags`,
     },
     {
       key: "totalNetWeight",
       label: "Net Weight",
-      render: (value: number) => `${value.toLocaleString()} Kg`,
+      render: (value: number) => `${formatNumber(value || 0, 2)} Kg`,
     },
     {
       key: "totalAmount",
       label: "Total",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value || 0)}`,
     },
     {
       key: "paidAmount",
       label: "Paid",
-      render: (value: number) => `₦${value.toLocaleString()}`,
+      render: (value: number) => `₦${formatCurrency(value || 0)}`,
     },
     {
       key: "currentBalance",
@@ -315,7 +315,7 @@ const RicePurchase = () => {
             value > 0 ? "text-red-600" : "text-green-600"
           }`}
         >
-          ₦{value.toLocaleString()}
+          ₦{formatCurrency(value || 0)}
         </span>
       ),
     },

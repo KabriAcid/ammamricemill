@@ -40,7 +40,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
       const p = purchases[i];
       const [items] = await pool.query(
         `SELECT pi.id, pi.quantity, pi.net_weight as netWeight, pi.rate, pi.total_price as totalPrice,
-                pr.name as product, g.name as godown, pi.size
+                pr.name as product, g.name as godown
          FROM purchase_items pi
          LEFT JOIN products pr ON pi.product_id = pr.id
          LEFT JOIN godowns g ON pi.godown_id = g.id
@@ -65,7 +65,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
           id: it.id,
           godown: it.godown,
           product: it.product,
-          size: it.size,
+          size: "",
           weight: it.netWeight,
           quantity: it.quantity,
           netWeight: it.netWeight,
@@ -126,15 +126,14 @@ router.post("/", authenticateToken, async (req, res, next) => {
 
     for (const it of items) {
       await connection.query(
-        `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price, size)
-         VALUES (?, NULL, NULL, ?, ?, ?, ?, ?)`,
+        `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price)
+         VALUES (?, NULL, NULL, ?, ?, ?, ?)`,
         [
           purchaseId,
           it.quantity || 0,
           it.netWeight || 0,
           it.rate || 0,
           it.totalPrice || 0,
-          it.size || null,
         ]
       );
     }
@@ -142,13 +141,11 @@ router.post("/", authenticateToken, async (req, res, next) => {
     await connection.commit();
 
     // Return created entry
-    res
-      .status(201)
-      .json({
-        success: true,
-        data: { id: purchaseId.toString(), items },
-        message: "Ledger entry created",
-      });
+    res.status(201).json({
+      success: true,
+      data: { id: purchaseId.toString(), items },
+      message: "Ledger entry created",
+    });
   } catch (err) {
     await connection.rollback();
     next(err);
@@ -184,15 +181,14 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 
     for (const it of items || []) {
       await connection.query(
-        `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price, size)
-         VALUES (?, NULL, NULL, ?, ?, ?, ?, ?)`,
+        `INSERT INTO purchase_items (purchase_id, product_id, godown_id, quantity, net_weight, rate, total_price)
+         VALUES (?, NULL, NULL, ?, ?, ?, ?)`,
         [
           id,
           it.quantity || 0,
           it.netWeight || 0,
           it.rate || 0,
           it.totalPrice || 0,
-          it.size || null,
         ]
       );
     }

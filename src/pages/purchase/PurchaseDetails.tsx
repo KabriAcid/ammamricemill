@@ -1,65 +1,46 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { Printer } from "lucide-react";
 import { Button } from "../../components/ui/Button";
 import { Purchase } from "../../types/purchase";
 import { format } from "date-fns";
+import { api } from "../../utils/fetcher";
+import { ApiResponse } from "../../types";
+import { formatCurrency, formatNumber } from "../../utils/formatters";
 
 const PurchaseDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
+  const location = useLocation();
   const [purchase, setPurchase] = useState<Purchase | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPurchase = async () => {
+      if (!id) return;
       setLoading(true);
       try {
-        // TODO: Replace with actual API call
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setPurchase({
-          id: "1",
-          invoiceNo: "PUR-001",
-          date: "2024-01-15",
-          challanNo: "CH-001",
-          partyId: "PARTY-001",
-          partyName: "Sample Party",
-          transportInfo: "Truck ABC-123",
-          notes: "Regular purchase",
-          items: [
-            {
-              id: "1",
-              categoryId: "CAT-001",
-              productId: "PROD-001",
-              godownId: "GD-001",
-              quantity: 100,
-              netWeight: 5000,
-              rate: 50,
-              totalPrice: 5000,
-            },
-          ],
-          totalQuantity: 100,
-          totalNetWeight: 5000,
-          invoiceAmount: 5000,
-          discount: 100,
-          totalAmount: 4900,
-          previousBalance: 1000,
-          netPayable: 5900,
-          paidAmount: 4000,
-          currentBalance: 1900,
-          createdAt: "2024-01-15T10:00:00Z",
-          updatedAt: "2024-01-15T10:00:00Z",
-        });
+        // Choose endpoint based on current path (rice vs paddy)
+        const isRice = location.pathname.includes("rice");
+        const endpoint = isRice
+          ? `/purchase/rice/${id}`
+          : `/purchase/paddy/${id}`;
+
+        const response = await api.get<ApiResponse<Purchase>>(endpoint);
+        if (response.success && response.data) {
+          setPurchase(response.data);
+        } else {
+          setPurchase(null);
+        }
       } catch (error) {
         console.error("Error fetching purchase:", error);
+        setPurchase(null);
       } finally {
         setLoading(false);
       }
     };
 
-    if (id) {
-      fetchPurchase();
-    }
-  }, [id]);
+    fetchPurchase();
+  }, [id, location.pathname]);
 
   if (loading) {
     return (
@@ -158,18 +139,20 @@ const PurchaseDetails: React.FC = () => {
             {purchase.items.map((item, index) => (
               <tr key={item.id}>
                 <td className="px-3 py-2 text-sm">{index + 1}</td>
-                <td className="px-3 py-2 text-sm">Product Description</td>
                 <td className="px-3 py-2 text-sm">
-                  {item.quantity.toLocaleString()}
+                  {(item as any).productName || "Product"}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  {item.netWeight.toLocaleString()}
+                  {formatNumber(item.quantity || 0, 0)}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  ₦{item.rate.toLocaleString()}
+                  {formatNumber(item.netWeight || 0, 2)}
                 </td>
                 <td className="px-3 py-2 text-sm">
-                  ₦{item.totalPrice.toLocaleString()}
+                  ₦{formatCurrency(item.rate || 0)}
+                </td>
+                <td className="px-3 py-2 text-sm">
+                  ₦{formatCurrency(item.totalPrice || 0)}
                 </td>
               </tr>
             ))}
@@ -180,14 +163,14 @@ const PurchaseDetails: React.FC = () => {
                 Total
               </td>
               <td className="px-3 py-2 text-sm font-medium">
-                {purchase.totalQuantity.toLocaleString()}
+                {formatNumber(purchase.totalQuantity || 0, 0)}
               </td>
               <td className="px-3 py-2 text-sm font-medium">
-                {purchase.totalNetWeight.toLocaleString()}
+                {formatNumber(purchase.totalNetWeight || 0, 2)}
               </td>
               <td className="px-3 py-2"></td>
               <td className="px-3 py-2 text-sm font-medium">
-                ₦{purchase.invoiceAmount.toLocaleString()}
+                ₦{formatCurrency(purchase.invoiceAmount || 0)}
               </td>
             </tr>
           </tfoot>
@@ -200,31 +183,31 @@ const PurchaseDetails: React.FC = () => {
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span>Invoice Amount:</span>
-            <span>₦{purchase.invoiceAmount.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.invoiceAmount || 0)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Discount:</span>
-            <span>₦{purchase.discount.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.discount || 0)}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Total Amount:</span>
-            <span>₦{purchase.totalAmount.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.totalAmount || 0)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Previous Balance:</span>
-            <span>₦{purchase.previousBalance.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.previousBalance || 0)}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Net Payable:</span>
-            <span>₦{purchase.netPayable.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.netPayable || 0)}</span>
           </div>
           <div className="flex justify-between text-sm">
             <span>Paid Amount:</span>
-            <span>₦{purchase.paidAmount.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.paidAmount || 0)}</span>
           </div>
           <div className="flex justify-between text-sm font-medium">
             <span>Current Balance:</span>
-            <span>₦{purchase.currentBalance.toLocaleString()}</span>
+            <span>₦{formatCurrency(purchase.currentBalance || 0)}</span>
           </div>
         </div>
       </div>
