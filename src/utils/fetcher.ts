@@ -15,8 +15,7 @@ export async function fetcher<T>(
   const fullUrl = url.startsWith("http") ? url : `${BASE_URL}${url}`;
 
   try {
-    // Debug: show resolved full URL for tracing incorrect endpoints
-    console.log("fetcher -> fullUrl:", fullUrl, "(url param:", url, ")");
+    
     // Get token from localStorage
     const user = localStorage.getItem("ammam_user");
     const token = user ? JSON.parse(user).token : null;

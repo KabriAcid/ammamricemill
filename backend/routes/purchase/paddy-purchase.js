@@ -42,7 +42,7 @@ router.get("/", authenticateToken, async (req, res, next) => {
         p.status,
         p.created_at as createdAt,
         p.updated_at as updatedAt
-      FROM paddy_purchases p
+  FROM purchases p
       LEFT JOIN parties pt ON p.party_id = pt.id
       WHERE ${dateCondition}
       ORDER BY p.date DESC, p.created_at DESC`,
@@ -88,7 +88,7 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
         p.status,
         p.created_at as createdAt,
         p.updated_at as updatedAt
-      FROM paddy_purchases p
+  FROM purchases p
       LEFT JOIN parties pt ON p.party_id = pt.id
       WHERE p.id = ?`,
       [id]
@@ -116,7 +116,7 @@ router.get("/:id", authenticateToken, async (req, res, next) => {
         pi.rate,
         pi.total_price as totalPrice,
         pi.created_at as createdAt
-      FROM paddy_purchase_items pi
+  FROM purchase_items pi
       LEFT JOIN categories c ON pi.category_id = c.id
       LEFT JOIN products pr ON pi.product_id = pr.id
       LEFT JOIN godowns g ON pi.godown_id = g.id
@@ -177,7 +177,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
 
     // Check for duplicate invoice number
     const [existing] = await connection.query(
-      "SELECT id FROM paddy_purchases WHERE invoice_no = ?",
+      "SELECT id FROM purchases WHERE invoice_no = ?",
       [invoiceNo]
     );
 
@@ -208,7 +208,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
 
     // Insert purchase header
     const [result] = await connection.query(
-      `INSERT INTO paddy_purchases (
+      `INSERT INTO purchases (
         date, invoice_no, challan_no, party_id, transport_info, notes,
         total_quantity, total_net_weight, invoice_amount, discount, total_amount,
         previous_balance, net_payable, paid_amount, current_balance,
@@ -240,10 +240,10 @@ router.post("/", authenticateToken, async (req, res, next) => {
     // Insert purchase items
     for (const item of items) {
       await connection.query(
-        `INSERT INTO paddy_purchase_items (
+        `INSERT INTO purchase_items (
           purchase_id, category_id, product_id, godown_id,
           quantity, net_weight, rate, total_price
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
         [
           purchaseId,
           item.categoryId || null,
@@ -261,7 +261,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
         `INSERT INTO stock_movements (
           date, product_id, godown_id, movement_type,
           reference_type, reference_id, quantity_in, rate, remarks
-        ) VALUES (?, ?, ?, 'purchase', 'paddy_purchase', ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, 'purchase', 'purchase', ?, ?, ?, ?)`,
         [
           date,
           item.productId,
@@ -298,7 +298,7 @@ router.post("/", authenticateToken, async (req, res, next) => {
         p.paid_amount as paidAmount,
         p.current_balance as currentBalance,
         p.status
-      FROM paddy_purchases p
+  FROM purchases p
       LEFT JOIN parties pt ON p.party_id = pt.id
       WHERE p.id = ?`,
       [purchaseId]
@@ -339,7 +339,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 
     // Check if purchase exists
     const [existing] = await connection.query(
-      "SELECT id, invoice_amount, previous_balance FROM paddy_purchases WHERE id = ?",
+      "SELECT id, invoice_amount, previous_balance FROM purchases WHERE id = ?",
       [id]
     );
 
@@ -358,11 +358,11 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
 
     // Update purchase
     await connection.query(
-      `UPDATE paddy_purchases 
-       SET date = ?, challan_no = ?, transport_info = ?, notes = ?, discount = ?,
-           total_amount = ?, net_payable = ?, paid_amount = ?,
-           current_balance = ?, payment_mode = ?, reference_no = ?, status = ?
-       WHERE id = ?`,
+      `UPDATE purchases 
+     SET date = ?, challan_no = ?, transport_info = ?, notes = ?, discount = ?,
+       total_amount = ?, net_payable = ?, paid_amount = ?,
+       current_balance = ?, payment_mode = ?, reference_no = ?, status = ?
+     WHERE id = ?`,
       [
         date,
         challanNo || null,
@@ -392,7 +392,7 @@ router.put("/:id", authenticateToken, async (req, res, next) => {
         p.paid_amount as paidAmount,
         p.current_balance as currentBalance,
         p.status
-      FROM paddy_purchases p
+  FROM purchases p
       WHERE p.id = ?`,
       [id]
     );
@@ -430,7 +430,7 @@ router.delete("/", authenticateToken, async (req, res, next) => {
     // Check if purchases exist
     const placeholders = ids.map(() => "?").join(",");
     const [existing] = await connection.query(
-      `SELECT id FROM paddy_purchases WHERE id IN (${placeholders})`,
+      `SELECT id FROM purchases WHERE id IN (${placeholders})`,
       ids
     );
 
@@ -444,7 +444,7 @@ router.delete("/", authenticateToken, async (req, res, next) => {
 
     // Soft delete - mark as cancelled
     await connection.query(
-      `UPDATE paddy_purchases SET status = 'cancelled' WHERE id IN (${placeholders})`,
+      `UPDATE purchases SET status = 'cancelled' WHERE id IN (${placeholders})`,
       ids
     );
 
@@ -474,7 +474,7 @@ router.delete("/:id", authenticateToken, async (req, res, next) => {
 
     // Check if purchase exists
     const [existing] = await connection.query(
-      "SELECT id FROM paddy_purchases WHERE id = ?",
+      "SELECT id FROM purchases WHERE id = ?",
       [id]
     );
 
@@ -488,7 +488,7 @@ router.delete("/:id", authenticateToken, async (req, res, next) => {
 
     // Soft delete - mark as cancelled
     await connection.query(
-      "UPDATE paddy_purchases SET status = 'cancelled' WHERE id = ?",
+      "UPDATE purchases SET status = 'cancelled' WHERE id = ?",
       [id]
     );
 
@@ -526,7 +526,7 @@ router.get("/statistics/summary", authenticateToken, async (req, res, next) => {
         COALESCE(SUM(total_quantity), 0) as totalQuantity,
         COALESCE(SUM(total_amount), 0) as totalAmount,
         COALESCE(SUM(current_balance), 0) as totalBalance
-      FROM paddy_purchases
+  FROM purchases
       WHERE ${dateCondition}`,
       params
     );
