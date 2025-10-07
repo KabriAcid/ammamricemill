@@ -7,6 +7,7 @@ import { useToast } from "../../components/ui/Toast";
 import { api } from "../../utils/fetcher";
 import { ApiResponse } from "../../types";
 import { SkeletonCard } from "../../components/ui/Skeleton";
+import { formatCurrency } from "../../utils/formatters";
 
 interface EmployeeSalary {
   employeeId: string;
@@ -197,7 +198,7 @@ const SalarySheetDetails: React.FC = () => {
           <div>
             <p className="text-sm text-gray-500 mb-1">Total Salary</p>
             <p className="text-lg font-semibold text-gray-900">
-              ₦{data.totalSalary.toLocaleString()}
+              ₦{formatCurrency(data.totalSalary || 0)}
             </p>
           </div>
         </div>
@@ -266,18 +267,16 @@ const SalarySheetDetails: React.FC = () => {
                     {emp.employeeName}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
-                    ₦{emp.salary.toLocaleString()}
+                    ₦{formatCurrency(emp.salary || 0)}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
-                    {emp.bonus > 0 ? `₦${emp.bonus.toLocaleString()}` : "0"}
+                    {emp.bonus > 0 ? `₦${formatCurrency(emp.bonus)}` : "0"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-900">
-                    {emp.deduction > 0
-                      ? `₦${emp.deduction.toLocaleString()}`
-                      : "0"}
+                    {emp.deduction > 0 ? `₦${formatCurrency(emp.deduction)}` : "0"}
                   </td>
                   <td className="px-4 py-3 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                    ₦{emp.payment.toLocaleString()}
+                    ₦{formatCurrency(emp.payment || 0)}
                   </td>
                   <td className="px-4 py-3 text-sm text-gray-600">
                     {emp.note || "-"}
@@ -294,25 +293,16 @@ const SalarySheetDetails: React.FC = () => {
                   Total:
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦
-                  {data.employeeSalaries
-                    .reduce((sum, emp) => sum + emp.salary, 0)
-                    .toLocaleString()}
+                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.salary, 0))}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦
-                  {data.employeeSalaries
-                    .reduce((sum, emp) => sum + emp.bonus, 0)
-                    .toLocaleString()}
+                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.bonus, 0))}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦
-                  {data.employeeSalaries
-                    .reduce((sum, emp) => sum + emp.deduction, 0)
-                    .toLocaleString()}
+                  ₦{formatCurrency(data.employeeSalaries.reduce((sum, emp) => sum + emp.deduction, 0))}
                 </td>
                 <td className="px-4 py-3 text-right text-sm">
-                  ₦{data.totalSalary.toLocaleString()}
+                  ₦{formatCurrency(data.totalSalary || 0)}
                 </td>
                 <td colSpan={2}></td>
               </tr>

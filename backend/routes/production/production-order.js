@@ -23,9 +23,8 @@ router.get("/", authenticateToken, async (req, res) => {
         p.id,
         p.invoice_no as invoiceNo,
         DATE_FORMAT(p.date, '%Y-%m-%d') as date,
-        p.description,
-        p.silo_info as siloInfo,
-        p.total_quantity as totalQuantity,
+  p.description,
+  p.total_quantity as totalQuantity,
         p.total_weight as totalWeight,
         p.status,
         p.created_at as createdAt,
@@ -74,7 +73,6 @@ router.get("/", authenticateToken, async (req, res) => {
           pi.category_id as categoryId,
           pi.product_id as productId,
           pi.godown_id as godownId,
-          pi.silo_id as siloId,
           pi.quantity,
           pi.net_weight as netWeight
         FROM production_items pi
@@ -119,15 +117,8 @@ router.post("/", authenticateToken, async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const {
-      invoiceNo,
-      date,
-      description,
-      siloInfo,
-      items,
-      totalQuantity,
-      totalWeight,
-    } = req.body;
+    const { invoiceNo, date, description, items, totalQuantity, totalWeight } =
+      req.body;
 
     // Validate required fields
     if (!invoiceNo || !date || !items || !items.length) {
@@ -146,31 +137,22 @@ router.post("/", authenticateToken, async (req, res) => {
     // Insert production order with explicit id
     await connection.query(
       `INSERT INTO productions 
-        (id, invoice_no, date, description, silo_info, total_quantity, total_weight, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-      [
-        productionId,
-        invoiceNo,
-        date,
-        description,
-        siloInfo,
-        totalQuantity,
-        totalWeight,
-      ]
+        (id, invoice_no, date, description, total_quantity, total_weight, status)
+      VALUES (?, ?, ?, ?, ?, ?, 'active')`,
+      [productionId, invoiceNo, date, description, totalQuantity, totalWeight]
     );
 
     // Insert production items
     for (const item of items) {
       await connection.query(
         `INSERT INTO production_items 
-          (production_id, category_id, product_id, godown_id, silo_id, quantity, net_weight)
-        VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          (production_id, category_id, product_id, godown_id, quantity, net_weight)
+        VALUES (?, ?, ?, ?, ?, ?)`,
         [
           productionId,
           item.categoryId,
           item.productId,
           item.godownId,
-          item.siloId,
           item.quantity,
           item.netWeight,
         ]
@@ -208,9 +190,8 @@ router.get("/:id", authenticateToken, async (req, res) => {
         p.id,
         p.invoice_no as invoiceNo,
         DATE_FORMAT(p.date, '%Y-%m-%d') as date,
-        p.description,
-        p.silo_info as siloInfo,
-        p.total_quantity as totalQuantity,
+  p.description,
+  p.total_quantity as totalQuantity,
         p.total_weight as totalWeight,
         p.status,
         p.created_at as createdAt,

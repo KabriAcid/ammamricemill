@@ -3,7 +3,6 @@ export interface ProductionItem {
   categoryId: string;
   productId: string;
   godownId: string;
-  siloId: string;
   quantity: number;
   netWeight: number;
 }
@@ -13,7 +12,6 @@ export interface Production {
   invoiceNo: string;
   date: string;
   description?: string;
-  siloInfo?: string;
   items: ProductionItem[];
   totalQuantity: number;
   totalWeight: number;

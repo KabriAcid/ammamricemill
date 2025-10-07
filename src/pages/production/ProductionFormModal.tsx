@@ -25,7 +25,6 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
     invoiceNo: "",
     date: new Date().toISOString().split("T")[0],
     description: "",
-    siloInfo: "",
     items: [],
     totalQuantity: 0,
     totalWeight: 0,
@@ -71,7 +70,6 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 categoryId: "",
                 productId: p.id,
                 godownId: "",
-                siloId: "",
                 quantity: 0,
                 netWeight: 0,
               })),
@@ -180,7 +178,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
       {initialLoading ? (
         <div className="p-6">
           {/* spinner instead */}
-          <Spinner/>
+          <Spinner />
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -268,7 +266,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         </select>
                       </div>
 
-                      <div className="col-span-12 md:col-span-3">
+                      <div className="col-span-12 md:col-span-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Product
                         </label>
@@ -277,7 +275,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                         </div>
                       </div>
 
-                      <div className="col-span-12 md:col-span-3">
+                      <div className="col-span-12 md:col-span-4">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Godown
                         </label>
