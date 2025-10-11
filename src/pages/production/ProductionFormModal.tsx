@@ -60,19 +60,22 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
           }));
           setProducts(loadedProducts);
 
+          // Initialize with a single empty item row when creating a new production.
           setFormData((prev) => {
             if (item) return prev;
             if (prev.items && prev.items.length) return prev;
             return {
               ...prev,
-              items: loadedProducts.map((p) => ({
-                id: p.id,
-                categoryId: "",
-                productId: p.id,
-                godownId: "",
-                quantity: 0,
-                netWeight: 0,
-              })),
+              items: [
+                {
+                  id: "",
+                  categoryId: "",
+                  productId: "",
+                  godownId: "",
+                  quantity: 0,
+                  netWeight: 0,
+                },
+              ],
             };
           });
         }
@@ -239,7 +242,7 @@ const ProductionFormModal: React.FC<ProductionFormModalProps> = ({
                 {formData.items.map((it, index) => {
                   const product = products.find((p) => p.id === it.productId);
                   return (
-                    <div key={it.id} className="grid grid-cols-12 gap-4">
+                    <div key={index} className="grid grid-cols-12 gap-4">
                       <div className="col-span-12 md:col-span-3">
                         <label className="block text-sm font-medium text-gray-700 mb-2">
                           Category
